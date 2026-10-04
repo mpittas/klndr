@@ -23,6 +23,13 @@
       "autoPort": true
     },
     {
+      "name": "api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "-w", "apps/api"],
+      "env": { "FIREBASE_PROJECT_ID": "" },
+      "port": 3001
+    },
+    {
       "name": "mobile",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "start", "-w", "apps/mobile"],

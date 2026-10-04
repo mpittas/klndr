@@ -10,6 +10,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/auth";
 import { ToastProvider } from "@/components/ui";
 import { UnavailableScreen } from "@/components/auth/unavailable";
+import { AppDataProvider } from "@/data";
 import { INTER_FONTS, useFonts } from "@/fonts";
 import { applyStoredTheme, ThemePreferenceProvider, useThemePreference } from "@/theme/preference";
 
@@ -68,7 +69,9 @@ export default function RootLayout() {
           <ToastProvider>
             <AuthProvider>
               <SplashUntilSettled />
-              <RootNavigator />
+              <AppDataProvider>
+                <RootNavigator />
+              </AppDataProvider>
             </AuthProvider>
           </ToastProvider>
         </ThemePreferenceProvider>

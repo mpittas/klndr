@@ -3,7 +3,7 @@ import { Check } from "lucide-vue-next";
 import { paletteOf } from "~/lib/colors";
 import { formatDuration } from "@klndr/core";
 
-// What every new account starts with: DEFAULT_TEMPLATES and the daily routines in server/utils/db.ts.
+// What every new account starts with: DEFAULT_TEMPLATES and the daily routines in apps/api/src/db.ts.
 const activities = [
   { emoji: "☀️", title: "Morning routine", color: "amber", duration: 45 },
   { emoji: "🛠️", title: "Working on projects", color: "indigo", duration: 120 },

@@ -439,3 +439,105 @@ frameworks, so `app.config.ts` now adds `expo-build-properties` with `ios.useFra
 no `disableSPM`. Lesson kept: nothing about the iOS native build is verified until EAS has built it.
 
 
+
+## 2026-10-03 — R: the web app moves to React; "Nuxt stays the production web app" is superseded
+
+The first entry of this file fixed the Nuxt app as the production web app and PLAN.md listed replacing
+it as out of scope. The owner has since decided to rewrite the web app in React (Vite, React, TanStack
+Router) and retire Nuxt, so that web and mobile share data hooks as well as logic. Mobile keeps its own
+native views on purpose; only logic, data and design tokens are shared. Plan: Phase R in PLAN.md. Nuxt
+keeps serving production until the React app reaches parity (R.5).
+
+## 2026-10-03 — R.1: the API is a Hono app in `apps/api`, and Nuxt forwards `/api/**` to it
+
+Why take the server out of Nuxt: it is what the React web app and the mobile app both call, and it has to
+outlive Nuxt. Everything in `apps/web/server` was already client-agnostic (REST plus a Firebase ID token
+forwarded to Firestore), and its only Nitro coupling was `createError`, `getQuery`, `readBody`,
+`getRouterParam`, `setResponseStatus`, `useRuntimeConfig` and `import.meta.dev`.
+
+- **Hono**, because the app is a plain fetch handler (`createApp(config).fetch`): it runs on Node
+  (`@hono/node-server`), inside Nitro, and on edge runtimes, and `app.request()` makes the routes testable
+  without a server. Standalone Node is the default way to run it (`npm run dev -w apps/api`).
+- **One implementation.** While Nuxt exists, `apps/web/server/api/[...].ts` hands every `/api/**` request to
+  the same app (`toWebRequest`), so the deployed web app and the mobile app's base URL are unchanged.
+  `@klndr/api` is in `build.transpile`, like `@klndr/core`, because it ships TypeScript source.
+- **Configuration is injected, not read from Nitro.** `createApp({ firebaseProjectId, allowDevUser, keys?,
+  storeFor? })`. Nuxt passes `useRuntimeConfig().public.firebaseProjectId` and `Boolean(import.meta.dev)`;
+  the Node entry reads `FIREBASE_PROJECT_ID` (or `NUXT_PUBLIC_FIREBASE_PROJECT_ID`) and `NODE_ENV`, and refuses
+  to start in production without a project id. `allowDevUser` is compiled to `false` in the Nuxt production
+  bundle (checked in `.output`).
+- **Same wire format.** Errors keep the Nitro keys (`error: true`, `statusCode`, `statusMessage`, `message`),
+  which is what `createApiClient` reads. Unexpected failures answer a plain 500 and log the detail.
+- **Small differences, all deliberate.** A body that is not valid JSON is a 400 "Expected a JSON object
+  body" (it was whatever `readBody` threw). Repeated query keys use the first value (h3 returned an array,
+  which the routes then ignored). The per-user in-memory stores for dev now belong to the app instance
+  (`createStoreFactory`) instead of a module-level map, so tests and multiple apps are isolated.
+  `Cache-Control: no-store` and `X-Content-Type-Options: nosniff` are set by the app itself.
+- **No CORS.** Nuxt serves web and API from one origin, and the React dev server will proxy `/api`. If the
+  React app and the API are ever hosted on different origins, add CORS then (HUMAN_TODO).
+- **Not changed:** the stores and the Firestore REST client moved verbatim (`git mv`), so Phase 3.1
+  (`createStore(db)` in core) starts from the same code. Validation stayed as it was; schema validation
+  (zod) was left out so this move changes no behaviour.
+
+## 2026-10-03 — line endings of the files tests compare byte for byte
+
+`packages/tokens` tests compare generated files and a fixture with what the code produces. On Windows with
+`core.autocrlf=true` (Git for Windows' default) they were checked out with CRLF and four tests failed
+without anything being wrong. A `.gitattributes` now pins exactly those paths to LF. Nothing else about line
+endings changed.
+
+## 2026-10-03 — R.2: `@klndr/data`, the data layer both apps share
+
+TanStack Query hooks over the `@klndr/core` API client, for the React web app and the Expo app. Views stay
+each app's own; this is everything behind them.
+
+- **Shape.** The logic is plain functions over a `QueryClient` (`cache.ts`, `blocks.ts`, `derive.ts`) and
+  mutations written as TanStack *options objects*, not hooks (`mutations/*`), so they run under a bare
+  `MutationObserver` in tests. The hooks (`hooks/*`) are thin wrappers. Above them sits `useDayTimeline(day)`,
+  the data half of `DayPlanner.vue`: tasks, add from an activity, move (with the neighbours' columns), resize,
+  tick, delete, editor save, undo/redo, refresh. React and `@tanstack/react-query` are *peer* dependencies: the
+  mobile app pins its own React (19.2.3, Expo's) and Metro resolves every import to that copy, which is why a
+  bundled second copy would crash with "invalid hook call". Checked in the exported bundles: one React copy.
+- **What is optimistic.** As in the Vue planner: add from an activity (temporary id, swapped for the saved
+  block), move, resize, tick, delete, dragging an activity to another category, ticking a checklist routine.
+  Everything with a form (editor save, activity and category edits, checklist edits) waits for the server and
+  throws its message to the caller. Rollback restores only the blocks a mutation touched (not a whole-cache
+  snapshot), so a failure never undoes an unrelated change made meanwhile.
+- **Order.** Task mutations share a TanStack `scope`, so they *run* one after another while their optimistic
+  effects appear at once: a drag followed quickly by a tick reaches the server in that order. The Vue planner
+  sent them in parallel. The checklist has its own scope. (Tested: the second request is not sent until the
+  first is answered.)
+- **No refetch after each task change.** Refetching on settle would show the server's state from before a
+  *queued* change and flicker the screen back. Responses are written into the cache instead; a failed move,
+  which may have half-saved, does invalidate. The cache is trusted for 30 s (`staleTime`).
+- **Deliberate differences from the Vue app** (each was a gap, not a feature):
+  - a failed resize or tick now says so (it was silent), and a failed checklist tick is put back (it stayed
+    ticked, with only a message);
+  - the checklist messages the components built ("Skipped … for this day", "Restored …", "Added … for this
+    day", "Removed …") are now shown; the planner discarded them;
+  - deleting an activity says "Activity deleted" everywhere (it did only from the editor), and deleting a block
+    from the editor is optimistic like deleting it from the timeline (it awaited, then closed);
+  - the server's message is thrown to the caller instead of `alert()`;
+  - fetching again after a category rename uses TanStack's cancel-and-refetch, replacing the hand-made
+    "older reload must not win" counter.
+- **Undo** is the existing `TimelineHistory` engine in core, reading and writing the day's list in the cache;
+  a different day starts a fresh history. Month grids that show those blocks are refetched after an undo.
+- **The device cache.** Persisted with `createKeyValuePersister(storage)` (MMKV on the phone). Its buster is
+  `version:userId`, so a cache saved for one person is discarded on restore for anyone else (tested), and it
+  is wiped when `userId` is `null`. That makes `null` mean *signed out*, never *not known yet*: the app must
+  not mount `DataProvider` until auth has settled, or every cold start would erase the cache. `AppDataProvider`
+  renders nothing while auth is `loading` for that reason. Saved data is shown at once and refreshed only if it
+  is older than `staleTime`. One cache slot, 24 h `maxAge`, bump `CACHE_VERSION` when a cached shape changes.
+- **Reconnect refetch is not done.** TanStack needs a network-state source for `onlineManager`; on a phone
+  that is a native module (`expo-network` or NetInfo), and a new native dependency means a new development
+  build. Foreground refetch is done (`AppState` to `focusManager`) and covers most of it; add the module with
+  the next planned native build.
+- **The profile** is a Firestore document read through each platform's own Firebase SDK, so `useProfile` takes
+  an injected `ProfileSource` (`load`, `save`); values go through core's `cleanPatch` first. The phone's
+  `AuthProvider` still loads the profile itself and doesn't use it yet; the Settings tab (2.6) will.
+- **Test harness.** The tests run the real `@klndr/api` in memory behind a stubbed `fetch`, with requests that
+  can be held or made to fail, so optimistic state is looked at while a request is in flight and rollbacks are
+  forced for real. React's side is checked with a renderer (happy-dom). Two things learned: TanStack tells React
+  about cache changes a tick later, so hook results are asserted with `waitFor`; and the default scheduler already
+  coalesces updates made in one synchronous block, so `notifyManager.batch` in the category rename states the
+  intent rather than being what keeps it consistent (the test checks the invariant either way).

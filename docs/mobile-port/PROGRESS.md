@@ -339,3 +339,75 @@ Everything that nothing ships or calls was taken out, and the rest re-verified:
 Next step:
 - Finish the remaining device checks above (HUMAN_TODO, Task 1.3), then task 1.4: TanStack Query hooks over
   `src/api.ts`, optimistic mutations, MMKV cache, refetch rules.
+
+## 2026-10-03 — session 8: Phase R begins (React web), R.1 the API out of Nuxt
+
+Context: asked to migrate to a React web app plus the Expo app, on top of this branch rather than from
+`main` (branch `feat/react-web`, off `feat/mobile-app` @ `ef40f9c`). Most of the shared-package work this
+needed was already here (`@klndr/core`, `@klndr/tokens`, the workspace); what was missing was the API
+outside Nuxt, shared data hooks, and the React app. Phase R in PLAN.md records the plan and its order.
+
+Done (R.1):
+- `apps/api` (`@klndr/api`): Hono app, `createApp(config)`. The server code moved with `git mv` (`db.ts`,
+  `firestore.ts`, `auth.ts`, `session.ts`, `validation.ts`, `categories.ts`), the routes were rewritten as
+  Hono routers, and the Nitro calls became a small `HttpError`. Standalone entry `src/server.ts`.
+- Nuxt: the 24 route files and the auth middleware are replaced by one catch-all that forwards to the
+  same app. `jose` moved from `apps/web` to `apps/api`; `.claude/launch.json` has an `api` config.
+- Tests (93): auth with real RS256 tokens and a local key set, every route, and the `@klndr/core` API client
+  against the app. Mutation check: breaking a status code and the id validation produced 5 failures.
+- `.gitattributes` for the byte-compared files in `packages/tokens` (see DECISIONS.md).
+
+Verification:
+- `npm run typecheck` — exit 0, all five workspaces.
+- `npm test` — 264 core, 93 api, 41 tokens pass.
+- `npm run build -w apps/web` — "Build complete!"; the API is the chunk `routes/api/_..._.mjs` (55 kB) and
+  `allowDevUser` is `Boolean(false)` in it.
+- Standalone API over HTTP (curl): health, create → 201, list, bad JSON → 400, unknown route → 404.
+- Through Nuxt in dev (the `demo` config): the same, plus PATCH with `lane: null`, DELETE, invalid id → 400,
+  PUT notes; the calendar page and the day page render with data and all their API calls return 200.
+- Seen and not investigated: Vue logs a hydration mismatch in `AppHeader` on first load. It is in a
+  component this work did not touch and happens before any API call; no baseline run was made to prove it
+  was already there.
+
+Not verified: the Firestore path (`FirestoreStore` with real tokens and the rules). The code moved
+unchanged, but nothing here exercises it; Task 3.2's emulator tests would, and need Java.
+
+Next step: R.2, `packages/data` (the task 1.4 hooks, written once for mobile and web), then R.3.
+
+## 2026-10-03 — session 9: R.2 `@klndr/data`, and task 1.4 with it
+
+Done:
+- `packages/data` (`@klndr/data`): query keys, cache helpers, the task / library / checklist mutations, the
+  notes saver, the profile hooks, `DataProvider`, `useDayTimeline`, `useTimelineHistory`, `useChecklist`,
+  `useNotesEditor`, `useLibraryActions`, the cache persister. See DECISIONS.md for the shape and the
+  deliberate differences from the Vue planner.
+- `apps/mobile`: `AppDataProvider` (`src/data/`) under the auth gate: the API client, the signed-in uid, toast as
+  `notify`, the cache in MMKV, refetch on foreground. `@klndr/data` and `@tanstack/react-query` added to its
+  dependencies. No native dependency was added, so the existing development build keeps working.
+- Root `typecheck` and `test` scripts now include the package.
+- Tasks 1.4 and R.2 ticked in PLAN.md. Only "refetch on reconnect" is open (see DECISIONS.md).
+
+Verification:
+- `npm run typecheck` — exit 0, six workspaces (the data package is checked twice: its source with no Node
+  types, its tests with them).
+- `npm test` — 264 core, 127 data, 93 api, 41 tokens pass.
+- Mutation check: removing the rollback of a failed move, removing the serial scope, and making the saved cache
+  ignore whose it is each failed exactly the one test written for it (125 of 126 passed each time); the files
+  were restored and re-run (126, then 127 with the sign-out test).
+- Flakiness: the whole data suite run three times in a row, 126 of 126 each time.
+- `expo export` for **android and ios** both bundle. In the source maps: all 19 `@klndr/data` modules, TanStack
+  Query core, react-query and the persisters; **one** React copy (`apps/mobile/node_modules/react`); no
+  react-dom; no `@klndr/api`; no test tooling.
+
+Found while testing:
+- A first version of the cache wipe would have deleted the saved cache on every cold start, because auth is
+  `loading` (no user yet) until Firebase restores the session. Fixed by contract: `userId: null` means signed
+  out, and `AppDataProvider` mounts the provider only once auth has settled.
+
+Not verified, and not verifiable here:
+- Anything on a device: that the cache survives a relaunch and shows at once, that sign-out empties it, and
+  that the navigator mounting a frame later (it now waits for auth to settle) shows no flash. HUMAN_TODO.
+- The screens do not use the hooks yet (the Day tab is Phase 2.1), so nothing visible changed in the app.
+- `useProfile` against the real Firestore.
+
+Next step: R.3, the timeline's interaction maths into `@klndr/core` (it is also what 2.1 needs), then R.4.

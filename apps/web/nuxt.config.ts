@@ -5,10 +5,10 @@ export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: false },
   css: ["~/assets/css/main.css"],
-  // @klndr/core ships TypeScript source, so both Vite builds have to compile it. Nuxt also feeds
-  // this list into Nitro's `externals.inline`, which is what makes the server bundle it.
+  // @klndr/core and @klndr/api ship TypeScript source, so both Vite builds have to compile them. Nuxt
+  // also feeds this list into Nitro's `externals.inline`, which is what makes the server bundle them.
   build: {
-    transpile: ["@klndr/core"],
+    transpile: ["@klndr/core", "@klndr/api"],
   },
   vite: {
     plugins: [tailwindcss()],

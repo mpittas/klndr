@@ -1,7 +1,8 @@
 # Mobile port plan
 
 Native iOS and Android apps for klndr (DayForge), built with Expo (React Native) while the
-Nuxt web app in `apps/web` keeps working unchanged. Tick each task as it finishes. Stop at
+Nuxt web app in `apps/web` keeps working unchanged (until Phase R replaces it with a React app, decided
+2026-10-03 after task 1.3). Tick each task as it finishes. Stop at
 each CHECKPOINT and post a review summary.
 
 Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
@@ -166,12 +167,12 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
       applied by a real `expo prebuild --platform android` with dummy config files.
 - [ ] HUMAN_TODO: try sign-in on a device — see HUMAN_TODO.md (Task 1.3).
 
-### 1.4 Data
-- [ ] TanStack Query hooks over the core API client (day tasks, range tasks, templates,
+### 1.4 Data  (decided 2026-10-03: written once in `packages/data`, see R.2, and shared with the React web app)
+- [x] TanStack Query hooks over the core API client (day tasks, range tasks, templates,
       categories, checklist items, day checklist, day notes, profile).
-- [ ] Optimistic mutations matching DayPlanner.vue (temp ids, rollback, toasts).
-- [ ] Query cache persisted in MMKV.
-- [ ] Refetch on foreground and on reconnect.
+- [x] Optimistic mutations matching DayPlanner.vue (temp ids, rollback, toasts).
+- [x] Query cache persisted in MMKV.
+- [~] Refetch on foreground (done, `src/data/focus.ts`) and on reconnect (open: needs a network-state module, see DECISIONS.md).
 
 ## Phase 2 — screens
 
@@ -283,7 +284,55 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
 ### CHECKPOINT C
 - [ ] Final report.
 
+## Phase R — the web app in React (decided 2026-10-03)
+
+The Nuxt app is rewritten in React and then retired, so web and mobile share not only `@klndr/core`
+and `@klndr/tokens` but also the data hooks. Only the views are written twice, on purpose: the mobile
+app keeps its own native design. Nuxt stays the production web app until R.5 reaches parity.
+
+### R.1 The API out of Nuxt (`apps/api`)
+- [x] Move `apps/web/server` into `apps/api`, a Hono app: `createApp(config)` returns a fetch handler.
+- [x] Routes rewritten one for one (tasks, templates, categories, checklist, notes, account, health);
+      same URLs, bodies, status codes and error body (`error`, `statusCode`, `statusMessage`, `message`).
+- [x] Firestore REST client, both stores (Firestore, in-memory) and the Firebase token check moved with it
+      (`git mv`, history kept). The only Nitro-specific calls became a small `HttpError`.
+- [x] Nuxt keeps serving `/api/**` through one catch-all (`apps/web/server/api/[...].ts`) that forwards to
+      the same app, so nothing changes for the deployed web app or the mobile app's base URL.
+- [x] Standalone Node entry: `npm run dev -w apps/api` (port 3001, tsx, in-memory without Firebase).
+- [x] Tests (93): the token check with real signed tokens and a local key set (wrong issuer, audience, key,
+      expiry, fail-closed), every route's success and refusal cases, and the `@klndr/core` API client driven
+      against the app (every client method matches a route). Mutation-checked.
+- [x] Verified: standalone over HTTP, through Nuxt in dev (calendar and day pages load), the production
+      bundle has `allowDevUser` compiled to `false`, typecheck for all five workspaces.
+- [ ] HUMAN_TODO: decide where `apps/api` is deployed before Nuxt is retired (R.6).
+
+### R.2 Shared data hooks (`packages/data`)
+- [x] TanStack Query hooks over the core API client (day tasks, range tasks, templates, categories,
+      checklist items, day checklist, day notes, profile). This is task 1.4, written once.
+- [x] Optimistic mutations matching DayPlanner.vue (temp ids, rollback, toasts) and the undo engine.
+- [x] Persistence of the query cache is injected (`createKeyValuePersister`): MMKV on mobile, none on the web at first.
+- [x] Hooks tested with the real API in memory behind `fetch` (127 tests): the mutations without React, the hooks with
+      a renderer where React is the point (provider, undo wiring, notes, profile, per-user cache).
+- [x] Wired into the Expo app: `AppDataProvider` under the auth gate, MMKV cache, refetch on foreground, toast as `notify`.
+- [ ] HUMAN_TODO: check a cold start on the device (no flash, data from the last run shows at once) and sign-out wiping the cache.
+
+### R.3 Timeline interaction maths in `@klndr/core`
+- [ ] Move the pure parts out of `DayTimelineGrid.vue` / `DayPlanner.vue`: position to minutes, grab offset,
+      snapping, resize limits, the lane a drag lands in, edge-scroll speed.
+- [ ] Unit tests; the Vue components call them (behaviour unchanged), and so do the React and mobile views.
+
+### R.4 `apps/web-react` scaffold
+- [ ] Vite, React, TanStack Router, Tailwind v4 on `@klndr/tokens`, Firebase JS SDK auth through the same
+      `@klndr/core` profile logic, `@klndr/data` for data. Proxy `/api` to `apps/api` in dev.
+
+### R.5 Port the screens
+- [ ] Landing, sign-in/up, calendar, day (timeline, checklist, notes, activities), profile, privacy,
+      account deletion. Parity checked page by page against the Nuxt app.
+
+### R.6 Retire Nuxt
+- [ ] Delete `apps/web`, serve the React build, deploy `apps/api`, point `EXPO_PUBLIC_API_BASE_URL` at it.
+
 ## Out of scope
-- Porting/replacing the web app or landing page with Expo web.
+- Running the mobile app on the web (Expo web). The web app is replaced by a separate React app: Phase R.
 - Tablet layouts, widgets and Live Activities, upgrading Nuxt.
 

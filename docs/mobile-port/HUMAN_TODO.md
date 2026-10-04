@@ -84,3 +84,20 @@ Needs a dev build with the Firebase config files in `apps/mobile/` (see Task 1.1
 
 ## Task 4.4 — release
 - [ ] Create the App Review demo account.
+
+## Phase R — the web app in React
+- [ ] Decide where `apps/api` runs once Nuxt is retired (R.6): any Node host or container
+      (`npm start -w apps/api`, set `FIREBASE_PROJECT_ID` and `NODE_ENV=production`), or an edge runtime
+      (`createApp(...).fetch` is portable). Until then nothing changes: Nuxt serves `/api/**` itself, so
+      the deployed web app and `EXPO_PUBLIC_API_BASE_URL` keep working.
+- [ ] If the React app and the API end up on different origins, CORS has to be added to the API (not needed
+      same-origin or behind a proxy).
+
+## Task R.2 — the data layer on a device
+Needs a development build; the existing one works, because no native dependency was added.
+- [ ] Cold start while signed in: no flash of a blank screen or the sign-in screen as the app opens (the
+      navigator now mounts when auth has settled, not before).
+- [ ] Sign out, then check the app's data is gone: sign in as someone else and confirm none of the first
+      person's data appears, not even for a moment.
+- [ ] Decide when to add a network-state module (`expo-network`) so queries refetch on reconnect. It is a native
+      dependency, so it needs a new development build; do it with the next one.
