@@ -1,6 +1,5 @@
 {
-  // TypeScript source with no build step: Node runs it through tsx, Nuxt's Nitro bundles it, and the
-  // tests run it through Vite.
+  // TypeScript source with no build step: Node runs it through tsx and the tests run it through Vite.
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",

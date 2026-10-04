@@ -52,8 +52,7 @@ const task = (id: string, startMinutes: number, durationMinutes: number, lane?: 
 });
 
 /**
- * The formulas as the Vue planner had them before they moved here (DayTimelineGrid.vue, DayPlanner.vue),
- * copied as they were. The functions under test must agree with them everywhere, which is what "behaviour
+ * The formulas as the original web planner had them before they moved here, copied as they were. The functions under test must agree with them everywhere, which is what "behaviour
  * unchanged" means.
  */
 const original = {
@@ -118,7 +117,7 @@ describe("how a block is drawn", () => {
     expect(blockHeight(0)).toBe(MIN_BLOCK_HEIGHT);
   });
 
-  it("matches the formulas the Vue planner used", () => {
+  it("matches the formulas the original planner used", () => {
     for (let minutes = 0; minutes <= DAY_MINUTES; minutes += 5) {
       expect(blockTop(minutes)).toBe(original.blockTop(minutes));
       expect(blockHeight(minutes)).toBe(original.blockHeight(minutes));
@@ -173,7 +172,7 @@ describe("a tap or a drop on the grid", () => {
     expect(slotAt(GRID_HEIGHT)).toBe(DAY_MINUTES - SNAP_MINUTES);
   });
 
-  it("matches the formula the Vue planner used, across the grid and past both ends", () => {
+  it("matches the formula the original planner used, across the grid and past both ends", () => {
     const rectTop = 120;
     for (let clientY = rectTop - 40; clientY <= rectTop + GRID_HEIGHT + 40; clientY += 7) {
       expect(slotAt(clientY - rectTop)).toBe(original.minutesFromEvent(clientY, rectTop, GRID_HEIGHT));
@@ -203,7 +202,7 @@ describe("moving a block", () => {
     expect(dragPosition(5000, 0, 50)).toEqual({ rawStart: 1390, snappedStart: 1380 });
   });
 
-  it("matches the formula the Vue planner used", () => {
+  it("matches the formula the original planner used", () => {
     for (const duration of [15, 30, 45, 50, 60, 90, 240, 1440]) {
       for (let pointer = -100; pointer <= DAY_MINUTES + 100; pointer += 11) {
         for (const grab of [0, 7, 23]) {
@@ -318,7 +317,7 @@ describe("edge scrolling", () => {
     expect(edgeScrollSpeed(top - 500, top, bottom)).toBe(-EDGE_SCROLL_MAX);
   });
 
-  it("matches the formula the Vue planner used", () => {
+  it("matches the formula the original planner used", () => {
     for (let y = -100; y <= 900; y += 3) {
       expect(edgeScrollSpeed(y, top, bottom)).toBe(original.edge(y, top, bottom));
     }
@@ -345,7 +344,7 @@ describe("resizing a block", () => {
     expect(fitDuration(1430, 60)).toBe(SNAP_MINUTES); // 10 minutes left: no whole step fits, so it keeps one
   });
 
-  it("matches the formula the Vue planner used", () => {
+  it("matches the formula the original planner used", () => {
     for (const start of [0, 15, 540, 1000, 1380, 1410, 1425, 1430]) {
       for (const startDuration of [15, 30, 60, 240]) {
         for (let deltaPx = -400; deltaPx <= 400; deltaPx += 13) {
@@ -365,7 +364,7 @@ describe("resizing a block", () => {
 });
 
 describe("the pointer", () => {
-  it("is measured the way the Vue planner measured it", () => {
+  it("is measured the way the original planner measured it", () => {
     for (const lastY of [100, 333, 1234]) {
       expect(pxToMinutes(lastY - 100)).toBe(original.pointerMinutes(lastY, 100));
     }

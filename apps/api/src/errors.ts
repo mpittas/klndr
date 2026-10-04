@@ -10,9 +10,8 @@ export class HttpError extends Error {
 }
 
 /**
- * The JSON body of an error response. It carries the same keys the Nuxt server used to send
- * (`error`, `statusCode`, `statusMessage`, `message`), which is what the clients in `@klndr/core`
- * read the message from.
+ * The JSON body of an error response. It carries the keys (`error`, `statusCode`, `statusMessage`,
+ * `message`) that the clients in `@klndr/core` read the message from.
  */
 export const errorBody = (status: number, message: string) => ({
   error: true,

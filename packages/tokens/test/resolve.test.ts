@@ -17,7 +17,7 @@ import {
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repo = join(root, "..", "..");
 
-const paletteSource = () => readFileSync(join(repo, "apps", "web", "lib", "colors.ts"), "utf8");
+const paletteSource = () => readFileSync(join(repo, "apps", "web-react", "src", "lib", "colors.ts"), "utf8");
 const context = (): ResolveContext => ({
   tailwind: parseTailwindColors(readFileSync(join(repo, "node_modules", "tailwindcss", "theme.css"), "utf8")),
   themes: THEMES,

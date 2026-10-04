@@ -1,6 +1,6 @@
 /*
- * The `:root`, `.dark` and `@theme inline` blocks, captured from apps/web/assets/css/main.css
- * just before they moved into @klndr/tokens. The web app's CSS variables must stay unchanged, so
+ * The `:root`, `.dark` and `@theme inline` blocks, captured from the web app's `main.css` just
+ * before they moved into @klndr/tokens. The web app's CSS variables must stay unchanged, so
  * `themeCss()` has to keep producing this byte for byte.
  */
 

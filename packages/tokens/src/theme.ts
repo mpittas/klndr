@@ -1,7 +1,6 @@
 /**
- * The app's theme, exactly as `apps/web/assets/css/main.css` defines it. This file is the single
- * source of truth: `scripts/generate.mts` turns it into the CSS blocks the web app imports, and the
- * mobile app reads the same values straight from here.
+ * The app's theme. This file is the single source of truth: `scripts/generate.mts` turns it into the
+ * CSS blocks the web app imports, and the mobile app reads the same values straight from here.
  */
 
 export type ThemeName = "light" | "dark";

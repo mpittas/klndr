@@ -88,7 +88,7 @@ DayForge is an intentional, distraction-free daily planner. The interface is cal
   - Tap targets are ≥40px (primary controls 44px). Where the visual must stay small, extend the hit area with an `after:` pseudo-element.
   - Use the `touch:` variant (`hover: none` + `pointer: coarse`) for anything that depends on hover or finger size, and `short:` (height ≤ 500px) for landscape phones. Never hide an action behind hover without a touch alternative.
   - Fields are 16px on touch (global rule in `main.css`); smaller text makes iOS zoom the page on focus.
-  - Dialogs and pickers are bottom sheets below `sm` (`Modal.vue`, `CategorySelect.vue`, `EmojiPicker.vue`): `dvh` heights, safe-area padding, swipe-down to dismiss, and the primary action pinned in the `footer` slot.
+  - Dialogs and pickers are bottom sheets below `sm` (`Modal.tsx`, `CategorySelect.tsx`, `EmojiPicker.tsx`): `dvh` heights, safe-area padding, swipe-down to dismiss, and the primary action pinned in the `footer`.
   - Don't auto-focus fields on touch; it raises the keyboard over the sheet.
 
 ## Elevation & Depth
@@ -106,7 +106,7 @@ DayForge is an intentional, distraction-free daily planner. The interface is cal
 - **Task Cards**: Tactile tiles with 1px cohesive borders, dark readable labels, completion toggle, and subtle hover-only controls.
 - **Activity Palettes**: Draggable items with clear drag handles and grab/grabbing cursors.
 - **Timeline Grid**: Crisp 30-minute rows, clean gutter labels, and a precise current-time indicator.
-- **Timeline Blocks** (`TimeBlock.vue`): One anatomy at every length: emoji and title, the time beneath (beside it on 15-minute blocks), and a completion ring on the right. Opaque category tint with a matched 1px border, no shadow, no side bar, and a 6px radius so short and long blocks share their corners. Done blocks keep their color but fade. Notes, durations and other details live in the editor, not on the block.
+- **Timeline Blocks** (`TimeBlock.tsx`): One anatomy at every length: emoji and title, the time beneath (beside it on 15-minute blocks), and a completion ring on the right. Opaque category tint with a matched 1px border, no shadow, no side bar, and a 6px radius so short and long blocks share their corners. Done blocks keep their color but fade. Notes, durations and other details live in the editor, not on the block.
 - **Header**: Minimalist top bar with custom vector logo and concise navigation.
 
 ## Do's and Don'ts

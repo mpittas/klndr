@@ -332,15 +332,77 @@ app keeps its own native design. Nuxt stays the production web app until R.5 rea
 - [ ] The React web view calls them too (R.4/R.5).
 
 ### R.4 `apps/web-react` scaffold
-- [ ] Vite, React, TanStack Router, Tailwind v4 on `@klndr/tokens`, Firebase JS SDK auth through the same
+- [x] Vite, React, TanStack Router, Tailwind v4 on `@klndr/tokens`, Firebase JS SDK auth through the same
       `@klndr/core` profile logic, `@klndr/data` for data. Proxy `/api` to `apps/api` in dev.
+      Screens are placeholders (plus a minimal sign-in form so the gate can be exercised); R.5 is the port.
 
 ### R.5 Port the screens
-- [ ] Landing, sign-in/up, calendar, day (timeline, checklist, notes, activities), profile, privacy,
-      account deletion. Parity checked page by page against the Nuxt app.
+- [~] Ported so far: the app chrome, sign-in/up, privacy, account deletion, the calendar, the profile,
+      the landing page, and the day planner's leaves (checklist, notes, emoji picker, colour swatches,
+      tooltip). Remaining: the rest of the day planner — the library, the activity palette, the block
+      editor and the timeline grid, then `DayPlanner` itself. Parity still to be checked page by page
+      in a browser against the Nuxt app.
+- [x] Chrome and frame: `AppHeader.tsx` (logo, the Calendar/Today segmented toggle, the theme button, the
+      profile chip and the no-Firebase banner) and the root frame's day-view scroll lock, both from `app.vue`.
+- [x] Auth and static pages: `login.tsx` and `signup.tsx` (Apple + Google, the reset flow, the split card),
+      `privacy.tsx`, `account-deletion.tsx` — wording unchanged, form checks and messages from `@klndr/core`.
+- [x] Calendar: `MonthView` with its header, grid, sidebar and date navigator, reading the month through
+      `@klndr/data`'s range query.
+- [x] Profile: `ProfileCard`, `AccountActionsCard`, `DeleteAccountCard` and the form, on `@klndr/data`'s
+      `useProfile` / `useUpdateProfile`.
+- [x] Landing: `pages/index.vue` and the ten `components/landing/` files, ported into
+      `src/components/landing/` (plus the shared `TimeBlock`, which the mockups draw blocks with). The
+      reveal-on-scroll observer, the SEO title and the `start`/`signedIn` props came across; the scoped
+      `<style>` blocks moved to `src/styles.css` (see DECISIONS.md for why they stay unlayered). The
+      R.4 placeholder's redirect of signed-in visitors was dropped: `/` is public in the Nuxt app, so
+      parity is to render the page for them and change the wording of the calls to action.
+- [~] Day planner: `DayPlanner.vue` and everything it draws. Done: the checklist (`DailyChecklist.tsx`
+      with `ChecklistHeader`/`ChecklistItemRow`/`ChecklistQuickAdd`), the notes (`DayNotes.tsx`), the
+      emoji picker, and the shared pieces (`category/ColorSwatches.tsx`, `ui/Tooltip.tsx`) — each taking
+      its behaviour from `@klndr/data`'s hooks rather than the Vue components' own save loops. Left:
+      `CategorySelect`, `ActivityForm`, `LibraryPanel`/`LibraryModal`, the activity palette,
+      `TaskEditor`, `DayTimelineGrid` (drag, resize, touch hold, edge scroll — all calling the R.3 maths
+      in `@klndr/core`) and `DayPlanner` itself with its header, routines shelf and mobile nav, then the
+      route shell swapping its placeholder for the real planner. Its route shell and data wiring are in
+      place.
 
 ### R.6 Retire Nuxt
-- [ ] Delete `apps/web`, serve the React build, deploy `apps/api`, point `EXPO_PUBLIC_API_BASE_URL` at it.
+- [x] **Deleted `apps/web` (2026-10-04).** The React app now draws the whole product, so nothing was
+      left behind in it. Recoverable from git history if ever needed (`git remote` / reflog), since the
+      deletion is a normal commit.
+- [ ] **The owner's half, and now the only thing outstanding:** deploy `apps/api` and put the React build
+      up, in the order below / in HUMAN_TODO.md. A deployed Nuxt release keeps serving as it is — deleting
+      the source does not take it down — but from now on it can no longer be rebuilt or redeployed from
+      this repo, so `firebase hosting:rollback` and the existing Cloud Run/Hosting setup are the only
+      rollback paths.
+- [x] Prepared: `packages/tokens/scripts/generate.mts` read `apps/web/lib/colors.ts` — the only code
+      dependency on the app being deleted — and now reads `apps/web-react/src/lib/colors.ts`. Verified by
+      hiding the old file and regenerating: exit 0, and the only change under `packages/tokens/generated/`
+      is the two-line `palette.ts` header. Comments that named the old path went with it.
+- [x] Prepared: the stray `apps/web-legacy/` (four empty directories) and the stale root `.nuxt/` removed.
+- [x] At the delete: the root `package.json` scripts now point at `apps/web-react` (`dev`, `build`, and
+      `typecheck` no longer names `apps/web`); the `dev`/`demo` configs are gone from
+      `.claude/launch.json`; `apps/api/Dockerfile`'s `COPY apps/web/package.json` line is gone (its `npm ci`
+      layer validates the lockfile against every workspace manifest, so this had to go in the same commit);
+      `.gitignore`/`.dockerignore` no longer carry `.nuxt`; `apps/api/src/server.ts` no longer reads the
+      Nuxt-only `NUXT_PUBLIC_FIREBASE_PROJECT_ID` fallback; `apps/web-react/README.md` says the app is fully
+      ported; and the two `packages/tokens` tests that read the deleted app's `colors.ts` and `main.css` now
+      read `apps/web-react`'s. The `oxc-parser`/`rolldown` `overrides` were **kept** on purpose: they exist
+      because Smart App Control blocks that pinned native binary, and Vite 8 still goes through rolldown/oxc,
+      so lifting them would risk installs for no gain.
+- [x] Checked for packages `apps/web-react` imports but does not declare, before deleting: the sweep found
+      none left. `emojibase-data` had been exactly that (it is declared by `apps/web-react` now); one was
+      known, so the pattern was assumed and checked rather than the instance.
+- [x] Decided where `apps/api` is deployed (2026-10-04): the `klndr-api` Cloud Run service in
+      `klndr-app`, region `europe-west1`, with Firebase Hosting rewriting `/api/**` to it so the API
+      keeps the web app's own origin and CORS stays out of the design. `apps/api/Dockerfile` (built from
+      the repo root) and the `hosting` block in `firebase.json` are in place; the exact commands are in
+      HUMAN_TODO.md. Chosen over Firebase Functions because it needs no adapter: the app is already a
+      fetch handler on plain Node. See DECISIONS.md.
+- [x] Find out how the web app is deployed today: answered. `firebase.json` carries the `hosting`
+      block (`public: apps/web-react/dist`, `/api/**` → the run service, `**` → `/index.html` for the
+      app's real paths). Nuxt was served from `apps/web/.output/public`; deploying hosting replaces it,
+      and `firebase hosting:rollback` brings it back without a rebuild.
 
 ## Out of scope
 - Running the mobile app on the web (Expo web). The web app is replaced by a separate React app: Phase R.

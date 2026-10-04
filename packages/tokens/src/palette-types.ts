@@ -1,7 +1,7 @@
 import type { ColorKey } from "@klndr/core";
 import type { ThemeName } from "./theme";
 
-/** Every role a colour plays in the UI, as `apps/web/lib/colors.ts` names them. */
+/** Every role a colour plays in the UI, as `apps/web-react/src/lib/colors.ts` names them. */
 export const PALETTE_ROLES = [
   "swatch",
   "block",

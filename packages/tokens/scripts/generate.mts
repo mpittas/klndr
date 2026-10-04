@@ -22,8 +22,8 @@ import {
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..", "..", "..");
 
-/** The web app's palette classes are the source of truth for what each role looks like. */
-const paletteSource = readFileSync(join(root, "apps/web/lib/colors.ts"), "utf8");
+/** The React web app's palette classes are the source of truth for what each role looks like. */
+const paletteSource = readFileSync(join(root, "apps/web-react/src/lib/colors.ts"), "utf8");
 /** Tailwind's own theme is the source of truth for the colours those classes name. */
 const tailwindSource = readFileSync(join(root, "node_modules/tailwindcss/theme.css"), "utf8");
 

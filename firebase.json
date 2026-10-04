@@ -13,5 +13,22 @@
         "supportEmail": "webpittas@gmail.com"
       }
     }
+  },
+  "hosting": {
+    "public": "apps/web-react/dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "klndr-api",
+          "region": "europe-west1"
+        }
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
 }

@@ -21,7 +21,7 @@ describe("the theme data", () => {
     }
   });
 
-  it("pins the values the web app renders (from apps/web/assets/css/main.css)", () => {
+  it("pins the values the web app renders", () => {
     expect(THEMES.light.scheme).toBe("light");
     expect(THEMES.dark.scheme).toBe("dark");
     expect(THEMES.light.values).toMatchObject({
@@ -84,7 +84,7 @@ describe("themeCss", () => {
 });
 
 describe("the web app's stylesheet", () => {
-  const mainCss = readFileSync(join(repo, "apps", "web", "assets", "css", "main.css"), "utf8");
+  const mainCss = readFileSync(join(repo, "apps", "web-react", "src", "styles.css"), "utf8");
 
   it("imports the generated theme", () => {
     expect(mainCss).toContain('@import "@klndr/tokens/theme.css";');

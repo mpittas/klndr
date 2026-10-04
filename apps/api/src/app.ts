@@ -27,8 +27,8 @@ export type ApiConfig = {
 };
 
 /**
- * The klndr HTTP API as a fetch handler (`app.fetch(request)`), so the same code runs on Node, inside
- * the Nuxt server while it still exists, and on edge runtimes.
+ * The klndr HTTP API as a fetch handler (`app.fetch(request)`), so the same code runs on plain Node and
+ * on edge runtimes.
  *
  * Every route under `/api` except `/api/health` needs a verified Firebase ID token. The caller's token
  * is forwarded to Firestore, so `firestore.rules` is enforced for them and the server holds no admin

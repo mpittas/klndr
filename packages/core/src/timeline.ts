@@ -5,7 +5,7 @@ import { SLOT_HEIGHT, SLOT_MINUTES, SNAP_MINUTES, type ScheduledTask } from "./t
 /**
  * The maths of the day timeline that does not depend on how it is drawn: minutes to pixels and back,
  * where a block sits, what a drag or a resize snaps to, which column a drag lands in and how fast the
- * edge of the screen scrolls. The Vue planner, the React planner and the phone's timeline all call these,
+ * edge of the screen scrolls. The web planner and the phone's timeline both call these,
  * so a block lands on the same minute everywhere. Pixels are measured from the top of the grid and
  * minutes from midnight; nothing here touches the DOM or a native view.
  *

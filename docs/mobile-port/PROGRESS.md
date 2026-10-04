@@ -465,5 +465,327 @@ Running locally for the owner: demo API on **3101**, Metro dev client on **8082*
 were avoided). Metro was started in apps/mobile with EXPO_PUBLIC_DEMO_MODE=1 and
 EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:3101. These addresses are for the local simulator only.
 
+## 2026-10-04 — session 12: R.5 begins, the React screens
+
+Done (all in `apps/web-react`, ported from the Nuxt files of the same names):
+
+- **Foundation.** `lib/colors.ts` copied verbatim and `lib/emojis.ts` copied with its one Vue-specific
+  line changed (`import.meta.client` → a `typeof window` guard). `hooks/useScrollLock.ts` is the Vue
+  composable's `lockScroll`/`unlockScroll` with the same one-word change. `hooks/useDocumentTitle.ts`
+  replaces `useHead`'s title (a Vite SPA has no head manager).
+- **`components/Modal.tsx`** — the focus trap, the shared Escape stack, the scroll lock and the
+  swipe-to-dismiss from `Modal.vue`. The slot pair became `children`/`footer`, and the enter/leave
+  `Transition` became a small `usePresence` helper (React does not delay unmount for you). Its scoped
+  transition CSS moved to `styles.css`, keyed off `data-state`.
+- **Chrome.** `components/AppHeader.tsx` and the root frame in `routes/__root.tsx` — the header on every
+  page but `/`, and the day view's locked page scrolling, both from `app.vue`.
+- **Auth + static.** `routes/login.tsx` and `routes/signup.tsx` are now the real pages (Apple and Google,
+  the forgot-password flow, the split card, the policy links); `routes/privacy.tsx` and
+  `routes/account-deletion.tsx` are the two static pages. `components/AuthCard.tsx`,
+  `components/ProviderButton.tsx`, `components/SocialIcons.tsx` and `components/TextField.tsx` hold the
+  shared pieces. The wording and the checks come from core (`authErrorMessage`, `signInProblem`,
+  `signUpProblem`), so both apps read identically.
+- **Calendar.** `components/MonthView.tsx` with `components/month-view/{MonthViewHeader,MonthGrid,MonthSidebar,DateNavigatorModal}.tsx`
+  and a shared `DayCell.ts` type, reading the month through `@klndr/data`'s `useRangeTasks`.
+- **Profile.** `components/profile/{ProfileCard,AccountActionsCard,DeleteAccountCard}.tsx` and
+  `routes/_authed/profile.tsx`, on `@klndr/data`'s `useProfile` / `useUpdateProfile`.
+  `auth/service.ts` gained `currentProviderIds()` for the delete card's password rule.
+- **Day route shell.** `routes/_authed/day/$date.tsx` has the page's real skeleton/error/retry states and
+  its data wiring; the planner view itself is still to come (see below).
+
+Decisions recorded in DECISIONS.md: `lucide-react` added to `apps/web-react`; the tooltip is deferred to
+the one component that uses it rather than pulling in a Radix equivalent of `reka-ui`; the profile screen
+reads through `@klndr/data` rather than the auth provider.
+
+Verification (all green):
+- `npm run build -w apps/web-react` — typecheck, then Vite: 2137 modules, 833 ms. The route tree
+  (`src/routeTree.gen.ts`) regenerated with `/privacy`, `/signup`, `/_authed/calendar`, `/_authed/profile`
+  and `/_authed/day/$date`.
+- `npm run typecheck` — all **seven** workspaces pass.
+- `npm install lucide-react -w apps/web-react` added the one package. The pins did not move: `vite` 8.3.1,
+  `rolldown` 1.2.11, `oxc-parser` 0.144.0 all still in `package-lock.json` at the pinned versions.
+
+Not verified:
+- Nothing was opened in a browser. The build and the typecheck prove the imports and the types, not what
+  renders: the gate's redirect, a real sign-in, the calendar against live data, the profile save, and the
+  page-by-page parity with the Nuxt app (R.5's acceptance test) all still need a browser.
+
+Not done (the rest of R.5):
+- The landing page (`pages/index.vue` and `components/landing/`, ten files) — decorative, and the only
+  thing on `/` so far is the R.4 placeholder.
+- The day planner: `DayPlanner.vue` (637 lines), `DayTimelineGrid.vue` (528), `TimeBlock.vue`,
+  `ActivityPalette.vue`, `TaskEditor.vue`, `LibraryModal.vue`/`library/LibraryPanel.vue`,
+  `EmojiPicker.vue`, `activity/ActivityForm.vue`, `DailyChecklist.vue` and `daily-checklist/*`,
+  `DayNotes.vue`, `day-planner/{DayMobileNav,DayPlannerHeader,DayRoutinesShelf}.vue`, plus
+  `CategorySelect.vue`, `category/ColorSwatches.vue` and the one `ui/tooltip/` consumer. Their data layer
+  (`useDayTimeline`, `useChecklist`, `useNotesEditor`, `useLibraryActions`) is ready and unchanged.
+
+Next step: the day planner, then the landing page; then open both apps side by side and check parity page
+by page. Still open elsewhere: the device checks for 2.1/2.2 and 2.3, and CHECKPOINT B.
+
+
 Next: complete the device checks for 2.1/2.2, then 2.3 checklist/notes sheets. R.4 onward and Phase 3
 remain untouched. CHECKPOINT B is still open.
+
+
+## 2026-10-04 — session 11: R.4 `apps/web-react` scaffold
+
+Done:
+- New workspace `apps/web-react` (`@klndr/web-react`): Vite 8 + React 19 + TanStack Router (file-based
+  routes) + Tailwind v4 on `@klndr/tokens`, Firebase JS SDK auth, `@klndr/data` for data, and `/api`
+  proxied to `apps/api` in development. It does **not** depend on `@klndr/api`, and the workspace packages
+  are compiled from source (no build step), as the Nuxt app does.
+- `src/styles.css` ports the Nuxt app's `main.css` (base layer, the `dark`/`touch`/`short` variants, the
+  touch and reduced-motion rules) over `@klndr/tokens/theme.css`; `index.html` carries the pre-paint theme
+  script plus the head metas and fonts from `nuxt.config.ts`. Tailwind scans this app only
+  (`source(none)` + `@source ".."`), so the Nuxt app's classes are not pulled in.
+- Auth as a React context: `src/auth/firebase.ts` (handles + ID token), `service.ts` (the Firebase calls,
+  delete-account order included), `provider.tsx` (the state and the gate), `profile.ts` (core's
+  `loadOrCreateProfile` behind a store that is Firestore with a project and in-memory without one),
+  `types.ts`. Sign-in, sign-up, Google, Apple, reset, `signOut` and `deleteAccount` are all wired; the
+  messages come from core, not from new strings.
+- Routing: `__root.tsx` (the `app.vue` frame), `index.tsx` and `login.tsx` (placeholders; login is a
+  minimal working form so the gate can be exercised), and `_authed.tsx` + `_authed/calendar.tsx`. The
+  `_authed` pathless layout is `middleware/auth.global.ts`; the router mounts only once auth has settled,
+  and `router.invalidate()` sends a person to /login the moment they sign out.
+- `src/data/provider.tsx` mounts `@klndr/data`'s `DataProvider` with the API client, the person
+  (`local-dev` in credential-free development, `null` when signed out), the toast `notify` and the profile
+  source. `src/toast.tsx` is the 2.2 s flash `DayPlanner.vue` uses; `src/theme.tsx` is `useTheme`.
+- Root `package.json`: `dev:web-react`, `build:web-react`, `typecheck:web-react`, and web-react added to
+  the aggregate `typecheck`; `rolldown: 1.2.11` added to `overrides` (see DECISIONS.md).
+  `.claude/launch.json` gains a `web-react` config (port 5173).
+
+Verification (all green):
+- `npm install` — 21 packages added. No pinned version moved: `vite` 8.3.1, `rolldown` 1.2.11,
+  `oxc-parser` 0.144.0, root `react`/`react-dom` 19.3.0, `apps/mobile/node_modules/react` 19.2.3.
+  The lockfile diff adds entries (and dependency lists); it removes no `version`, `resolved` or
+  `integrity` line.
+- `npm run typecheck` — all **seven** workspaces pass (web-react is the seventh; `tsc` prints nothing).
+- `npm run build -w apps/web-react` — typecheck, then Vite: 230 modules, 548 ms; CSS 17.49 kB
+  (4.52 kB gzip), 101.15 kB gzip for the app chunk, 166.84 kB gzip for the auth chunk.
+- `npm test` — 565 tests pass (core 301, data 130, API 93, tokens 41), unchanged.
+- `npm run build -w apps/web` — "Build complete!", exit 0. The lockfile change did not disturb Nuxt.
+- Dev smoke test with both servers up: `GET :3001/api/health` → 200 `{"ok":true}`;
+  `GET :5173/api/health` → 200 `{"ok":true}` (the proxy works); `GET :5173/` → 200 with `id="root"` and
+  the theme script; `GET :5173/calendar` → 200 (the SPA serves it; the guard runs in the browser).
+- The built CSS contains the token utilities (`bg-canvas`, `text-muted-foreground`), so Tailwind picked
+  the theme up.
+- `git status` — only `.claude/launch.json`, `package.json` and `package-lock.json` modified, plus the new
+  `apps/web-react/`; `dist/` and `node_modules/` are ignored by the app's own `.gitignore`.
+
+Not verified (and not verifiable without a browser here):
+- Anything rendered: the gate's redirect (both directions), a real Firebase sign-in, the sign-up name
+  landing in `users/{uid}`, Firestore reads and writes, the theme toggle surviving a reload, the toast,
+  and that `/calendar` shows the loaded activities. The smoke test proves the servers and the proxy only;
+  it does not execute the app.
+- `useProfile` / `useUpdateProfile` against real Firestore.
+- Rendered appearance: the placeholders use the tokens, but nothing was compared page by page with the
+  Nuxt app (that is R.5's acceptance test).
+- A known duplication, to collapse in R.5: the auth provider loads the profile for the gate while
+  `@klndr/data`'s `useProfile` reads it through `profileSource`, so the profile screen would read it
+  twice. The phone's `AuthProvider` has the same shape (its Settings tab will be the first user).
+
+Next step: R.5 — port the screens page by page against the Nuxt app (landing, sign-in/up, calendar, day,
+profile, privacy, account deletion). Still open elsewhere: the device checks for 2.1/2.2 and 2.3
+(checklist/notes sheets), and CHECKPOINT B.
+
+## 2026-10-04 — session 13: R.6 prerequisites (Nuxt still up)
+
+R.6 is "delete `apps/web`", and two things have to be true first. One is R.5 (the landing page and the
+day planner are still unported). The other is not in the R.6 line at all: **Nuxt is the API host.** In
+production `apps/web/server/api/[...].ts` is the catch-all that forwards `/api/**` to `apps/api`, so
+deleting `apps/web` before the API is deployed takes the API away from both the deployed web app and the
+mobile app (`EXPO_PUBLIC_API_BASE_URL` points at the Nuxt origin). Order: deploy `apps/api`, move the
+mobile base URL, serve the React build at the same origin, keep Nuxt up as the rollback, then delete.
+
+Done — the repo-side half, none of which needs the deploy:
+
+- **The one code dependency on the app being deleted.** `packages/tokens/scripts/generate.mts` read
+  `apps/web/lib/colors.ts`, so `npm run generate` would have thrown the moment `apps/web` went away. It
+  now reads `apps/web-react/src/lib/colors.ts`. Safe to do now because the two files were byte-identical
+  (SHA-256 `40E3E46C…`). Proved by hiding the old file and regenerating: exit 0, and the only change
+  under `packages/tokens/generated/` is the two-line `palette.ts` header. All 41 token tests and the
+  tokens typecheck pass.
+- Comments that named the old path were corrected with it: `tools/resolve.ts` (including the
+  `MODULE_HEADER` that is baked into the generated file), `src/palette-types.ts`, `test/theme.test.ts`,
+  and the `theme-css.css` fixture header (safe — `blocksOf()` strips the header before comparing).
+  `src/theme.ts` also lost a reference to `main.css` that had stopped being true when the blocks moved
+  into the tokens.
+- Historical references were deliberately left alone: `packages/core/test/fixtures/markdown-cases.ts` and
+  the R.2 entry in DECISIONS.md describe where things *used to* live, which stays true.
+- Stray directories removed: `apps/web-legacy/` (four empty directories — invisible to `git status`,
+  because git does not track empty ones) and the root `.nuxt/` (a stale `nuxt prepare` run from the repo
+  root; `apps/web/.nuxt/` is the real one, and it dies with the app).
+- The rest of R.6 is now an explicit checklist in PLAN.md, including what only the owner can decide, and
+  the fact that `firebase.json` has no `hosting` block — so how the app is deployed today is not in git.
+  `HUMAN_TODO.md` gained the "decide where `apps/api` runs" item's real weight, and its
+  privacy/deletion-placeholder item was repointed at the React pages (those three placeholders are still
+  unfilled there, so deleting `apps/web` would otherwise have orphaned the instruction).
+
+Deliberately **not** done, because it has to land with the delete to stay coherent: the root
+`package.json` scripts (`dev`, `build`, `typecheck`, `typecheck:web` all point at `apps/web` — flipping
+`dev` now would launch the half-ported React app instead of the working Nuxt one), the `dev`/`demo`
+configs in `.claude/launch.json`, and the `rolldown` + `oxc-parser` `overrides` (Nuxt workarounds; Vite 8
+also goes through rolldown and oxc, so lift and re-verify rather than assume).
+
+Next step: still R.5 — the day planner, then the landing page, then the page-by-page parity check in a
+browser. R.6's delete waits on that and on the API host decision.
+
+## 2026-10-04 — session 14: R.5's landing page, and where the API lives
+
+Two of the three things left before Nuxt can be retired: the landing page is ported, and the API has a
+decided home with the configuration to match. The day planner is not done, and nothing was deployed.
+
+**R.5 — the landing page (done).** `pages/index.vue` and the ten `components/landing/` files, 1,875 lines
+of Vue, now live in `apps/web-react/src/components/landing/`. The shared `TimeBlock` came with them
+(`day-planner/TimeBlock.tsx`), since the mockups draw their blocks with it. What carried across, and why:
+
+- **The reveal-on-scroll observer** moved into the route's `useEffect`, unchanged: same `IntersectionObserver`
+  options, same "anything already on screen is revealed immediately", same `reveal-ready` class.
+- **The scoped `<style>` blocks went to `src/styles.css`** as plain, unlayered CSS. The Vue compiler's
+  `data-v` attribute gave those rules a specificity edge over utilities and Tailwind's utilities are in
+  `@layer utilities`, so unlayered CSS keeps the edge. This is the same reasoning the file already gave
+  for the touch rules.
+- **The signed-in redirect is gone.** The R.4 placeholder bounced signed-in visitors to `/calendar`; Nuxt
+  does not (`/` is in `PUBLIC_PATHS`, and the middleware only redirects signed-*out* visitors), which is
+  why the Nuxt page has a signed-in wording for its buttons at all. Parity is to render the page.
+- **`hero-rise` and `hero-drop` are inert and were left so.** No rule for either exists anywhere in the
+  Nuxt app. Recorded in DECISIONS.md — the owner may want the entrance animation the names imply.
+- **`PlannerMock`** keeps its measured drag path: a stateful `PlannerMock` owns the `ResizeObserver` and
+  `IntersectionObserver` and the `--dx`/`--dy` custom properties; `PlannerMockBody` is the markup.
+
+Verified by `npm run typecheck -w apps/web-react` (exit 0) and `npm run build:web-react` (exit 0, `✓ built
+in 906ms`). **Not verified: what it looks like.** No browser was opened — the same gap this project has
+always had for `apps/web-react`. The page-by-page parity check against Nuxt is still owed.
+
+**R.6 — the API host decided (config in place, nothing deployed).** `apps/api` runs as the `klndr-api`
+Cloud Run service in `klndr-app` (region `europe-west1`, beside the `eur3` Firestore data), and Firebase
+Hosting fronts it so the API keeps the web app's own origin — the property that keeps CORS out of the
+design, exactly as Nuxt's catch-all did.
+
+- Chosen over Firebase Functions because it needs no adapter: `createApp(config)` is already a fetch
+  handler and `src/server.ts` already runs it on plain Node, so the container runs the server that exists.
+- `apps/api/Dockerfile` (multi-stage, built from the repo root) plus a root `.dockerignore`. Its `npm ci`
+  layer has to copy *every* workspace `package.json`, because `npm ci` validates the lockfile against all
+  of them — including `apps/web`, which R.6 deletes, so that line goes in the same commit.
+- `firebase.json` gained the `hosting` block the repo was missing: `apps/web-react/dist` as `public`,
+  `/api/**` rewritten to the run service, `**` → `/index.html` for the app's real paths.
+- The Nuxt rollback is `firebase hosting:rollback`, not a rebuild, since the React site replaces Nuxt on
+  the same site.
+- The exact deploy sequence is in HUMAN_TODO.md. It is the owner's to run: it needs the GCP project, the
+  Artifact Registry repository and the web app's build-time Firebase config, none of which are in the repo.
+
+One mistake worth recording: the first `.dockerignore` excluded `apps/web` and `apps/web-react` wholesale,
+which would have broken the Dockerfile's `COPY apps/web/package.json` and failed the build. It now excludes
+only their build outputs and says why.
+
+**Housekeeping.** PLAN.md's R.5/R.6 checklists, HUMAN_TODO.md (both the hosting item and the API-host item),
+DECISIONS.md (two entries), HANDOFF.md and `apps/web-react/README.md` were all updated to match, so no doc
+still claims `firebase.json` has no `hosting` block or that the landing page is a placeholder.
+
+**Next.** The day planner is the last screen and the large one: `DayPlanner.vue` plus the timeline grid,
+activity palette, block editor, library, checklist and notes — about 5,000 lines of Vue across twenty
+components, which is more than the whole app ported so far (3,867 lines of TSX). Then the page-by-page
+parity check in a browser, then the deploy, then the delete.
+
+## 2026-10-04 — session 15: R.5's day planner, begun (and a break waiting at the delete)
+
+The day planner is the last screen and the large one, and this session got through its leaves: the
+checklist, the notes, the emoji picker and the small shared pieces. **It is not finished, nothing was
+deployed, and `apps/web` was deliberately not deleted** — see the warning below.
+
+**R.5 — started, ~1,400 of ~4,400 lines.** Into `apps/web-react/src/components/`, following
+`@klndr/data`'s hooks rather than the Vue components' hand-rolled save loops:
+
+- `daily-checklist/ChecklistHeader.tsx`, `ChecklistItemRow.tsx`, `ChecklistQuickAdd.tsx` and
+  `DailyChecklist.tsx`. The data half of `DailyChecklist.vue` — the optimistic tick, the add/edit/skip
+  calls, which routines are hidden — is `useChecklist(day)`; what is left in the view is the list, the
+  menu, the two dialogs and the messages. `DailyChecklist` takes the whole hook result as a prop, so the
+  shelf beside the timeline and the phone's sheet will drive one shared instance.
+- `DayNotes.tsx`. The debounce, the "never clobber unsaved typing" rule, the per-day flush and the retry
+  are `useNotesEditor(day)`; `NotesSaver`'s behaviour came across from `DayNotes.vue` unchanged. Its old
+  `:deep()` prose rules are now unlayered `.notes-prose` rules in `src/styles.css`, for the same
+  specificity reason as the landing page's.
+- `EmojiPicker.tsx`: the popover-on-a-pointer / bottom-sheet-on-a-phone split, the keyboard inset, the
+  group tabs that follow scrolling, recents and search. The dataset still loads lazily through
+  `@/lib/emojis`.
+- `category/ColorSwatches.tsx` and `ui/Tooltip.tsx`. The Vue tooltip wrapped `reka-ui`, which is the Vue
+  port of Radix and has no place in this app; only `ChecklistQuickAdd` ever used a tooltip, so the React
+  one is hand-rolled (~90 lines) with the same composition and `aria-describedby` (DECISIONS.md).
+
+Verified with `npm run typecheck -w apps/web-react` after each file. Baseline re-run at the end of the
+session: `npm run typecheck` exit 0 (seven workspaces), `npm test` all green (565). **Not verified: what
+any of it looks like.** No browser was opened, the same gap every `apps/web-react` screen has had.
+
+**A break waiting at the delete: `emojibase-data` is a hoisted dependency.** The landing page's port put
+`apps/web-react/src/lib/emojis.ts` in place, and it imports `emojibase-data/en/compact.json`. The package
+was never added to `apps/web-react/package.json` — it resolves today only because `apps/web` declares it
+and npm hoists it to the repo-root `node_modules`. Adding `"emojibase-data": "^17.0.0"` to
+`apps/web-react` (and syncing `package-lock.json`) fixes it. **Without it, the first `npm ci` after
+`git rm -r apps/web` fails to build the React app** — a failure that would only show up after the delete
+was already committed. HUMAN_TODO.md now carries this in the delete sequence.
+
+**Why Vue and Nuxt are still here.** The plan for the port has always been that Nuxt is the reference
+and the live release. Deleting `apps/web` now would not retire a duplicate — it would remove the day
+planner from the product entirely, because nothing in `apps/web-react` draws a timeline yet. The delete
+(R.6) is gated on the port finishing, then a browser parity pass, then the owner's deploy. Two other
+things still point the same way: `apps/api/Dockerfile`'s `npm ci` layer `COPY`s `apps/web/package.json`,
+and the root `package.json`'s `dev`/`build`/`typecheck` still name `apps/web`.
+
+**Next.** The rest of the day planner, in the order the components depend on each other: `ActivityForm`
+and `CategorySelect` (both used by the editor and the library), `LibraryPanel`/`LibraryModal`, the
+activity palette, `TaskEditor`, then `DayTimelineGrid` — the drag, the resize, the touch hold and the
+edge scroll, all of which call the R.3 maths already in `@klndr/core` — then `DayPlanner.tsx` with its
+header, routines shelf and mobile nav, and finally the route shell's swap from placeholder to planner.
+
+
+
+## 2026-10-04 — session 16: R.5 finished, and R.6 done (Vue and Nuxt removed)
+
+Done — the rest of the day planner, in dependency order:
+- `CategorySelect.tsx` (popover on a pointer, bottom sheet on a phone, with the on-screen-keyboard inset),
+  `activity/ActivityForm.tsx`, `library/LibraryPanel.tsx`, `LibraryModal.tsx`, `day-planner/ActivityPalette.tsx`,
+  `TaskEditor.tsx`, `day-planner/DayTimelineGrid.tsx` (pointer drag, touch hold, edge auto-scroll, hover ghost,
+  resize guides and the live-time line — every measurement from `@klndr/core`'s R.3 maths),
+  `day-planner/{DayPlannerHeader,DayRoutinesShelf,DayMobileNav}.tsx`, and `DayPlanner.tsx` itself, with
+  `routes/_authed/day/$date.tsx` swapping its placeholder for the real planner.
+- `src/lib/library.ts`: the Nuxt `useLibrary` singleton as a tiny external store, so the palette, the category
+  picker, the block editor and the phones' nav open the same one dialog.
+- `TimeBlock.tsx` gained a `style` prop (Vue's attribute fallthrough used to put the timeline's positioning there).
+- Two deliberate shape changes, both because the data layer owns the behaviour now: `DayNotes` takes its
+  `useNotesEditor` result as a prop (as `DailyChecklist` already did), so the sidebar and the phone's sheet cannot
+  become two savers racing over one day's text; and `LibraryPanel` needs no `onSaved`/`onDeleted`/
+  `onCategoriesChanged` forwarding — the Vue needed those because closing the dialog unmounted it and dropped its
+  emits, whereas the library mutations write the server's answer into the cache.
+- Vue-only API dropped where it was already dead in the original: `DayTimelineGrid`'s `day` prop and `refresh`
+  emit, and `TaskEditor`'s never-used `tone`.
+
+Done — R.6, the delete:
+- `git rm -r apps/web` (53 Vue files, `nuxt.config.ts`, the `server/api/[...].ts` catch-all, the CSS entry).
+  `npm install` pruned the workspace and the lockfile no longer names it.
+- Root `package.json`: `dev`/`build` now point at `apps/web-react`, `typecheck` no longer names `apps/web`, and
+  `typecheck:web` is gone. `dev`/`demo` removed from `.claude/launch.json`. `COPY apps/web/package.json` removed
+  from `apps/api/Dockerfile`. `.nuxt` dropped from `.gitignore` and `.dockerignore`. `apps/api/src/server.ts` no
+  longer reads the Nuxt-only `NUXT_PUBLIC_FIREBASE_PROJECT_ID` fallback.
+- The two `packages/tokens` tests that read the deleted app's `lib/colors.ts` and `assets/css/main.css` now read
+  `apps/web-react`'s `src/lib/colors.ts` and `src/styles.css`. They are the byte-compare guard for the generated
+  palette and theme, so they had to follow the source of truth.
+- The `oxc-parser`/`rolldown` `overrides` were **kept** on purpose (DECISIONS.md).
+- Swept for packages `apps/web-react` imports but does not declare, before deleting: none left. The
+  `emojibase-data` case was the only one and was already fixed.
+
+Verification (all green, with `apps/web` gone):
+- `npm run typecheck` — exit 0, six workspaces (was seven).
+- `npm test` — 565 passed (core 301, data 130, api 93, tokens 41).
+- `npm run build` (now `apps/web-react`) — built; the `_date-*.js` chunk is in `dist`.
+- Sweep: no `.vue` file anywhere, no `vue`/`nuxt`/`@vue/*`/`vue-tsc`/`reka-ui` in any workspace manifest, and no
+  `apps/web` path left in code or config (only historical prose in comments and these docs).
+
+Not verified: what any of it looks like. No browser has been opened against a running `apps/web-react`, so the whole
+port — the planner above all — rests on the compiler, the tests and the build.
+
+Next step:
+- The owner's R.6 deploy (HUMAN_TODO.md, Phase R): `apps/api` to Cloud Run, then the React build to Hosting. Until
+  the API is up, the live site keeps serving the last Nuxt release, which can no longer be rebuilt from this repo.
+- A browser parity pass over `apps/web-react`, page by page: the one validation this port has never had.
+

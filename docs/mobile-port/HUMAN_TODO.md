@@ -6,9 +6,12 @@ Things only the owner can do, grouped by what each item unblocks. Exact steps gi
 - [ ] Move `.env` into `apps/web/` — Nuxt reads `.env` from the app folder. Do not commit it.
       The app still runs without it (credential-free dev mode serves the "local-dev" store),
       so the build is not blocked while this is pending.
-- [ ] If the web app is served by Firebase Hosting, point its root/public directory at
-      `apps/web` (`.output/public`) before the next deploy. `firebase.json` in this repo has
-      no `hosting` block today, so check the Hosting console setting if one exists.
+- [ ] **How the web app is served — decided 2026-10-04 (see DECISIONS.md).** `firebase.json` now has
+      the `hosting` block this repository was missing: the `klndr-app` Hosting site serves
+      `apps/web-react/dist`, with `/api/**` rewritten to the `klndr-api` Cloud Run service (same
+      origin, so no CORS) and `**` → `/index.html` for the app's real paths (`/calendar`,
+      `/day/<date>`). The site it replaces was served from `apps/web/.output/public`; the exact
+      deploy steps are under Phase R below. Nothing changes until you run them.
 
 ## Environment (Windows) — Smart App Control
 - [ ] Decide how to handle Smart App Control, which blocks the Windows binary in
@@ -26,8 +29,9 @@ Things only the owner can do, grouped by what each item unblocks. Exact steps gi
 - [ ] Apple Services ID, key, and the Firebase console setup for "Sign in with Apple" (the web button
       is in place, but Firebase needs the provider enabled before it works).
 - [ ] Fill in the placeholders on the privacy policy and on the deletion page: `[COMPANY LEGAL NAME]`,
-      `[CONTACT EMAIL]` and `[DATE]` (in `apps/web/pages/privacy.vue` and
-      `apps/web/pages/account-deletion.vue`), then review the draft policy.
+      `[CONTACT EMAIL]` and `[DATE]`. They are in `apps/web-react/src/routes/privacy.tsx` and
+      `apps/web-react/src/routes/account-deletion.tsx`, and — while Nuxt is still the production app —
+      in `apps/web/pages/privacy.vue` and `apps/web/pages/account-deletion.vue`. Then review the draft policy.
 - [ ] Once Firebase is configured, delete a throwaway account and check in the Firestore console that
       nothing is left. The dev-mode run proves the endpoint and the in-memory store, but the Firestore
       path and the new rules can only be exercised against a real project (the emulator needs Java —
@@ -86,12 +90,65 @@ Needs a dev build with the Firebase config files in `apps/mobile/` (see Task 1.1
 - [ ] Create the App Review demo account.
 
 ## Phase R — the web app in React
-- [ ] Decide where `apps/api` runs once Nuxt is retired (R.6): any Node host or container
-      (`npm start -w apps/api`, set `FIREBASE_PROJECT_ID` and `NODE_ENV=production`), or an edge runtime
-      (`createApp(...).fetch` is portable). Until then nothing changes: Nuxt serves `/api/**` itself, so
-      the deployed web app and `EXPO_PUBLIC_API_BASE_URL` keep working.
-- [ ] If the React app and the API end up on different origins, CORS has to be added to the API (not needed
-      same-origin or behind a proxy).
+- [ ] **`firebase deploy` now publishes the website too — deploy with `--only` until the steps below are
+      done.** `firebase.json` gained a `hosting` block (see the item under Task 0.1), so the bare command
+      that used to release only Firestore and Auth would now also replace the live Nuxt site with
+      `apps/web-react/dist` — whose API is not deployed yet. The React app does draw the whole product now
+      (`apps/web` has been deleted from the repo, R.6), so the only thing between this deploy and a working
+      site is the sequence below. Until it is complete, use `firebase deploy --only firestore:rules`,
+      `--only firestore:indexes` or `--only auth`. If it does happen, `firebase hosting:rollback` puts
+      the previous release (Nuxt) back.
+- [ ] Once `apps/web-react` is the app you use, copy `apps/web-react/.env.example` to
+      `apps/web-react/.env` and fill in the Firebase web config (the same values as the Nuxt app's
+      `.env`). Without it the React app runs credential-free: the auth gate stays open and the API
+      answers as its `local-dev` user. Nothing is blocked while this is pending.
+- [ ] **Deploy the API, then move the site — decided 2026-10-04 (see DECISIONS.md).** `apps/api`
+      runs as the `klndr-api` Cloud Run service in the `klndr-app` project (region `europe-west1`,
+      next to the `eur3` Firestore data), and Firebase Hosting puts it behind the same origin as the
+      web app. `apps/api/Dockerfile` and the `hosting` block in `firebase.json` are in place; these
+      are the commands, and they are the whole of R.6's live half. **This is now the last thing outstanding
+      in R.6**: `apps/web` has already been deleted from the repo, so the Nuxt catch-all that used to serve
+      `/api/**` in production can no longer be rebuilt or redeployed. The running release keeps answering
+      until Hosting is switched over; after that the API has to be up, or the web app and the mobile app's
+      `EXPO_PUBLIC_API_BASE_URL` have nothing behind them.
+
+      1. Build and push the image (Artifact Registry, `klndr` repository, same region):
+         ```bash
+         docker build -f apps/api/Dockerfile -t europe-west1-docker.pkg.dev/klndr-app/klndr/klndr-api .
+         docker push europe-west1-docker.pkg.dev/klndr-app/klndr/klndr-api
+         ```
+      2. Deploy the service. `--allow-unauthenticated` is required: the API checks the Firebase ID
+         token itself (`firebase.rules` is enforced through that token), and Hosting is a plain
+         caller. The container is fail-closed, so `FIREBASE_PROJECT_ID` is not optional.
+         ```bash
+         gcloud run deploy klndr-api \
+           --image europe-west1-docker.pkg.dev/klndr-app/klndr/klndr-api \
+           --region europe-west1 --project klndr-app \
+           --set-env-vars FIREBASE_PROJECT_ID=klndr-app \
+           --allow-unauthenticated
+         ```
+      3. Check it answers on its own URL before anything is switched over: `/api/health` returns
+         `{"ok":true}` with no token (it is the one unauthenticated route).
+      4. Move the mobile app: point `EXPO_PUBLIC_API_BASE_URL` at the Hosting origin (not the Cloud
+         Run URL), so phone and web use the same one.
+      5. Put the React site up (this replaces the live Nuxt site on the same domain):
+         ```bash
+         npm run build:web-react && firebase deploy --only hosting
+         ```
+      6. **Rollback is now Hosting-only.** `firebase hosting:rollback` returns the site to the previous
+         release, which is the last Nuxt deploy — nothing has to be built for it. `apps/web` has already
+         been deleted from the repo (R.6, 2026-10-04), so that rollback target is the last one that will
+         ever exist; recover the source from git history if it ever has to be changed.
+- [x] **Done, in the commit that removed it: the hoisting check and the three delete-time edits.**
+      No package `apps/web-react` imports is left undeclared (`emojibase-data`, the one case, is declared by
+      `apps/web-react`). The root `package.json` scripts, the `dev`/`demo` configs in `.claude/launch.json`
+      and the `COPY apps/web/package.json` line in `apps/api/Dockerfile` were all handled together with
+      `.gitignore`/`.dockerignore`, the two `packages/tokens` tests that read the deleted app's `colors.ts`
+      and `main.css`, and `server.ts`'s Nuxt-only `NUXT_PUBLIC_FIREBASE_PROJECT_ID` fallback.
+- [x] CORS: not needed, and deliberately so. The API is reachable only through the Hosting rewrite
+      (`/api/**` → Cloud Run), so the web app calls its own origin exactly as it did behind Nuxt's
+      catch-all. The mobile app calls the same origin. If a later change puts them on different
+      origins, CORS has to be added to the API at that point.
 
 ## Task R.2 — the data layer on a device
 Needs a development build; the existing one works, because no native dependency was added.

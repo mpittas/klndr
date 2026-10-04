@@ -1,0 +1,78 @@
+import { addDaysISO, formatDuration, longDate, mediumDate } from "@klndr/core";
+import { Link } from "@tanstack/react-router";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+
+/**
+ * The planner's header. The two arrows are day links, so a jump to another day is an ordinary navigation,
+ * and "Today" is only rendered when the day on screen isn't today. The planner's messages go through the
+ * app's toast (`@klndr/data`'s `notify`), not through the header.
+ */
+export function DayPlannerHeader({
+  day,
+  isToday,
+  today,
+  stats,
+  onCreateBlock,
+}: {
+  day: string;
+  isToday: boolean;
+  today: string;
+  stats: { scheduled: number; count: number; done: number };
+  onCreateBlock: () => void;
+}) {
+  return (
+    <header className="relative flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border bg-background pl-1.5 pr-3 short:h-11 sm:h-12 sm:gap-3 sm:px-5">
+      <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+        <div className="flex shrink-0 items-center">
+          <Link
+            to="/day/$date"
+            params={{ date: addDaysISO(day, -1) }}
+            className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground active:bg-muted short:h-10 short:w-10 sm:h-7 sm:w-7"
+            aria-label="Previous day"
+          >
+            <ChevronLeft className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden="true" />
+          </Link>
+          <Link
+            to="/day/$date"
+            params={{ date: addDaysISO(day, 1) }}
+            className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground active:bg-muted short:h-10 short:w-10 sm:h-7 sm:w-7"
+            aria-label="Next day"
+          >
+            <ChevronRight className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden="true" />
+          </Link>
+        </div>
+
+        <div className="min-w-0">
+          <h1 className="truncate text-[15px] font-semibold leading-tight tracking-tight text-foreground sm:text-sm">
+            <span className="sm:hidden">{mediumDate(day)}</span>
+            <span className="hidden sm:inline">{longDate(day)}</span>
+          </h1>
+          <p className="truncate font-mono text-[11px] leading-tight tabular-nums text-muted-foreground">
+            {formatDuration(stats.scheduled)} planned · {stats.done}/{stats.count} done
+          </p>
+        </div>
+
+        {!isToday && (
+          <Link
+            to="/day/$date"
+            params={{ date: today }}
+            className="flex h-9 shrink-0 items-center rounded-md border border-border px-3 text-xs font-medium text-foreground transition hover:bg-muted active:bg-muted sm:h-auto sm:px-2 sm:py-1"
+          >
+            Today
+          </Link>
+        )}
+      </div>
+
+      <div className="flex shrink-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={onCreateBlock}
+          className="hidden h-7 cursor-pointer items-center gap-1 rounded-md bg-primary px-2.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/90 lg:inline-flex"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          Task
+        </button>
+      </div>
+    </header>
+  );
+}

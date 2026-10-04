@@ -14,6 +14,13 @@ describe("authErrorMessage", () => {
     );
   });
 
+  it("explains a sign-in method or domain Firebase has not enabled", () => {
+    expect(authErrorMessage(firebase("auth/operation-not-allowed"))).toBe(
+      "That sign-in method isn't available yet. Please use another one.",
+    );
+    expect(authErrorMessage(firebase("auth/unauthorized-domain"))).toContain("authorized domains");
+  });
+
   it("says the same thing as the web's sign-up page", () => {
     expect(authErrorMessage(firebase("auth/email-already-in-use"), "sign-up")).toBe(
       "An account with this email already exists. Please log in instead.",
@@ -21,6 +28,15 @@ describe("authErrorMessage", () => {
     expect(authErrorMessage(firebase("auth/weak-password"), "sign-up")).toBe(
       `Password is too weak. Please use at least ${MIN_PASSWORD_LENGTH} characters.`,
     );
+  });
+
+  it("explains linking Apple to the account that already has the data", () => {
+    expect(authErrorMessage(firebase("auth/account-exists-with-different-credential"))).toMatch(/connect this one from your profile/);
+    expect(authErrorMessage(firebase("auth/credential-already-in-use"))).toMatch(/another klndr\. account/);
+    expect(authErrorMessage(firebase("auth/provider-already-linked"))).toBe(
+      "That sign-in method is already connected to your account.",
+    );
+    expect(authErrorMessage(firebase("auth/popup-closed-by-user"))).toBe("The sign-in window closed before it finished.");
   });
 
   it("only blames the credentials when someone was signing in", () => {

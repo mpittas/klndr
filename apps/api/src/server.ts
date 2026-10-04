@@ -6,7 +6,7 @@ import { serve } from "@hono/node-server";
 import { createApp } from "./app";
 
 const env = process.env;
-const firebaseProjectId = env.FIREBASE_PROJECT_ID || env.NUXT_PUBLIC_FIREBASE_PROJECT_ID || "";
+const firebaseProjectId = env.FIREBASE_PROJECT_ID || "";
 const production = env.NODE_ENV === "production";
 const port = Number(env.PORT) || 3001;
 

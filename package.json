@@ -8,11 +8,14 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w apps/web",
+    "dev": "npm run dev -w apps/web-react",
     "dev:api": "npm run dev -w apps/api",
-    "build": "npm run build -w apps/web",
-    "typecheck": "npm run typecheck -w apps/web && npm run typecheck -w apps/api && npm run typecheck -w apps/mobile && npm run typecheck -w packages/core && npm run typecheck -w packages/data && npm run typecheck -w packages/tokens",
-    "typecheck:web": "npm run typecheck -w apps/web",
+    "dev:web-react": "npm run dev -w apps/web-react",
+    "build": "npm run build -w apps/web-react",
+    "build:web-react": "npm run build -w apps/web-react",
+    "typecheck": "npm run typecheck -w apps/web-react && npm run typecheck -w apps/api && npm run typecheck -w apps/mobile && npm run typecheck -w packages/core && npm run typecheck -w packages/data && npm run typecheck -w packages/tokens",
+    "typecheck:web-react": "npm run typecheck -w apps/web-react",
+    "lint": "npm run lint -w apps/web-react",
     "typecheck:api": "npm run typecheck -w apps/api",
     "typecheck:mobile": "npm run typecheck -w apps/mobile",
     "test": "npm run test -w packages/core && npm run test -w packages/data && npm run test -w apps/api && npm run test -w packages/tokens",
@@ -20,6 +23,7 @@
   },
   "overrides": {
     "@grpc/grpc-js": "^1.14.5",
-    "oxc-parser": "0.144.0"
+    "oxc-parser": "0.144.0",
+    "rolldown": "1.2.11"
   }
 }
