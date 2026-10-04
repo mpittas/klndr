@@ -541,3 +541,20 @@ each app's own; this is everything behind them.
   about cache changes a tick later, so hook results are asserted with `waitFor`; and the default scheduler already
   coalesces updates made in one synchronous block, so `notifyManager.batch` in the category rename states the
   intent rather than being what keeps it consistent (the test checks the invariant either way).
+
+
+## 2026-10-04 — R.3 and the mobile Day/editor screens
+
+- Timeline functions used per frame carry the Reanimated `"worklet"` directive (including their snap
+  helper dependencies). Node and web treat it as a string; Metro transforms it for the UI thread.
+  Framework input/scroll logic remains in each view. R.3 preserves the original Vue formulas.
+- The timeline and editor share one day's TimelineHistory in DataProvider, rather than independent
+  hook-local instances. Changing day or person starts fresh. Delete returns a boolean for the editor's
+  success-only Undo toast; errors are still reported by the mutation notifier.
+- Reconnect is now wired through expo-network, added with the new simulator build. The initial async
+  read yields to any later network event, and cannot update a listener after cleanup.
+- iOS `useFrameworks: "dynamic"` is unconditional: the installed Firebase native modules are linked
+  even without the config files when building demo mode. Making this conditional on credentials caused
+  the local pod/build failures. Existing logs confirm the simulator build now succeeds.
+- Expo config explicitly limits platforms to iOS and Android. Native views remain separate from the
+  planned React web app. Android date/time dialogs are mounted only after their value control is tapped.

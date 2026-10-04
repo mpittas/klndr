@@ -2,21 +2,32 @@
 import { Check, Plus, X } from "lucide-vue-next";
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import {
+  DAY_MINUTES,
   SLOT_HEIGHT,
   SLOT_MINUTES,
-  SNAP_MINUTES,
+  TOUCH_HOLD_MS,
+  TOUCH_SLOP,
+  blockHeight,
+  blockTop,
   boxOf,
-  columnsBeside,
-  lanesFor,
-  layoutDay,
-  withLanes,
+  changedLanes as lanesToSave,
+  dragFraction,
+  dragPosition,
+  edgeScrollSpeed,
   formatDuration,
   formatTime,
   formatTimeRange,
+  grabOffset,
   gutterLabel,
-  floorMinutes,
+  hasResizeGrip,
   HOUR_OPTIONS,
-  snapMinutes,
+  isShortBlock,
+  minutesToPx,
+  nudgedStart,
+  planDrag,
+  pxToMinutes,
+  slotAt,
+  titleLines,
   type ScheduledTask,
 } from "@klndr/core";
 import { paletteOf } from "~/lib/colors";
@@ -49,7 +60,6 @@ const emit = defineEmits<{
 const gridRef = ref<HTMLDivElement | null>(null);
 const hoverMinutes = ref<number | null>(null);
 const HOVER_DURATION = 30; // matches the default duration of a block created by clicking the grid
-const DAY_MINUTES = 24 * 60;
 // Cut short when the hovered slot is too close to midnight.
 const hoverDuration = computed(() => Math.min(HOVER_DURATION, DAY_MINUTES - (hoverMinutes.value ?? 0)));
 
@@ -73,7 +83,7 @@ const updateHover = () => {
     return;
   }
   // Floors to the quarter hour under the cursor, same as the click-to-create handler, so the block lands where it's shown.
-  const minutes = floorMinutes(((y - rect.top) / SLOT_HEIGHT) * SLOT_MINUTES, SNAP_MINUTES);
+  const minutes = slotAt(y - rect.top);
   // No ghost over a row that already holds activities.
   const end = minutes + Math.min(HOVER_DURATION, DAY_MINUTES - minutes);
   const occupied = props.tasks.some((task) => task.startMinutes < end && task.startMinutes + task.durationMinutes > minutes);
@@ -97,11 +107,8 @@ onBeforeUnmount(() => window.removeEventListener("scroll", updateHover, { captur
 watch(() => [props.preview, props.resizing], updateHover);
 
 // ---- Moving blocks (pointer based, so it works with mouse, touch and pen) ----
-const TOUCH_HOLD_MS = 300; // touch must press and hold, otherwise the gesture scrolls the timeline
-const TOUCH_SLOP = 10;
+// Touch must press and hold (TOUCH_HOLD_MS), otherwise the gesture scrolls the timeline.
 const MOUSE_SLOP = 4;
-const EDGE_SCROLL_ZONE = 72;
-const EDGE_SCROLL_MAX = 16;
 
 type DragState = {
   id: string;
@@ -142,20 +149,15 @@ const findScroller = (el: HTMLElement | null): HTMLElement | null => {
 
 const pointerMinutes = () => {
   const rect = gridRef.value!.getBoundingClientRect();
-  return ((lastY - rect.top) / SLOT_HEIGHT) * SLOT_MINUTES;
+  return pxToMinutes(lastY - rect.top);
 };
 
 const updateDrag = () => {
   if (!active) return;
   const { task, grabMinutes } = active;
-  const maxStart = DAY_MINUTES - task.durationMinutes;
-  const rawStart = Math.max(0, Math.min(maxStart, pointerMinutes() - grabMinutes));
-  const snappedStart = Math.min(
-    Math.floor(maxStart / SNAP_MINUTES) * SNAP_MINUTES,
-    snapMinutes(rawStart, SNAP_MINUTES),
-  );
+  const { rawStart, snappedStart } = dragPosition(pointerMinutes(), grabMinutes, task.durationMinutes);
   const rect = gridRef.value!.getBoundingClientRect();
-  const fraction = Math.max(0, Math.min(1, (lastX - rect.left) / rect.width));
+  const fraction = dragFraction(lastX, rect.left, rect.width);
   drag.value = { id: task.id, rawStart, snappedStart, fraction };
 };
 
@@ -164,13 +166,7 @@ const edgeScrollTick = () => {
   if (!active) return;
   if (scroller) {
     const rect = scroller.getBoundingClientRect();
-    const intoTop = rect.top + EDGE_SCROLL_ZONE - lastY;
-    const intoBottom = lastY - (rect.bottom - EDGE_SCROLL_ZONE);
-    const speed = intoTop > 0
-      ? -Math.min(1, intoTop / EDGE_SCROLL_ZONE) * EDGE_SCROLL_MAX
-      : intoBottom > 0
-        ? Math.min(1, intoBottom / EDGE_SCROLL_ZONE) * EDGE_SCROLL_MAX
-        : 0;
+    const speed = edgeScrollSpeed(lastY, rect.top, rect.bottom);
     if (speed !== 0) {
       scroller.scrollTop += speed;
       updateDrag();
@@ -191,7 +187,7 @@ const beginDrag = () => {
     // The pointer is already gone; the window listeners still end the drag.
   }
   scroller = findScroller(gridRef.value);
-  active = { task, grabMinutes: pointerMinutes() - task.startMinutes };
+  active = { task, grabMinutes: grabOffset(pointerMinutes(), task.startMinutes) };
   document.body.style.userSelect = "none";
   document.body.style.webkitUserSelect = "none";
   if (pointerType === "touch") navigator.vibrate?.(8);
@@ -283,22 +279,12 @@ const onBlockKeydown = (task: ScheduledTask, event: KeyboardEvent) => {
   if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
   event.preventDefault();
   const direction = event.key === "ArrowUp" ? -1 : 1;
-  const next = Math.max(0, Math.min(DAY_MINUTES - task.durationMinutes, task.startMinutes + direction * SNAP_MINUTES));
+  const next = nudgedStart(task.startMinutes, task.durationMinutes, direction);
   if (next !== task.startMinutes) emit("move-task", task, next);
 };
 
-// Blocks sit 2px inside their slot so back-to-back blocks keep a gap. Height is proportional to
-// duration, so a 15 minute block is visibly half the height of a 30 minute one.
-const MIN_BLOCK_HEIGHT = 16;
-const blockTop = (minutes: number) => (minutes / SLOT_MINUTES) * SLOT_HEIGHT + 2;
-const blockHeight = (durationMinutes: number) =>
-  Math.max(MIN_BLOCK_HEIGHT, (durationMinutes / SLOT_MINUTES) * SLOT_HEIGHT - 4);
-// Every block shows the same things. Blocks shorter than a slot fit them on one line; taller ones
-// put the time under the title, which may wrap once there is room for it.
-const isShort = (durationMinutes: number) => durationMinutes < SLOT_MINUTES;
-const titleLines = (durationMinutes: number) => (durationMinutes >= 45 ? 2 : 1);
-// The resize grip needs a free strip under the text; shorter blocks still resize from their bottom edge.
-const hasGrip = (durationMinutes: number) => durationMinutes >= 45;
+// Where and how tall a block is drawn, and what it shows, is core's (blockTop, blockHeight, isShortBlock,
+// titleLines, hasResizeGrip), the same on every screen.
 
 const durationOf = (id: string) => props.tasks.find((item) => item.id === id)?.durationMinutes ?? SLOT_MINUTES;
 
@@ -307,11 +293,7 @@ const durationOf = (id: string) => props.tasks.find((item) => item.id === id)?.d
 const dragPlan = computed(() => {
   if (!drag.value) return null;
   const { id, snappedStart, fraction } = drag.value;
-  const beside = columnsBeside(props.tasks, id, snappedStart);
-  const index = Math.floor(fraction * (beside.length + 1));
-  const lanes = lanesFor(beside, id, index);
-  const moved = props.tasks.map((task) => (task.id === id ? { ...task, startMinutes: snappedStart } : task));
-  return { lanes, placements: layoutDay(withLanes(moved, lanes)) };
+  return planDrag(props.tasks, id, snappedStart, fraction);
 });
 
 const layoutBox = (id: string) => {
@@ -320,17 +302,7 @@ const layoutBox = (id: string) => {
 };
 
 // The lanes to save when a block is dropped, or nothing if no one ended up in a different column.
-const changedLanes = () => {
-  const plan = dragPlan.value;
-  if (!plan || !plan.lanes.size) return undefined;
-  const before = layoutDay(props.tasks);
-  const moved = [...plan.lanes.keys()].some((id) => {
-    const was = before.get(id);
-    const now = plan.placements.get(id);
-    return was?.column !== now?.column || was?.columns !== now?.columns;
-  });
-  return moved ? plan.lanes : undefined;
-};
+const changedLanes = () => lanesToSave(props.tasks, dragPlan.value);
 
 const dragGhostStyle = computed(() => {
   if (!drag.value) return undefined;
@@ -370,7 +342,7 @@ const onGridClick = (event: MouseEvent) => {
 
 const dragOffsetPx = (task: ScheduledTask) =>
   drag.value?.id === task.id
-    ? ((drag.value.rawStart - task.startMinutes) / SLOT_MINUTES) * SLOT_HEIGHT
+    ? minutesToPx(drag.value.rawStart - task.startMinutes)
     : 0;
 
 onMounted(() => gridRef.value?.addEventListener("touchmove", blockTouchScroll, { passive: false }));
@@ -409,7 +381,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
           v-for="minute in guideMinutes"
           :key="`edge-${minute}`"
           class="pointer-events-none absolute right-0.5 sm:right-1 z-20 -translate-y-1/2 whitespace-nowrap rounded-md border border-border bg-muted px-1 sm:px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground/70"
-          :style="{ top: `${(minute / SLOT_MINUTES) * SLOT_HEIGHT}px` }"
+          :style="{ top: `${minutesToPx(minute)}px` }"
         >
           {{ formatTime(minute) }}
         </div>
@@ -419,7 +391,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
       <div
         v-if="nowMinute !== null"
         class="pointer-events-none absolute right-0.5 sm:right-1 z-30 -translate-y-1/2 whitespace-nowrap rounded-md bg-rose-500 px-1 sm:px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-white shadow-xs"
-        :style="{ top: `${(nowMinute / SLOT_MINUTES) * SLOT_HEIGHT}px` }"
+        :style="{ top: `${minutesToPx(nowMinute)}px` }"
       >
         {{ formatTime(nowMinute) }}
       </div>
@@ -454,7 +426,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
           v-for="minute in guideMinutes"
           :key="`guide-${minute}`"
           class="pointer-events-none absolute inset-x-0 z-[5] border-t border-dashed border-foreground/15"
-          :style="{ top: `${(minute / SLOT_MINUTES) * SLOT_HEIGHT}px` }"
+          :style="{ top: `${minutesToPx(minute)}px` }"
         />
       </template>
 
@@ -462,7 +434,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
       <div
         v-if="nowMinute !== null"
         class="pointer-events-none absolute inset-x-0 z-20 flex items-center"
-        :style="{ top: `${(nowMinute / SLOT_MINUTES) * SLOT_HEIGHT}px` }"
+        :style="{ top: `${minutesToPx(nowMinute)}px` }"
       >
         <div class="relative flex items-center w-full">
           <span class="absolute -left-1 flex h-2 w-2 items-center justify-center">
@@ -478,7 +450,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
         v-if="hoverMinutes !== null && !preview && !resizing"
         :class="[
           'pointer-events-none absolute z-20 flex gap-1 overflow-hidden rounded-md border border-dashed border-foreground/20 pl-2 text-xs leading-4 tabular-nums text-muted-foreground',
-          isShort(hoverDuration) ? 'items-center' : 'items-start pt-1',
+          isShortBlock(hoverDuration) ? 'items-center' : 'items-start pt-1',
         ]"
         :style="{
           top: `${blockTop(hoverMinutes)}px`,
@@ -498,7 +470,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
         :title="preview.label"
         :time="formatTimeRange(preview.start, Math.min(preview.start + preview.duration, DAY_MINUTES))"
         :color="preview.color"
-        :short="isShort(preview.duration)"
+        :short="isShortBlock(preview.duration)"
         :lines="titleLines(preview.duration)"
         class="pointer-events-none absolute z-30 border-dashed opacity-80"
         :style="{
@@ -525,7 +497,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
         :time="formatTimeRange(shownStart(task), shownStart(task) + task.durationMinutes)"
         :color="colorOf(task)"
         :done="task.completed"
-        :short="isShort(task.durationMinutes)"
+        :short="isShortBlock(task.durationMinutes)"
         :lines="titleLines(task.durationMinutes)"
         data-task-block
         role="button"
@@ -557,7 +529,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
             @click.stop="emit('toggle-complete', task)"
             :class="[
               'relative z-[1] hidden h-3.5 w-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-colors after:absolute after:-inset-1.5 touch:after:-inset-2.5 @[8rem]:flex',
-              !isShort(task.durationMinutes) && 'mt-px',
+              !isShortBlock(task.durationMinutes) && 'mt-px',
               task.completed ? [toneOf(task).accent, 'border-transparent text-white'] : [toneOf(task).check, 'text-transparent'],
             ]"
           >
@@ -580,7 +552,7 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
           title="Delete"
           :class="[
             'absolute right-1 z-[2] flex touch:hidden max-sm:hidden h-5 w-5 cursor-pointer items-center justify-center rounded-md bg-black/5 text-current opacity-0 transition hover:bg-black/15 hover:!opacity-100 focus-visible:opacity-100 group-hover:opacity-70 dark:bg-white/10 dark:hover:bg-white/20',
-            isShort(task.durationMinutes) ? 'top-1/2 -translate-y-1/2' : 'top-0.5',
+            isShortBlock(task.durationMinutes) ? 'top-1/2 -translate-y-1/2' : 'top-0.5',
           ]"
           @pointerdown.stop
           @click.stop="emit('delete-task', task)"
@@ -592,11 +564,11 @@ const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(
         <div
           data-resize-handle
           @pointerdown="(e) => emit('start-resize', task, e)"
-          :class="isShort(task.durationMinutes) ? 'h-2 touch:h-3' : 'h-3.5 sm:h-2 touch:h-5'"
+          :class="isShortBlock(task.durationMinutes) ? 'h-2 touch:h-3' : 'h-3.5 sm:h-2 touch:h-5'"
           class="absolute inset-x-0 bottom-0 flex touch-none cursor-ns-resize items-end justify-center pb-[3px]"
         >
           <span
-            v-if="hasGrip(task.durationMinutes)"
+            v-if="hasResizeGrip(task.durationMinutes)"
             class="h-0.5 w-5 rounded-full bg-current opacity-0 transition-opacity group-hover:opacity-25 touch:opacity-20"
           />
         </div>

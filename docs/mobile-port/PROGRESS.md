@@ -411,3 +411,59 @@ Not verified, and not verifiable here:
 - `useProfile` against the real Firestore.
 
 Next step: R.3, the timeline's interaction maths into `@klndr/core` (it is also what 2.1 needs), then R.4.
+
+
+## 2026-10-04 — session 10: resumed Claude's mobile implementation in Codex
+
+Recovered the local Claude Code chat **Mobile app implementation** (session
+`71047faf-751e-4310-897a-9935789317cf`). It stopped at the usage limit while checking the iOS build.
+The changes were already in this checkout on `feat/react-web`; they were preserved.
+
+Inherited implementation, now checked:
+- R.3: shared timeline geometry, drag/snapping/lane planning, resize and edge-scroll math in core; Vue
+  uses it too. 37 timeline tests bring core to 301 tests. Claude's transcript records browser drag/resize
+  and mutation checks; those interactive checks were not repeated in Codex.
+- Mobile 2.1: date header, undo/redo, day swipes, routines shelf, grid, live clock, task gestures,
+  optimistic persistence and accessibility actions. Gestures run on the UI thread and report discrete
+  snap/column changes to React.
+- Mobile 2.2: task editor, native date/time and category controls, templates, notes, completion,
+  emoji search/recents, category creation and a delete/undo toast.
+- Shared undo history is held by DataProvider so the editor and Day tab share it. Deletion resolves to
+  success/failure so an Undo toast is only offered after a successful deletion.
+- expo-network reconnect handling and unconditional iOS framework build configuration.
+
+Codex fixes:
+- Android date/time controls now open a native dialog on tap, rather than both opening at form mount.
+- Canceled day swipes return the page to rest; Today clears a pending slide. Each day gets its own
+  timeline view so scroll/gesture state does not carry across dates.
+- Shared block position/size resynchronizes with task objects, including rollback. The drag landing
+  callback no longer overwrites a newer saved position, and edge scrolling stops when the finger lifts.
+- Task forms use the profile's defaultTaskDuration, constrain start/duration to the day, cap fields at
+  the shared limits, and guard repeated submits and conflicting footer actions during save.
+- Failed task fetches show a retry action instead of claiming the block was deleted. Loading timelines
+  open at the skeleton near 07:00, then settle on the first loaded block.
+- Network-state reads cannot overwrite a newer listener event; read failures retain the current state.
+- Explicit iOS/Android platforms in Expo config match the decision that Expo web is out of scope.
+
+Verification:
+- `npm run typecheck`: all six workspaces pass; mobile rechecked after the final UI changes.
+- `npm test`: **565 tests pass** (core 301, data 130, API 93, tokens 41).
+- `npm run build -w apps/web`: Build complete.
+- Expo export: both Android and iOS Hermes bundles pass; a separate iOS source-map export confirms
+  core's timeline is included, one React copy (`apps/mobile/node_modules/react`), no react-dom, API or Vitest.
+- Prior native build logs `/tmp/klndr-build4.log` and `/tmp/klndr-xcodebuild.log` both end in BUILD SUCCEEDED.
+  Installed the simulator binary from `/tmp/klndr-dd/Build/Products/Debug-iphonesimulator/klndr.app`.
+- `git diff --check`: clean. No commit, push or deployment.
+
+Not verified:
+- Native runtime, gestures, visual appearance, keyboard avoidance, accessibility, dark mode, largest
+  text size, or reconnect behavior. Simulator access is not exposed by the available UI tool; its
+  screenshot still showed the system “Open in klndr?” prompt. Asked the owner to click Open.
+- The simulator build is demo mode; it does not establish real Firebase sign-in or Firestore parity.
+
+Running locally for the owner: demo API on **3101**, Metro dev client on **8082** (the usual ports
+were avoided). Metro was started in apps/mobile with EXPO_PUBLIC_DEMO_MODE=1 and
+EXPO_PUBLIC_API_BASE_URL=http://127.0.0.1:3101. These addresses are for the local simulator only.
+
+Next: complete the device checks for 2.1/2.2, then 2.3 checklist/notes sheets. R.4 onward and Phase 3
+remain untouched. CHECKPOINT B is still open.

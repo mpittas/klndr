@@ -12,6 +12,10 @@
  * any more: `Trash2` is an alias of `Trash`).
  */
 export { default as CalendarX } from "lucide-react-native/icons/calendar-x";
+export { default as Check } from "lucide-react-native/icons/check";
+export { default as ChevronLeft } from "lucide-react-native/icons/chevron-left";
 export { default as ChevronRight } from "lucide-react-native/icons/chevron-right";
 export { default as Plus } from "lucide-react-native/icons/plus";
+export { default as Redo2 } from "lucide-react-native/icons/redo-2";
 export { default as Trash } from "lucide-react-native/icons/trash";
+export { default as Undo2 } from "lucide-react-native/icons/undo-2";

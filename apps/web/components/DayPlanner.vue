@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
 import {
-  SLOT_HEIGHT,
-  SLOT_MINUTES,
-  SNAP_MINUTES,
+  GRID_HEIGHT,
   boxOf,
+  initialScrollOffset,
   layoutDay,
-  floorMinutes,
   formatTime,
   longDate,
   nowMinutes,
+  resizedDuration,
+  slotAt,
   snapMinutes,
   todayISO,
   type ActivityTemplate,
@@ -73,7 +73,6 @@ const today = computed(() => {
 const isToday = computed(() => props.day === today.value);
 const nowMinute = computed(() => (isToday.value ? clock.value : null));
 let clockTimer: number | null = null;
-const GRID_HEIGHT = (24 * 60 / SLOT_MINUTES) * SLOT_HEIGHT;
 
 watch(
   () => props.initialTasks,
@@ -125,12 +124,7 @@ const notify = (message: string) => {
 const scrollToUsefulPosition = () => {
   const el = scrollRef.value;
   if (!el) return;
-  const first = tasks.value.reduce<number | null>(
-    (min, task) => (min === null ? task.startMinutes : Math.min(min, task.startMinutes)),
-    null,
-  );
-  const target = first ?? 420;
-  el.scrollTop = Math.max(0, (target / SLOT_MINUTES) * SLOT_HEIGHT - 96);
+  el.scrollTop = initialScrollOffset(tasks.value);
 };
 
 const { load: loadCategories, colorOf } = useCategories();
@@ -212,10 +206,7 @@ const categoryColor = (cat: string) => {
 
 const minutesFromEvent = (container: HTMLDivElement | null, clientY: number) => {
   if (!container) return 0;
-  const rect = container.getBoundingClientRect();
-  const offsetY = Math.max(0, Math.min(rect.height, clientY - rect.top));
-  const raw = (offsetY / SLOT_HEIGHT) * SLOT_MINUTES;
-  return floorMinutes(raw, SNAP_MINUTES);
+  return slotAt(clientY - container.getBoundingClientRect().top);
 };
 
 const handleDragOver = (event: DragEvent) => {
@@ -304,16 +295,11 @@ const startResize = (task: ScheduledTask, event: PointerEvent) => {
   const startDuration = task.durationMinutes;
   resizedJustHappened = false;
   resizing.value = task.id;
-  const snapDuration = (minutes: number) => {
-    const step = SNAP_MINUTES;
-    const longest = Math.floor((24 * 60 - task.startMinutes) / step) * step;
-    return Math.max(Math.min(step, longest) || step, Math.min(longest, snapMinutes(minutes, step)));
-  };
+  const snapDuration = (deltaPx: number) => resizedDuration(task.startMinutes, startDuration, deltaPx);
 
   const onMove = (moveEvent: PointerEvent) => {
     resizedJustHappened = true;
-    const delta = ((moveEvent.clientY - startY) / SLOT_HEIGHT) * SLOT_MINUTES;
-    const next = snapDuration(startDuration + delta);
+    const next = snapDuration(moveEvent.clientY - startY);
     tasks.value = tasks.value.map((item) =>
       item.id === task.id ? { ...item, durationMinutes: next } : item,
     );
@@ -335,8 +321,7 @@ const startResize = (task: ScheduledTask, event: PointerEvent) => {
     window.removeEventListener("pointerup", finish);
     window.removeEventListener("pointercancel", cancel);
     resizing.value = null;
-    const delta = ((upEvent.clientY - startY) / SLOT_HEIGHT) * SLOT_MINUTES;
-    const next = snapDuration(startDuration + delta);
+    const next = snapDuration(upEvent.clientY - startY);
     if (next === startDuration) {
       resizedJustHappened = false;
       return;

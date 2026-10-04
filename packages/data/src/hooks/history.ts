@@ -1,6 +1,6 @@
 import { TimelineHistory, type ScheduledTask } from "@klndr/core";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { queryKeys } from "../keys";
 import { useData } from "../provider";
 
@@ -10,27 +10,24 @@ import { useData } from "../provider";
  * different day starts a fresh history, as it always has.
  */
 export function useTimelineHistory(day: string) {
-  const { api, notify } = useData();
+  const { api, notify, histories } = useData();
   const queryClient = useQueryClient();
 
-  // The engine is built once per day but reads the latest client and notifier when it runs.
-  const latest = useRef({ queryClient, notify });
-  latest.current = { queryClient, notify };
-
-  const holder = useRef<{ day: string; history: TimelineHistory } | null>(null);
-  if (holder.current?.day !== day) {
-    holder.current = {
+  // One history per day on screen, kept in the provider rather than in this hook, so a screen opened over the
+  // timeline (the editor) shares it with the timeline. A different day starts a fresh one.
+  if (histories.current?.day !== day) {
+    histories.current = {
       day,
       history: new TimelineHistory({
         api,
-        getTasks: () => latest.current.queryClient.getQueryData<ScheduledTask[]>(queryKeys.tasks.day(day)) ?? [],
-        setTasks: (tasks) => latest.current.queryClient.setQueryData(queryKeys.tasks.day(day), tasks),
+        getTasks: () => queryClient.getQueryData<ScheduledTask[]>(queryKeys.tasks.day(day)) ?? [],
+        setTasks: (tasks) => queryClient.setQueryData(queryKeys.tasks.day(day), tasks),
         day: () => day,
-        notify: (message) => latest.current.notify(message),
+        notify,
       }),
     };
   }
-  const history = holder.current.history;
+  const history = histories.current.history;
 
   const subscribe = useCallback((onChange: () => void) => history.subscribe(() => onChange()), [history]);
   const canUndo = useSyncExternalStore(subscribe, () => history.canUndo, () => false);

@@ -8,7 +8,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AuthProvider, useAuth } from "@/auth";
-import { ToastProvider } from "@/components/ui";
+import { formSheet, ToastProvider } from "@/components/ui";
 import { UnavailableScreen } from "@/components/auth/unavailable";
 import { AppDataProvider } from "@/data";
 import { INTER_FONTS, useFonts } from "@/fonts";
@@ -42,6 +42,10 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(tabs)" />
+        {/* Sheets over the tabs: the system's own form sheet, with its grabber and detents. */}
+        <Stack.Screen name="task-editor" options={formSheet([0.8, 1])} />
+        <Stack.Screen name="emoji-sheet" options={formSheet([0.7, 1])} />
+        <Stack.Screen name="date-sheet" options={formSheet([0.75])} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="(auth)" />

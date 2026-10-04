@@ -172,34 +172,39 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
       categories, checklist items, day checklist, day notes, profile).
 - [x] Optimistic mutations matching DayPlanner.vue (temp ids, rollback, toasts).
 - [x] Query cache persisted in MMKV.
-- [~] Refetch on foreground (done, `src/data/focus.ts`) and on reconnect (open: needs a network-state module, see DECISIONS.md).
+- [x] Refetch on foreground (`src/data/focus.ts`) and on reconnect (`src/data/online.ts`, expo-network).
+      The native module is included in the successful local iOS simulator build; device reconnect checks remain.
 
 ## Phase 2 — screens
 
 ### 2.1 Day tab (centerpiece)
-- [ ] Header: date title (tap → date picker sheet), Today, prev/next, undo/redo.
-- [ ] Swipe horizontally between days; routines shelf above the timeline.
-- [ ] Geometry: SLOT_MINUTES 30, SLOT_HEIGHT 48, SNAP_MINUTES 15, bit-for-bit formulas.
-- [ ] Short-block and two-line rules; hour gutter; now-line with a live pill (every 30 s).
-- [ ] On open, scroll to the first block (or 07:00).
-- [ ] Tap empty grid → task editor at the 15-minute slot.
-- [ ] Tap a block → edit; tap its ring → toggle done.
-- [ ] Long-press 300 ms → lift (scale 1.02, shadow, medium haptic).
-- [ ] Drag: follow finger, snap to 15 min, selection haptic on snap change.
-- [ ] Drag: horizontal picks the column via core layout functions; neighbours animate aside.
-- [ ] Drag: start/end times in the gutter; 72px edge auto-scroll, up to 16px/frame.
-- [ ] Drag: release → optimistic save + undo entry.
-- [ ] Resize from the bottom edge in 15-min steps (min 15, up to midnight), haptics + label.
-- [ ] Only discrete changes cross to the JS thread; nothing re-renders every frame.
-- [ ] Accessibility: announce title + time range; actions to move/lengthen/etc.
-- [ ] Unit-test geometry, snapping and lane planning.
+
+Implementation and automated checks are done; native gesture/visual acceptance is pending (HUMAN_TODO).
+- [x] Header: date title (tap → date picker sheet), Today, prev/next, undo/redo.
+- [x] Swipe horizontally between days; routines shelf above the timeline.
+- [x] Geometry: SLOT_MINUTES 30, SLOT_HEIGHT 48, SNAP_MINUTES 15, bit-for-bit formulas.
+- [x] Short-block and two-line rules; hour gutter; now-line with a live pill (every 30 s).
+- [x] On open, scroll to the first block (or 07:00).
+- [x] Tap empty grid → task editor at the 15-minute slot.
+- [x] Tap a block → edit; tap its ring → toggle done.
+- [x] Long-press 300 ms → lift (scale 1.02, shadow, medium haptic).
+- [x] Drag: follow finger, snap to 15 min, selection haptic on snap change.
+- [x] Drag: horizontal picks the column via core layout functions; neighbours animate aside.
+- [x] Drag: start/end times in the gutter; 72px edge auto-scroll, up to 16px/frame.
+- [x] Drag: release → optimistic save + undo entry.
+- [x] Resize from the bottom edge in 15-min steps (min 15, up to midnight), haptics + label.
+- [x] Only discrete changes cross to the JS thread; nothing re-renders every frame.
+- [x] Accessibility: announce title + time range; actions to move/lengthen/etc.
+- [x] Unit-test geometry, snapping and lane planning.
 - [ ] HUMAN_TODO: try the timeline on a device build.
 
 ### 2.2 Task editor sheet
-- [ ] Title, emoji (emoji picker sheet), category (native menu + "new category").
-- [ ] Start time and duration (native pickers, DURATION_CHOICES).
-- [ ] Notes and template quick-pick.
-- [ ] Save; delete with an undo toast.
+
+Implemented and bundled for both platforms; native form/picker acceptance is pending (HUMAN_TODO).
+- [x] Title, emoji (emoji picker sheet), category (native menu + "new category").
+- [x] Start time and duration (native pickers, DURATION_CHOICES).
+- [x] Notes and template quick-pick.
+- [x] Save; delete with an undo toast.
 
 ### 2.3 Checklist and notes sheets
 - [ ] Checklist: toggle, quick add (every day / only today), skip + restore, edit, delete.
@@ -317,9 +322,14 @@ app keeps its own native design. Nuxt stays the production web app until R.5 rea
 - [ ] HUMAN_TODO: check a cold start on the device (no flash, data from the last run shows at once) and sign-out wiping the cache.
 
 ### R.3 Timeline interaction maths in `@klndr/core`
-- [ ] Move the pure parts out of `DayTimelineGrid.vue` / `DayPlanner.vue`: position to minutes, grab offset,
-      snapping, resize limits, the lane a drag lands in, edge-scroll speed.
-- [ ] Unit tests; the Vue components call them (behaviour unchanged), and so do the React and mobile views.
+- [x] Move the pure parts out of `DayTimelineGrid.vue` / `DayPlanner.vue` into `packages/core/src/timeline.ts`:
+      position to minutes, grab offset, snapping, resize limits, the lane a drag lands in, edge-scroll speed,
+      block geometry (top, height, one-line and two-line rules), where a day opens, nudges for the keyboard.
+- [x] Unit tests (37): each function is also compared with the original Vue formula, copied verbatim, over a sweep
+      of inputs; mutation-checked (three deliberate breaks, one of which first survived and got its own test).
+- [x] The Vue components call them (behaviour unchanged, checked by dragging and resizing in the browser); the mobile
+      timeline calls the same functions, from the UI thread (see DECISIONS.md, the `"worklet"` directive).
+- [ ] The React web view calls them too (R.4/R.5).
 
 ### R.4 `apps/web-react` scaffold
 - [ ] Vite, React, TanStack Router, Tailwind v4 on `@klndr/tokens`, Firebase JS SDK auth through the same

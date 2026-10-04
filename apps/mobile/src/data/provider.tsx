@@ -6,6 +6,7 @@ import { useAuth } from "@/auth";
 import { useToast } from "@/components/ui";
 
 import "./focus";
+import "./online";
 import { queryPersister } from "./persister";
 
 /**

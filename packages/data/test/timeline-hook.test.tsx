@@ -74,6 +74,27 @@ describe("useDayTimeline", () => {
     expect((await server.current.api.getTasksForDay(DAY))[0]).toMatchObject({ title: "Keep me", completed: false });
   });
 
+  it("says whether a delete worked, and puts the block back when it did not", async () => {
+    await server.current.seedTask(DAY, { title: "Stubborn" });
+    const { result, messages } = await mount();
+    await waitFor(() => expect(result.current.tasks).toHaveLength(1));
+    server.current.fail("DELETE /api/tasks/");
+
+    let deleted: boolean | undefined;
+    await act(async () => {
+      deleted = await result.current.deleteTask(result.current.tasks[0]);
+    });
+    expect(deleted).toBe(false);
+    await waitFor(() => expect(result.current.tasks).toHaveLength(1));
+    expect(messages).toContain("Could not delete that block");
+
+    await act(async () => {
+      deleted = await result.current.deleteTask(result.current.tasks[0]);
+    });
+    expect(deleted).toBe(true);
+    await waitFor(() => expect(result.current.tasks).toEqual([]));
+  });
+
   it("moves a block, saves its neighbours' columns with it and undoes the whole step", async () => {
     const a = await server.current.seedTask(DAY, { title: "A" });
     const b = await server.current.seedTask(DAY, { title: "B" });
@@ -162,6 +183,34 @@ describe("useDayTimeline", () => {
     await act(() => view.result.current.day.undo());
     await waitFor(() => expect(view.result.current.month.data).toEqual([]));
     expect(server.current.sent.filter((line) => line.startsWith("GET /api/tasks?from=")).length).toBeGreaterThan(1);
+  });
+
+  it("shares one undo history between every screen that changes the day, like the timeline and the editor over it", async () => {
+    const h = harness(server.current);
+    const view = renderHook(() => ({ timeline: useDayTimeline(DAY), editor: useDayTimeline(DAY) }), { wrapper: h.wrapper });
+    await waitFor(() => expect(view.result.current.timeline.query.isSuccess).toBe(true));
+    const payload = { day: DAY, title: "From the editor", emoji: "✍️", color: "sky", category: "Work", startMinutes: 600, durationMinutes: 30 };
+
+    await act(async () => {
+      await view.result.current.editor.saveTask({ id: null, payload });
+    });
+    // The editor made the change; the timeline, a different instance of the hook, can undo it.
+    await waitFor(() => expect(view.result.current.timeline.canUndo).toBe(true));
+    await act(() => view.result.current.timeline.undo());
+    await waitFor(() => expect(view.result.current.timeline.tasks).toEqual([]));
+    expect(await server.current.api.getTasksForDay(DAY)).toEqual([]);
+    await waitFor(() => expect(view.result.current.editor.canRedo).toBe(true));
+  });
+
+  it("starts a fresh history when the day on screen changes", async () => {
+    const { result, rerender } = await mount();
+    const template = (await server.current.api.getTemplates())[0];
+    await act(() => result.current.createFromTemplate(template, 600));
+    await waitFor(() => expect(result.current.canUndo).toBe(true));
+
+    rerender({ day: NEXT_DAY });
+    await waitFor(() => expect(result.current.day).toBe(NEXT_DAY));
+    expect(result.current.canUndo).toBe(false);
   });
 
   it("asks the server again on refresh and says how it went", async () => {

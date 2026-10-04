@@ -48,10 +48,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   const firebasePlugins: NonNullable<ExpoConfig["plugins"]> = withFirebase
     ? [
-        // The Firebase iOS SDK comes in through Swift Package Manager (React Native Firebase's default),
-        // which needs the iOS pods built as dynamic frameworks. A first build without this failed in
-        // "Install pods" (see DECISIONS.md, task 1.3).
-        ["expo-build-properties", { ios: { useFrameworks: "dynamic" } }],
         "@react-native-firebase/app",
         "@react-native-firebase/auth",
         // Google sign-in's iOS URL scheme (the reversed client id); the plugin throws without one.
@@ -66,6 +62,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     scheme: "klndr",
     version: "0.1.0",
     orientation: "portrait",
+    platforms: ["ios", "android"],
     // Both themes are real, and the app follows the system setting (see 1.2 for the override).
     userInterfaceStyle: "automatic",
     icon: "./assets/images/icon.png",
@@ -91,6 +88,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     plugins: [
       "expo-router",
       "expo-apple-authentication",
+      // The Firebase iOS SDK comes in through Swift Package Manager (React Native Firebase's default), which needs
+      // the iOS pods built as dynamic frameworks. It is not tied to the config files below: the Firebase native
+      // modules are linked whether or not they are there, so a build without them (a local simulator build in demo
+      // mode) fails in "Install pods" without it, as the first EAS build did (see DECISIONS.md, task 1.3).
+      ["expo-build-properties", { ios: { useFrameworks: "dynamic" } }],
       ...firebasePlugins,
       [
         "expo-splash-screen",

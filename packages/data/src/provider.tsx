@@ -1,4 +1,4 @@
-import type { ApiClient } from "@klndr/core";
+import type { ApiClient, TimelineHistory } from "@klndr/core";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider, type Persister } from "@tanstack/react-query-persist-client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, type PropsWithChildren } from "react";
@@ -7,10 +7,18 @@ import type { Notify } from "./mutations/types";
 import { cacheBuster, CACHE_MAX_AGE_MS } from "./persistence";
 import type { ProfileSource } from "./hooks/profile";
 
+/** The undo history of the day on screen. */
+export type HistoryHolder = { current: { day: string; history: TimelineHistory } | null };
+
 type DataContextValue = {
   api: ApiClient;
   notify: Notify;
   profile: ProfileSource | null;
+  /**
+   * Where the day's undo history lives, so that every screen that changes that day's blocks (the timeline, the
+   * editor opened over it) records into, and undoes from, the same one. It starts afresh for a new person.
+   */
+  histories: HistoryHolder;
 };
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -60,9 +68,10 @@ export function DataProvider({ api, userId, notify, profile, persister, queryCli
   latestNotify.current = notify;
   const stableNotify = useCallback<Notify>((message) => latestNotify.current?.(message), []);
 
+  const histories = useMemo<HistoryHolder>(() => ({ current: null }), [client]);
   const value = useMemo<DataContextValue>(
-    () => ({ api, notify: stableNotify, profile: profile ?? null }),
-    [api, stableNotify, profile],
+    () => ({ api, notify: stableNotify, profile: profile ?? null, histories }),
+    [api, stableNotify, profile, histories],
   );
   const tree = <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 

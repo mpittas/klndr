@@ -6,6 +6,7 @@
 export * from "./types";
 export * from "./time";
 export * from "./layout";
+export * from "./timeline";
 export * from "./colors";
 export * from "./categories";
 export * from "./validation";

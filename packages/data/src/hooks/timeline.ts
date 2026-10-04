@@ -74,7 +74,11 @@ export function useDayTimeline(day: string) {
     [toggle],
   );
 
-  const deleteTask = useCallback((task: ScheduledTask) => handled(remove({ task })), [remove]);
+  /** Delete a block. Never throws: it resolves to whether the block was deleted, and a failure is put back and reported. */
+  const deleteTask = useCallback(
+    (task: ScheduledTask) => remove({ task }).then(() => true, () => false),
+    [remove],
+  );
 
   /** Save from the editor: waits for the server, and throws its message so the form can show it. */
   const saveTask = useCallback((vars: SaveTaskVars) => save(vars), [save]);

@@ -1,5 +1,13 @@
 # Handoff: where to pick up
 
+## Latest continuation — 2026-10-04 (Codex)
+
+The historical handoff below describes the committed baseline. The current checkout also has the
+R.3 extraction, mobile Day tab and task editor, shared editor/timeline undo, and reconnect
+handling. See PROGRESS.md session 10 for recovered Claude context, fixes and verification. All 565 tests,
+six-workspace typecheck, native bundles and the web build pass. Native interactive acceptance is pending;
+2.3 checklist/notes is next. CHECKPOINT B remains open.
+
 Written 2026-10-04 at the end of a session on the owner's Windows machine, for an AI assistant (and the owner)
 continuing on another device. Read this first, then the four files it points to. Everything here was true of
 branch `feat/react-web` at the commit that added this file; if the code disagrees, trust the code and fix this.

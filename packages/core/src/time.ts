@@ -120,11 +120,13 @@ export function monthTitle(iso: string): string {
 }
 
 export function snapMinutes(minutes: number, step = 30): number {
+  "worklet"; // also run on the phone's UI thread while a block is dragged (see timeline.ts)
   return Math.max(0, Math.min(24 * 60, Math.round(minutes / step) * step));
 }
 
 /** Start of the step that contains `minutes` (what a click on a time slot should mean). */
 export function floorMinutes(minutes: number, step = 30): number {
+  "worklet";
   return Math.max(0, Math.min(24 * 60 - step, Math.floor(minutes / step) * step));
 }
 

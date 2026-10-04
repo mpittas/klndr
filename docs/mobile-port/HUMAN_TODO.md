@@ -99,5 +99,27 @@ Needs a development build; the existing one works, because no native dependency 
       navigator now mounts when auth has settled, not before).
 - [ ] Sign out, then check the app's data is gone: sign in as someone else and confirm none of the first
       person's data appears, not even for a moment.
-- [ ] Decide when to add a network-state module (`expo-network`) so queries refetch on reconnect. It is a native
-      dependency, so it needs a new development build; do it with the next one.
+- [x] Add expo-network with the next native build (implemented 2026-10-04; successful local simulator build).
+- [ ] Confirm stale data refetches after losing and regaining connection on a device.
+
+
+## Tasks 2.1–2.2 — Day timeline and task editor on a device
+
+The implementation is present and both native bundles pass. Interactive acceptance remains open.
+The local simulator dev build includes expo-network; an older phone build needs rebuilding.
+
+- [ ] Simulator: click Open in the pending “Open in klndr?” prompt. Local Metro is on 8082 and
+      the demo API is on 3101. A physical phone needs the Mac's LAN address rather than 127.0.0.1.
+- [ ] Header: previous/next, Today, date sheet, swipe both ways, cancel a swipe, undo and redo.
+- [ ] Open a seeded day and an empty day: scroll to the first block or 07:00, check the live now-line.
+- [ ] Tap an empty slot to create, tap a block to edit, tap its ring to toggle. Edit/delete in the sheet
+      and undo/redo from the header.
+- [ ] Hold 300 ms and drag to another quarter-hour and column, including overlap, top/bottom edge
+      scrolling, canceled/interrupted gestures and a second finger. Resize to 15 minutes and midnight.
+- [ ] Force a save failure: position/size/toggle roll back and show an error. Offline reconnect refreshes.
+- [ ] New block: apply a template, choose an emoji, create a category, change the date/start/duration,
+      write notes, save and reopen. Check start/duration near midnight and rapid repeated Save presses.
+- [ ] Android: date and time dialogs open only after tapping their fields; cancel, reopen and confirm.
+- [ ] iOS/Android: keyboard does not hide the focused field/footer; sheets dismiss and reopen cleanly.
+- [ ] Dark theme, largest text size, Reduce Motion and VoiceOver/TalkBack: edit/toggle/move/resize
+      actions work and labels include the task's title and time range.
