@@ -1,6 +1,7 @@
 import { createApiClient } from "@klndr/core";
 
 import { getAuthToken } from "@/auth/firebase";
+import { clientId } from "@/data/client-id";
 import { apiBaseUrl } from "@/env";
 
 /**
@@ -10,4 +11,4 @@ import { apiBaseUrl } from "@/env";
  * `apiBaseUrl` is empty by default, so requests go to this origin — where the dev server proxies `/api`
  * to `apps/api`, and where the API is served in production. CORS is therefore never involved.
  */
-export const api = createApiClient({ baseUrl: apiBaseUrl, getToken: getAuthToken });
+export const api = createApiClient({ baseUrl: apiBaseUrl, getToken: getAuthToken, clientId });

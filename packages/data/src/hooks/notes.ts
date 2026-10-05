@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { queryKeys } from "../keys";
 import { NotesSaver } from "../notes-saver";
+import { announceChange } from "../tab-sync";
 import { useData } from "../provider";
 import { useDayNotes } from "./queries";
 
@@ -26,7 +27,10 @@ export function useNotesEditor(day: string, options: { delayMs?: number } = {}) 
   const saverRef = useRef<NotesSaver | null>(null);
   saverRef.current ??= new NotesSaver({
     save: (forDay, text) => latest.current.api.saveDayNotes(forDay, text),
-    onSaved: (saved) => latest.current.queryClient.setQueryData(queryKeys.notes(saved.day), saved),
+    onSaved: (saved) => {
+      latest.current.queryClient.setQueryData(queryKeys.notes(saved.day), saved);
+      announceChange(latest.current.queryClient, ["notes"]);
+    },
     delayMs: options.delayMs,
   });
   const saver = saverRef.current;

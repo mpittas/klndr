@@ -14,6 +14,7 @@ rules_version = '2';
 //   users/{uid}/checklist_items/{id}  the default checklist, applied to every day
 //   users/{uid}/checklist_days/{day}  per-day ticks, skipped defaults and one-off items
 //   users/{uid}/day_notes/{day}       quick notes for one day (one markdown text)
+//   users/{uid}/meta/sync           "something changed" stamps the API writes, which the person's other devices listen to
 //   users/{uid}/meta/categorySeed   one-time marker: categories created from existing templates
 //   users/{uid}/categories/{id}     activity categories (name, color)
 //   users/{uid}/templates/{id}      activity templates
@@ -118,6 +119,24 @@ service cloud.firestore {
           && request.resource.data.keys().hasOnly(['seededAt'])
           && request.resource.data.seededAt == request.time;
         allow update: if false;
+        allow delete: if isOwner(uid);
+      }
+
+      // ---------- change stamps: how a device learns another one saved something ----------
+      // One string field per kind of data ("<device id>:<time>"); the data itself is never in here.
+      function validSyncStamp(d) {
+        return d.keys().hasOnly(['tasks', 'templates', 'categories', 'checklist', 'notes'])
+          && d.keys().size() >= 1
+          && (!('tasks' in d) || str(d.tasks, 1, 80))
+          && (!('templates' in d) || str(d.templates, 1, 80))
+          && (!('categories' in d) || str(d.categories, 1, 80))
+          && (!('checklist' in d) || str(d.checklist, 1, 80))
+          && (!('notes' in d) || str(d.notes, 1, 80));
+      }
+
+      match /meta/sync {
+        allow read: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validSyncStamp(request.resource.data);
         allow delete: if isOwner(uid);
       }
 

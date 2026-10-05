@@ -16,6 +16,7 @@ import { notes } from "./routes/notes";
 import { tasks } from "./routes/tasks";
 import { templates } from "./routes/templates";
 import type { Session } from "./session";
+import { createAnnouncer, deviceIdOf, rootOfPath, type Announce } from "./sync";
 
 export type ApiConfig = {
   /** The Firebase project whose ID tokens are accepted; empty when Firebase isn't configured. */
@@ -26,6 +27,8 @@ export type ApiConfig = {
   keys?: JWTVerifyGetKey;
   /** Where each caller's data lives. Defaults to Firestore (or memory for the dev user). */
   storeFor?: (session: Session) => Store;
+  /** Tells the caller's other devices that their data changed. Defaults to a stamp in Firestore. */
+  announce?: Announce;
   /** Picks an emoji for a title. Defaults to OpenAI when `openaiApiKey` is set, and to none otherwise. */
   suggestEmoji?: EmojiSuggester;
   /** Key for the OpenAI API, which `suggestEmoji` uses. Without one the app falls back to a neutral emoji. */
@@ -45,6 +48,7 @@ export type ApiConfig = {
 export function createApp(config: ApiConfig) {
   const keys = config.keys ?? firebaseKeys();
   const storeFor = config.storeFor ?? createStoreFactory(config.firebaseProjectId);
+  const announce = config.announce ?? createAnnouncer(config.firebaseProjectId);
   const suggestEmoji =
     config.suggestEmoji ??
     (config.openaiApiKey ? createEmojiSuggester({ apiKey: config.openaiApiKey, model: config.emojiModel }) : null);
@@ -71,6 +75,14 @@ export function createApp(config: ApiConfig) {
     c.set("store", storeFor(session));
     c.set("suggestEmoji", suggestEmoji);
     await next();
+
+    // A saved change is announced so other devices refresh; failing to announce never fails the change.
+    const root = c.req.method === "GET" ? null : rootOfPath(c.req.path);
+    if (root && c.res.status < 400) {
+      await announce(session, root, deviceIdOf(c.req.header("x-client-id"))).catch((err) => {
+        console.error("Could not announce a change:", err);
+      });
+    }
   });
   api.route("/tasks", tasks);
   api.route("/templates", templates);

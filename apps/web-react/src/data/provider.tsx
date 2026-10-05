@@ -1,9 +1,11 @@
 import { DataProvider } from "@klndr/data";
-import { useCallback, type PropsWithChildren } from "react";
+import { useCallback, useMemo, type PropsWithChildren } from "react";
 
 import { api } from "@/api";
 import { DEV_USER, useAuth } from "@/auth";
 import { useToast } from "@/toast";
+
+import { createLiveChanges } from "./live-changes";
 
 /**
  * The app's data layer (`@klndr/data`) wired to this app: the one API client, the signed-in person, the
@@ -24,8 +26,12 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   const userId =
     state.status === "signed-in" ? state.user.uid : state.status === "unavailable" ? DEV_USER.uid : null;
 
+  // Only a signed-in person has other devices to hear from (not the credential-free development user).
+  const signedInUid = state.status === "signed-in" ? state.user.uid : null;
+  const liveChanges = useMemo(() => (signedInUid ? createLiveChanges(signedInUid) : undefined), [signedInUid]);
+
   return (
-    <DataProvider api={api} userId={userId} notify={notify} profile={profileSource ?? undefined}>
+    <DataProvider api={api} userId={userId} notify={notify} syncTabs liveChanges={liveChanges} profile={profileSource ?? undefined}>
       {children}
     </DataProvider>
   );

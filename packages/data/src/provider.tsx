@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, typ
 import { createQueryClient } from "./client";
 import type { Notify } from "./mutations/types";
 import { cacheBuster, CACHE_MAX_AGE_MS } from "./persistence";
+import { syncQueryClientAcrossTabs, type LiveChanges } from "./tab-sync";
 import type { ProfileSource } from "./hooks/profile";
 
 /** The undo history of the day on screen. */
@@ -41,6 +42,16 @@ export type DataProviderProps = PropsWithChildren<{
   profile?: ProfileSource;
   /** Keep the cache on the device with this (see `createKeyValuePersister`). Off by default. */
   persister?: Persister;
+  /**
+   * Keep other open tabs of this person up to date: a change saved here shows in them without a reload
+   * (see `syncQueryClientAcrossTabs`). Web only; off by default.
+   */
+  syncTabs?: boolean;
+  /**
+   * Where to hear about changes made on the person's other devices (see `LiveChanges`); they are
+   * refetched as they happen. Web only; off by default.
+   */
+  liveChanges?: LiveChanges;
   /** Bring your own client, for tests. */
   queryClient?: QueryClient;
 }>;
@@ -49,7 +60,7 @@ export type DataProviderProps = PropsWithChildren<{
  * Gives the screens below it their data: the API, the query cache and the place messages go. Put it inside
  * whatever knows who is signed in, and pass that person's id as `userId`.
  */
-export function DataProvider({ api, userId, notify, profile, persister, queryClient, children }: DataProviderProps) {
+export function DataProvider({ api, userId, notify, profile, persister, syncTabs, liveChanges, queryClient, children }: DataProviderProps) {
   // A new person gets a new cache, never the previous person's.
   const client = useMemo(() => queryClient ?? createQueryClient(), [queryClient, userId]);
   // Drop the previous person's data (and its timers) when the cache is replaced or the provider goes away.
@@ -59,6 +70,12 @@ export function DataProvider({ api, userId, notify, profile, persister, queryCli
     },
     [client, queryClient],
   );
+
+  // The person's other tabs and devices tell this one what changed.
+  useEffect(() => {
+    if ((!syncTabs && !liveChanges) || !userId) return;
+    return syncQueryClientAcrossTabs(client, { channelName: userId, tabs: syncTabs, remote: liveChanges });
+  }, [client, syncTabs, liveChanges, userId]);
 
   // Nobody signed in: nothing of the last person's stays on the device.
   useEffect(() => {

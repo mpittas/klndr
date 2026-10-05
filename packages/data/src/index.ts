@@ -49,6 +49,9 @@ export { dayStats, buildDayChecklist, emptyDayChecklist, type DayStats, type Day
 export { draftFromTemplate, planMove, isTempId, type MoveChanges } from "./blocks";
 export { NotesSaver, NOTES_SAVE_DELAY_MS, type NotesStatus } from "./notes-saver";
 
+// Keeping every open tab and device in step
+export { syncQueryClientAcrossTabs, announceChange, type TabSyncOptions, type LiveChanges } from "./tab-sync";
+
 // Keeping the cache on the device
 export {
   createKeyValuePersister,

@@ -7,6 +7,11 @@ export type ApiClientOptions = {
   baseUrl?: string;
   /** The signed-in user's bearer token (`null` when signed out or in demo mode). */
   getToken?: () => Promise<string | null>;
+  /**
+   * Names this device in every request (`X-Client-Id`), so the server can say who made a change and the
+   * device can ignore its own when it hears about it from the others.
+   */
+  clientId?: string;
 };
 
 export type TaskDraft = {
@@ -75,6 +80,7 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.clientId ? { "X-Client-Id": options.clientId } : {}),
         ...(init.headers ?? {}),
       },
     });

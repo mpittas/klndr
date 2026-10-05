@@ -68,6 +68,8 @@ function decodeDoc(raw: RawDoc): FsDoc {
 export type Write =
   | { op: "create"; path: string; data: Record<string, unknown>; serverTimes?: string[] }
   | { op: "update"; path: string; data: Record<string, unknown>; serverTimes?: string[] }
+  /** Writes the given fields, creating the document when it is not there yet. */
+  | { op: "upsert"; path: string; data: Record<string, unknown>; serverTimes?: string[] }
   /** `mustExist: false` deletes unconditionally, which is what emptying a collection needs. */
   | { op: "delete"; path: string; mustExist?: boolean };
 
@@ -134,7 +136,7 @@ export class Firestore {
     return rows.flatMap((row) => (row.document ? [decodeDoc(row.document)] : []));
   }
 
-  /** Apply writes atomically. Create/update/delete each carry an existence precondition. */
+  /** Apply writes atomically. Create/update/delete each carry an existence precondition; upsert has none. */
   async commit(writes: Write[]): Promise<void> {
     const body = {
       writes: writes.map((write) => {
@@ -148,7 +150,7 @@ export class Firestore {
         const fields = Object.fromEntries(Object.entries(write.data).map(([k, v]) => [k, encode(v)]));
         return {
           update: { name, fields },
-          ...(write.op === "update" ? { updateMask: { fieldPaths: Object.keys(write.data) } } : {}),
+          ...(write.op !== "create" ? { updateMask: { fieldPaths: Object.keys(write.data) } } : {}),
           ...(write.serverTimes?.length
             ? {
                 updateTransforms: write.serverTimes.map((fieldPath) => ({
@@ -157,7 +159,7 @@ export class Firestore {
                 })),
               }
             : {}),
-          currentDocument: { exists: write.op === "update" },
+          ...(write.op === "upsert" ? {} : { currentDocument: { exists: write.op === "update" } }),
         };
       }),
     };
