@@ -221,6 +221,21 @@ describe("categories", () => {
     expect(res.body.category).toMatchObject({ name: "Music", color: "indigo" });
   });
 
+  it("keeps the emoji it is given, and can change it later", async () => {
+    const created = await post("/api/categories", { name: "Music", emoji: "🎸" });
+    expect(created.body.category.emoji).toBe("🎸");
+    const changed = await patch(`/api/categories/${created.body.category.id}`, { emoji: "🎹" });
+    expect(changed.body.category.emoji).toBe("🎹");
+    expect((await get("/api/categories")).body.categories.find((c: { name: string }) => c.name === "Music").emoji).toBe("🎹");
+  });
+
+  it("has no emoji until one is given, and ignores an empty one", async () => {
+    const created = await post("/api/categories", { name: "Music", emoji: "  " });
+    expect(created.body.category).not.toHaveProperty("emoji");
+    const patched = await patch(`/api/categories/${created.body.category.id}`, { color: "rose", emoji: "" });
+    expect(patched.body.category).not.toHaveProperty("emoji");
+  });
+
   it("refuses a name that is taken, whatever its case", async () => {
     const res = await post("/api/categories", { name: "work" });
     expect(res.status).toBe(409);

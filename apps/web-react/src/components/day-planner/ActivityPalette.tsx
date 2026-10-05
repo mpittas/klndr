@@ -9,7 +9,9 @@ import { useCategories, useCategoryColor, useLibraryActions } from "@klndr/data"
 import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Pencil, Plus, Search, SquarePen, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { CategoryMark } from "@/components/category/CategoryMark";
 import { EmojiPicker } from "@/components/EmojiPicker";
+import { useEmojiPicker } from "@/hooks/useEmojiField";
 import { paletteOf } from "@/lib/colors";
 import { useLibrary } from "@/lib/library";
 
@@ -65,7 +67,9 @@ export function ActivityPalette({
   // Quick add: a short form at the bottom of a category, kept open between adds.
   const [adding, setAdding] = useState<string | null>(null);
   const [addName, setAddName] = useState("");
-  const [addEmoji, setAddEmoji] = useState("📌");
+  // `null` is "pick one for me": the name is read when it is added. A hand-picked emoji is for one add.
+  const [addEmoji, setAddEmoji] = useState<string | null>(null);
+  const pickEmoji = useEmojiPicker("activity", templates);
   const [addDuration, setAddDuration] = useState(60);
   // Saves in flight. Several can overlap when names are typed in quick succession.
   const [addPending, setAddPending] = useState(0);
@@ -98,7 +102,7 @@ export function ActivityPalette({
       byCategory.set(template.category, list);
     }
     return withImplicitCategories(categories, templates)
-      .map((entry) => ({ category: entry.name, color: entry.color, items: byCategory.get(entry.name) ?? [] }))
+      .map((entry) => ({ category: entry.name, color: entry.color, emoji: entry.emoji, items: byCategory.get(entry.name) ?? [] }))
       .filter((group) => !query || group.items.length > 0);
   }, [categories, templates, query]);
 
@@ -152,6 +156,7 @@ export function ActivityPalette({
   const startAdd = (category: string) => {
     setAdding(category);
     setAddName("");
+    setAddEmoji(null);
     setAddError(null);
     setCollapsed((current) => current.filter((c) => c !== category));
     requestAnimationFrame(() => {
@@ -173,14 +178,16 @@ export function ActivityPalette({
     }
     setAddPending((n) => n + 1);
     setAddError(null);
+    const chosen = addEmoji;
     // Cleared at once so the next name can be typed while this one saves; put back if saving fails.
     setAddName("");
+    setAddEmoji(null);
     try {
       await saveTemplate({
         id: null,
         draft: {
           name,
-          emoji: addEmoji || "📌",
+          emoji: chosen ?? (await pickEmoji(name)),
           color: colorOf({ category }),
           category,
           defaultDuration: addDuration,
@@ -304,9 +311,7 @@ export function ActivityPalette({
                     ].join(" ")}
                     aria-hidden="true"
                   />
-                  <span
-                    className={["h-2.5 w-2.5 shrink-0 rounded-full shadow-2xs", paletteOf(group.color).dot].join(" ")}
-                  />
+                  <CategoryMark emoji={group.emoji} color={group.color} size="sm" />
                   <span className="truncate font-semibold tracking-tight text-foreground">{group.category}</span>
                 </div>
                 <span className="inline-flex items-center rounded-full border border-border bg-background px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-muted-foreground">
@@ -386,7 +391,13 @@ export function ActivityPalette({
                       }}
                     >
                       <div className="flex h-8 items-center rounded-md border border-input bg-background transition-colors focus-within:ring-1 focus-within:ring-ring">
-                        <EmojiPicker value={addEmoji} onChange={setAddEmoji} />
+                        <EmojiPicker
+                          value={addEmoji}
+                          hint={addEmoji === null ? "Emoji picked for you when you add it. Click to choose your own." : undefined}
+                          autoDescription="Chosen for you when you add it"
+                          onChange={setAddEmoji}
+                          onAuto={() => setAddEmoji(null)}
+                        />
                         <span className="h-4 w-px shrink-0 bg-border" />
                         <input
                           ref={addInput}

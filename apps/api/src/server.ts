@@ -15,7 +15,10 @@ if (!firebaseProjectId && production) {
   process.exit(1);
 }
 
-const app = createApp({ firebaseProjectId, allowDevUser: !production });
+const openaiApiKey = env.OPENAI_API_KEY || undefined;
+if (!openaiApiKey) console.log("OPENAI_API_KEY is not set: new activities and categories get a neutral emoji instead of one picked by AI.");
+
+const app = createApp({ firebaseProjectId, allowDevUser: !production, openaiApiKey, emojiModel: env.EMOJI_MODEL || undefined });
 
 serve({ fetch: app.fetch, port }, ({ port: listening }) => {
   const mode = firebaseProjectId ? `Firebase project ${firebaseProjectId}` : "no Firebase: in-memory data for the local-dev user";

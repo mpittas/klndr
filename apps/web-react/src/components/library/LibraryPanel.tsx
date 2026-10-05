@@ -1,6 +1,7 @@
 import {
   formatDuration,
   nextCategoryColor,
+  normalizeEmojiTitle,
   sortCategoriesByName,
   withImplicitCategories,
   type ActivityTemplate,
@@ -10,8 +11,10 @@ import { useCategories, useCategoryColor, useData, useLibraryActions } from "@kl
 import { Clock, FolderPlus, Palette, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
-import { ActivityForm, type ActivityDraft } from "@/components/activity/ActivityForm";
+import { ActivityForm, type ActivityDraft, type ActivityFormInitial } from "@/components/activity/ActivityForm";
 import { ColorSwatches } from "@/components/category/ColorSwatches";
+import { EmojiPicker } from "@/components/EmojiPicker";
+import { useEmojiField, useEmojiPicker } from "@/hooks/useEmojiField";
 import type { LibraryFocus } from "@/lib/library";
 import { paletteOf } from "@/lib/colors";
 
@@ -90,6 +93,8 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
   const [addError, setAddError] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [justAdded, setJustAdded] = useState<string | null>(null);
+  // Picked when the category is added, unless the person picks one themselves first.
+  const newEmoji = useEmojiField({ kind: "category", initial: null, initialTitle: "", title: newName, known: categories });
   const nameInput = useRef<HTMLInputElement | null>(null);
   const justAddedTimer = useRef<number | null>(null);
 
@@ -102,15 +107,18 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
   // What happens to the activities of a category that is being deleted.
   const [deleteMode, setDeleteMode] = useState<"move" | "delete">("move");
   const [removing, setRemoving] = useState(false);
+  // The category whose emoji is being picked right now (after a rename, or on request).
+  const [emojiBusy, setEmojiBusy] = useState<string | null>(null);
+  const pickCategoryEmoji = useEmojiPicker("category", categories);
 
-  const draftFor = (form: ActivityFormState): ActivityDraft => {
+  const draftFor = (form: ActivityFormState): ActivityFormInitial => {
     if (form.kind === "create") {
-      return { name: "", emoji: "📌", category: form.category, defaultDuration: 60, notes: "" };
+      return { name: "", emoji: null, category: form.category, defaultDuration: 60, notes: "" };
     }
     const t = templates.find((item) => item.id === form.id);
     return {
       name: t?.name ?? "",
-      emoji: t?.emoji ?? "📌",
+      emoji: t?.emoji ?? null,
       category: t?.category ?? GENERAL,
       defaultDuration: t?.defaultDuration ?? 60,
       notes: t?.notes ?? "",
@@ -193,6 +201,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
   const startNewCategory = () => {
     setActivityForm(null);
     setNewColor(nextCategoryColor(categories));
+    newEmoji.reset();
     setNewCategoryOpen(true);
     focusNewCategoryField();
   };
@@ -207,8 +216,11 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
     setAdding(true);
     setAddError(null);
     try {
-      const created = await createCategory({ draft: { name, color: newColor } });
+      // The emoji is picked now, on save, and shows in the form while the category is created.
+      const emoji = await newEmoji.resolve();
+      const created = await createCategory({ draft: { name, color: newColor, emoji } });
       setNewName("");
+      newEmoji.reset();
       setNewCategoryOpen(false);
       setJustAdded(created.id);
       if (justAddedTimer.current !== null) window.clearTimeout(justAddedTimer.current);
@@ -224,7 +236,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
   const setRowError = (key: string, message: string | null) =>
     setRowErrors((current) => ({ ...current, [key]: message }));
 
-  const patchCategory = async (entry: CategoryEntry, patch: { name?: string; color?: string }) => {
+  const patchCategory = async (entry: CategoryEntry, patch: { name?: string; color?: string; emoji?: string }) => {
     if (!entry.id) return;
     setRowError(keyOf(entry), null);
     try {
@@ -253,9 +265,34 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
       clearDraft(key);
       return;
     }
-    // Keep showing the typed name while it saves, so the field doesn't flip back to the old one.
-    await patchCategory(entry, { name });
+    // Keep showing the typed name while it saves, so the field doesn't flip back to the old one. A new
+    // name gets an emoji to match, picked in the same step.
+    setEmojiBusy(key);
+    try {
+      await patchCategory(entry, { name, emoji: await pickCategoryEmoji(name) });
+    } finally {
+      setEmojiBusy(null);
+    }
     clearDraft(key);
+  };
+
+  /** "Pick for me" on a category that is already saved: picks from its name and saves it. */
+  const autoPickEmoji = async (entry: CategoryEntry) => {
+    const key = keyOf(entry);
+    setEmojiBusy(key);
+    try {
+      await patchCategory(entry, { emoji: await pickCategoryEmoji(entry.name) });
+    } finally {
+      setEmojiBusy(null);
+    }
+  };
+
+  /** A rename is typed but not saved yet, so the emoji showing is about to be replaced. */
+  const emojiIsStale = (entry: CategoryEntry) => {
+    const typed = nameDrafts[keyOf(entry)];
+    return (
+      !!entry.emoji && typed !== undefined && !!typed.trim() && normalizeEmojiTitle(typed) !== normalizeEmojiTitle(entry.name)
+    );
   };
 
   const revertName = (entry: CategoryEntry) => clearDraft(keyOf(entry));
@@ -264,7 +301,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
     const key = keyOf(entry);
     setRowError(key, null);
     try {
-      await createCategory({ draft: { name: entry.name, color: entry.color } });
+      await createCategory({ draft: { name: entry.name, color: entry.color, emoji: await pickCategoryEmoji(entry.name) } });
     } catch (err) {
       setRowError(key, err instanceof Error ? err.message : "Could not save");
     }
@@ -394,20 +431,32 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
             New category
           </label>
           <div className="mt-2 flex items-stretch gap-2">
-            <input
-              id="new-category-name"
-              ref={nameInput}
-              value={newName}
-              type="text"
-              maxLength={40}
-              autoComplete="off"
-              placeholder="e.g. Fitness, Side project…"
-              className="h-11 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9"
-              onChange={(event) => {
-                setAddError(null);
-                setNewName(event.target.value);
-              }}
-            />
+            <div className="flex h-11 min-w-0 flex-1 items-center rounded-md border border-input bg-background shadow-xs transition-colors focus-within:ring-1 focus-within:ring-ring sm:h-9">
+              <EmojiPicker
+                value={newEmoji.emoji}
+                stale={newEmoji.stale}
+                busy={newEmoji.pending}
+                hint={newEmoji.hint}
+                autoDescription="Chosen for you when you add it"
+                onChange={newEmoji.choose}
+                onAuto={newEmoji.auto}
+              />
+              <span className="h-5 w-px shrink-0 bg-border" />
+              <input
+                id="new-category-name"
+                ref={nameInput}
+                value={newName}
+                type="text"
+                maxLength={40}
+                autoComplete="off"
+                placeholder="e.g. Fitness, Side project…"
+                className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none"
+                onChange={(event) => {
+                  setAddError(null);
+                  setNewName(event.target.value);
+                }}
+              />
+            </div>
             <button
               type="button"
               className="h-11 shrink-0 cursor-pointer rounded-md px-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground sm:h-9"
@@ -420,7 +469,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
               disabled={adding || !newName.trim()}
               className="h-11 shrink-0 cursor-pointer rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9"
             >
-              Add
+              {adding ? "Adding…" : "Add"}
             </button>
           </div>
           <div className="mt-3">
@@ -503,10 +552,32 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
 
             {/* Category header: color, name, count, actions */}
             <div className="flex items-center gap-1.5 border-b border-border bg-muted/40 py-2 pl-3.5 pr-2">
-              <span
-                className={["h-2 w-2 shrink-0 rounded-full", paletteOf(entry.color).dot].join(" ")}
-                aria-hidden="true"
-              />
+              {entry.id ? (
+                <EmojiPicker
+                  value={entry.emoji ?? null}
+                  stale={emojiIsStale(entry)}
+                  busy={emojiBusy === keyOf(entry)}
+                  label={`Change emoji of ${entry.name}`}
+                  hint={
+                    !entry.emoji
+                      ? "No emoji yet. Click to choose one, or have one picked for you."
+                      : emojiIsStale(entry)
+                        ? "A new emoji will be picked for you when the name is saved. Click to keep this one."
+                        : undefined
+                  }
+                  autoDescription="Chosen from the category's name"
+                  placeholder={
+                    <span className={["h-2 w-2 rounded-full", paletteOf(entry.color).dot].join(" ")} aria-hidden="true" />
+                  }
+                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-base transition-colors hover:bg-background focus-visible:bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring touch:h-9 touch:w-9"
+                  onChange={(emoji) => void patchCategory(entry, { emoji })}
+                  onAuto={() => void autoPickEmoji(entry)}
+                />
+              ) : (
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center" aria-hidden="true">
+                  <span className={["h-2 w-2 rounded-full", paletteOf(entry.color).dot].join(" ")} />
+                </span>
+              )}
 
               {entry.id ? (
                 <input

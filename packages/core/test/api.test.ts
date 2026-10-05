@@ -71,6 +71,17 @@ describe("requests", () => {
     expect(await createApiClient().getChecklistItems()).toEqual([{ id: "i1" }]);
   });
 
+  it("asks for an emoji with the text and what it is for, and passes on a missing one", async () => {
+    const calls = stubFetch({ emoji: "🏋️" });
+    expect(await createApiClient().suggestEmoji("Gym", "activity")).toBe("🏋️");
+    expect(calls[0].url).toBe("/api/emoji");
+    expect(calls[0].init.method).toBe("POST");
+    expect(bodyOf(calls[0])).toEqual({ text: "Gym", kind: "activity" });
+
+    stubFetch({ emoji: null });
+    expect(await createApiClient().suggestEmoji("???", "category")).toBeNull();
+  });
+
   it("posts a draft as JSON", async () => {
     const calls = stubFetch({ task: { id: "t1" } });
     const draft: TaskDraft = {

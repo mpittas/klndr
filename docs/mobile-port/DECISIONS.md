@@ -762,3 +762,47 @@ Control off, or a Vite/rolldown that no longer pulls that binding).
 replaced by a hand-rolled `ui/Tooltip.tsx` during the port rather than kept as a dependency, and nothing was left in
 the tree aliasing or stubbing the deleted app. One implementation, and it is the React one.
 
+## 2026-10-05 — Emoji picked by AI when a form is saved
+
+**Decision: the emoji is chosen when the person saves, never while they type or leave the title field.** A new
+activity, block or category starts with no emoji: the picker shows a dashed sparkle placeholder (not 📌), and the
+button says "Choosing emoji…" for the second or so it takes. `useEmojiField` (web) owns the state; the rule itself
+is the pure `emojiNeedsPicking` in `@klndr/core`, which is tested. One request per save, and none at all when nothing
+needs picking.
+
+**Decision: an emoji the person chose is never replaced; an edit re-picks only when the title changed.** There is no
+stored "was this chosen by hand" flag (it would have meant new fields and new rules on three collections), so an edited
+item's emoji counts as the app's own. When its title changes, the emoji gets a small sparkle badge ("a new one is picked
+when you save, click to keep this one"), and clicking any emoji in the picker keeps that one. Starting a block from a
+library activity counts as a choice and keeps the activity's emoji. The cost: renaming something whose emoji was picked
+by hand, in an earlier session, shows the badge and replaces it unless the person clicks it first.
+
+**Decision: the model call lives in the API (`POST /api/emoji`), and fails soft.** OpenAI's `gpt-5.6-luna` (`EMOJI_MODEL`
+to change it) through the official SDK's Responses API, with `reasoning: { effort: "none" }` (its default is "medium",
+which would add seconds and cost to a one-emoji answer), `max_output_tokens: 32`, `store: false`, no retries and a 4 s
+timeout. The route needs a signed-in user, takes the text and `"activity" | "category"`, and answers `{ emoji: string | null }`;
+no key, an error, a timeout or an answer that isn't exactly one emoji all give `null`, never an error, because saving
+must not depend on it. The client (`useEmojiSuggester` in `@klndr/data`, so mobile can use it) adds a 5 s race, remembers
+answers for the session, and `useEmojiPicker` (web) tries, in order: an emoji the person already uses for that exact name,
+the model's suggestion if the picker's own set contains it (so one too new to draw is never saved), then 📌 / 📁.
+
+**Decision: `gpt-5.6-luna`, chosen on price, lifetime and the owner's existing key, not on a quality test.** The first
+version used Claude Haiku 4.5 because it was the Anthropic API's cheapest model, picked without comparing providers. A
+comparison on 2026-10-05 (prices from each provider's pages, per 1M input/output tokens): Ministral 3 3B 0.10/0.10, Ministral
+3 8B 0.15/0.15, gpt-5.6-luna 0.20/1.20, Gemini 3.5 Flash-Lite 0.30/2.50, Claude Haiku 4.5 1.00/5.00. A save costs about 190
+input and 4 output tokens, so even Haiku is about 20¢ per 1,000 saves and the spread between the others is cents: price was
+never the deciding factor. The cheaper OpenAI nanos were out because they are being retired (`gpt-4.1-nano` Oct 23, 2026;
+`gpt-5-nano` Dec 11, 2026), and `gemini-2.5-flash-lite` because Google restricts it to legacy users. Model quality for this
+task was *not* measured: if titles come back badly, `EMOJI_MODEL` changes the model without touching code, and `emoji:check`
+shows the answers. Vercel's AI Gateway (no markup, one key, models as strings) was considered as a way to survive the
+6–12 month model churn and was not adopted, because the owner already has an OpenAI key.
+
+**Considered and dropped: a keyword search of the emoji names as the offline fallback.** It matched "work" to 💦 and
+"shopping" to 👕, and nothing for "groceries"; a wrong emoji stated with confidence is worse than a neutral one.
+
+**Decision: categories get an optional `emoji`.** They had none. It is optional so every existing category stays valid
+(it shows its color dot until it gets one, on the next rename or from "Pick for me"), and `firestore.rules` allows it
+(see HUMAN_TODO.md: deploy the rules first). Shown in the sidebar group header, the library, and the category select.
+
+**Not done:** the checklist's habits (they walk a fixed list of emoji, and weren't asked for); no rate limit on
+`/api/emoji` beyond needing a session (an in-memory limit means little on serverless — use Vercel's if abuse shows up).

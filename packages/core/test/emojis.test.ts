@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  FALLBACK_EMOJI,
   RECENT_EMOJIS_KEY,
   RECENT_EMOJIS_MAX,
   buildEmojiGroups,
+  buildEmojiRows,
+  emojiNeedsPicking,
+  isEmojiKind,
+  moveEmojiCursor,
+  normalizeEmojiTitle,
   readRecentEmojis,
   rememberEmoji,
   searchEmojis,
@@ -124,5 +130,86 @@ describe("recent emojis", () => {
 
   it("doesn't throw when the storage does", () => {
     expect(() => rememberEmoji(broken, "😀")).not.toThrow();
+  });
+});
+
+describe("the picker's row model", () => {
+  const entry = (char: string) => ({ char, label: char, tags: [] });
+  const sections = [
+    { id: "a", label: "A", emojis: ["1", "2", "3", "4", "5"].map(entry) },
+    { id: "b", label: "B", emojis: ["6", "7"].map(entry) },
+    { id: "empty", label: "Empty", emojis: [] },
+  ];
+
+  it("lays sections out as titled rows of at most `columns` emojis", () => {
+    const { rows, cells } = buildEmojiRows(sections, 3);
+    expect(cells.map((c) => c.char)).toEqual(["1", "2", "3", "4", "5", "6", "7"]);
+    expect(rows).toEqual([
+      { kind: "header", id: "a", label: "A" },
+      { kind: "emojis", start: 0, count: 3 },
+      { kind: "emojis", start: 3, count: 2 },
+      { kind: "header", id: "b", label: "B" },
+      { kind: "emojis", start: 5, count: 2 },
+    ]);
+  });
+
+  it("can leave the titles out (search results)", () => {
+    const { rows } = buildEmojiRows(sections, 3, false);
+    expect(rows.every((row) => row.kind === "emojis")).toBe(true);
+  });
+
+  it("moves the cursor with the arrow keys, across titles and onto shorter rows", () => {
+    const { rows, cells } = buildEmojiRows(sections, 3);
+    const total = cells.length;
+    expect(moveEmojiCursor(rows, total, -1, "down")).toBe(0);
+    expect(moveEmojiCursor(rows, total, 0, "left")).toBe(0);
+    expect(moveEmojiCursor(rows, total, 6, "right")).toBe(6);
+    expect(moveEmojiCursor(rows, total, 2, "right")).toBe(3);
+    expect(moveEmojiCursor(rows, total, 2, "down")).toBe(4); // the next row has two emojis, so the column clamps
+    expect(moveEmojiCursor(rows, total, 4, "down")).toBe(6); // skips the "B" title; column 1 stays
+    expect(moveEmojiCursor(rows, total, 6, "up")).toBe(4);
+    expect(moveEmojiCursor(rows, total, 0, "up")).toBe(0);
+    expect(moveEmojiCursor(rows, 0, 0, "down")).toBe(-1);
+  });
+});
+
+describe("emoji picked for a title", () => {
+  const state = (over: Partial<Parameters<typeof emojiNeedsPicking>[0]> = {}) => ({
+    emoji: null as string | null,
+    pickedFor: "",
+    byHand: false,
+    title: "Gym",
+    ...over,
+  });
+
+  it("compares titles without minding case or spacing", () => {
+    expect(normalizeEmojiTitle("  Deep   Work ")).toBe("deep work");
+  });
+
+  it("picks one for a new item that has none", () => {
+    expect(emojiNeedsPicking(state())).toBe(true);
+  });
+
+  it("has nothing to pick for until there is a title", () => {
+    expect(emojiNeedsPicking(state({ title: "   " }))).toBe(false);
+  });
+
+  it("keeps an emoji whose title hasn't changed", () => {
+    expect(emojiNeedsPicking(state({ emoji: "🏋️", pickedFor: "Gym", title: "gym " }))).toBe(false);
+  });
+
+  it("picks again when the title it was picked for has changed", () => {
+    expect(emojiNeedsPicking(state({ emoji: "🏋️", pickedFor: "Gym", title: "Reading" }))).toBe(true);
+  });
+
+  it("never replaces an emoji chosen by hand, whatever the title says", () => {
+    expect(emojiNeedsPicking(state({ emoji: "🔥", pickedFor: "Gym", byHand: true, title: "Reading" }))).toBe(false);
+  });
+
+  it("knows the two things an emoji is picked for, each with a fallback", () => {
+    expect(isEmojiKind("activity")).toBe(true);
+    expect(isEmojiKind("category")).toBe(true);
+    expect(isEmojiKind("habit")).toBe(false);
+    expect(Object.keys(FALLBACK_EMOJI).sort()).toEqual(["activity", "category"]);
   });
 });

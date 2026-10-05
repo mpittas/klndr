@@ -41,7 +41,7 @@ describe("parseTailwindColors", () => {
 describe("parsePaletteClasses", () => {
   it("reads every colour and role out of the web app's own file", () => {
     const classes = parsePaletteClasses(paletteSource());
-    expect(Object.keys(classes)).toHaveLength(12);
+    expect(Object.keys(classes)).toHaveLength(16);
     for (const [color, roles] of Object.entries(classes)) {
       expect(Object.keys(roles).sort(), color).toEqual([...PALETTE_ROLES].sort());
       for (const role of PALETTE_ROLES) expect(roles[role], `${color}.${role}`).toBeTruthy();

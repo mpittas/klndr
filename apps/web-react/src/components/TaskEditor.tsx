@@ -15,6 +15,7 @@ import { useState } from "react";
 import { CategorySelect } from "@/components/category/CategorySelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { Modal } from "@/components/Modal";
+import { useEmojiField } from "@/hooks/useEmojiField";
 
 /** What the editor was opened for. */
 export type EditorRequest = {
@@ -43,7 +44,6 @@ const CONTROL_CLASS =
 
 type Draft = {
   title: string;
-  emoji: string;
   category: string;
   day: string;
   start: string;
@@ -59,7 +59,6 @@ function draftFrom(request: EditorRequest): Draft {
     const task = request.task;
     return {
       title: task.title,
-      emoji: task.emoji,
       category: task.category,
       day: task.day,
       start: timeInputValue(task.startMinutes),
@@ -72,7 +71,6 @@ function draftFrom(request: EditorRequest): Draft {
   const template = request.template ?? null;
   return {
     title: template?.name ?? "",
-    emoji: template?.emoji ?? "📌",
     category: template?.category ?? GENERAL,
     day: request.day,
     start: timeInputValue(request.startMinutes),
@@ -117,6 +115,17 @@ function TaskEditorDialog({
   const colorOf = useCategoryColor();
 
   const [draft, setDraft] = useState(() => draftFrom(request));
+  // A new block has no emoji yet: it is picked when the form is saved. One started from an activity has that
+  // activity's, and an edited one keeps its own unless its title changes (see `useEmojiField`).
+  const start = request.mode === "edit" ? request.task : null;
+  const emoji = useEmojiField({
+    kind: "activity",
+    initial: start ? start.emoji : (request.template?.emoji ?? null),
+    initialTitle: start ? start.title : (request.template?.name ?? ""),
+    initialByHand: !start && !!request.template,
+    title: draft.title,
+    known: templates,
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmingTemplateDelete, setConfirmingTemplateDelete] = useState(false);
@@ -140,11 +149,11 @@ function TaskEditorDialog({
       patch({ templateId: id });
       return;
     }
+    emoji.choose(template.emoji);
     setDraft((current) => ({
       ...current,
       templateId: id,
       title: template.name,
-      emoji: template.emoji,
       category: template.category,
       duration: template.defaultDuration,
       notes: current.notes || (template.notes ?? ""),
@@ -171,19 +180,25 @@ function TaskEditorDialog({
       setError("Give this block a name.");
       return;
     }
-    const payload: TaskDraft = {
-      title: draft.title.trim(),
-      emoji: draft.emoji,
-      color,
-      category,
-      day: draft.day,
-      startMinutes: fromTimeInput(draft.start),
-      durationMinutes: draft.duration,
-      notes: draft.notes.trim() || null,
-      completed: draft.completed,
-      templateId: draft.templateId,
-    };
-    void attempt(() => onSave({ id: request.task?.id ?? null, payload }), "Something went wrong");
+    if (busy) return;
+    const snapshot = draft;
+    void attempt(async () => {
+      // Picked now, on save, and shown in the form while the block is being saved.
+      const picked = await emoji.resolve();
+      const payload: TaskDraft = {
+        title: snapshot.title.trim(),
+        emoji: picked,
+        color,
+        category,
+        day: snapshot.day,
+        startMinutes: fromTimeInput(snapshot.start),
+        durationMinutes: snapshot.duration,
+        notes: snapshot.notes.trim() || null,
+        completed: snapshot.completed,
+        templateId: snapshot.templateId,
+      };
+      return onSave({ id: request.task?.id ?? null, payload });
+    }, "Something went wrong");
   };
 
   const removeBlock = () => {
@@ -261,7 +276,7 @@ function TaskEditorDialog({
               disabled={busy}
               className="inline-flex h-11 flex-[1.6] cursor-pointer items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 disabled:opacity-50 sm:h-9 sm:flex-none sm:text-xs"
             >
-              {busy ? "Saving…" : isEdit ? "Save changes" : "Add to schedule"}
+              {emoji.pending ? "Choosing emoji…" : busy ? "Saving…" : isEdit ? "Save changes" : "Add to schedule"}
             </button>
           </div>
         </div>
@@ -322,7 +337,14 @@ function TaskEditorDialog({
             Activity Name
           </label>
           <div className="mt-1.5 flex h-11 w-full items-center rounded-md border border-input bg-background shadow-xs transition-colors focus-within:ring-1 focus-within:ring-ring sm:h-10">
-            <EmojiPicker value={draft.emoji} onChange={(emoji) => patch({ emoji })} />
+            <EmojiPicker
+              value={emoji.emoji}
+              stale={emoji.stale}
+              busy={emoji.pending}
+              hint={emoji.hint}
+              onChange={emoji.choose}
+              onAuto={emoji.auto}
+            />
             <span className="h-5 w-px shrink-0 bg-border" />
             <input
               id="task-title"

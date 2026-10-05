@@ -10,7 +10,7 @@ const COLORS = Object.keys(PALETTE) as (keyof typeof PALETTE)[];
 describe("the palette", () => {
   it("covers every colour the app can store, and only those", () => {
     expect(Object.keys(PALETTE).sort()).toEqual([...ACCEPTED_COLOR_KEYS].sort());
-    expect(Object.keys(PALETTE)).toHaveLength(12);
+    expect(Object.keys(PALETTE)).toHaveLength(16);
     for (const key of COLOR_KEYS) expect(PALETTE[key]).toBeDefined();
   });
 

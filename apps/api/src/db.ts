@@ -504,6 +504,7 @@ const toCategory = ({ id, data }: FsDoc): Category => ({
   id,
   name: String(data.name ?? ""),
   color: String(data.color ?? "slate"),
+  ...(typeof data.emoji === "string" && data.emoji ? { emoji: data.emoji } : {}),
 });
 
 const toChecklistItem = ({ id, data }: FsDoc): ChecklistItem => ({

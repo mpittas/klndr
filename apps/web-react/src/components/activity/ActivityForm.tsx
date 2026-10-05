@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { CategorySelect } from "@/components/category/CategorySelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
+import { useEmojiField } from "@/hooks/useEmojiField";
 
 /** The fields the activity form edits; the color is the category's. */
 export type ActivityDraft = {
@@ -13,12 +14,17 @@ export type ActivityDraft = {
   notes: string;
 };
 
+/** What the form starts from: `emoji` is `null` for a new activity, which gets one when it is saved. */
+export type ActivityFormInitial = Omit<ActivityDraft, "emoji"> & { emoji: string | null };
+
 /**
  * The name-and-emoji field, the category picker, the default length and the notes, plus the
  * cancel/submit pair pinned to the bottom on a phone.
  *
  * `initial` seeds the form once. To start over on something else, the parent remounts it with a new
  * `key` when the thing being edited changes.
+ *
+ * The emoji is picked when the form is submitted (see `useEmojiField`), so `onSubmit` always gets one.
  */
 export function ActivityForm({
   initial,
@@ -29,7 +35,7 @@ export function ActivityForm({
   onSubmit,
   onCancel,
 }: {
-  initial: ActivityDraft;
+  initial: ActivityFormInitial;
   templates: ActivityTemplate[];
   submitLabel: string;
   busy?: boolean;
@@ -37,7 +43,17 @@ export function ActivityForm({
   onSubmit: (draft: ActivityDraft) => void;
   onCancel: () => void;
 }) {
-  const [draft, setDraft] = useState<ActivityDraft>({ ...initial });
+  const [draft, setDraft] = useState<Omit<ActivityDraft, "emoji">>(() => {
+    const { emoji: _emoji, ...rest } = initial;
+    return rest;
+  });
+  const emoji = useEmojiField({
+    kind: "activity",
+    initial: initial.emoji,
+    initialTitle: initial.name,
+    title: draft.name,
+    known: templates,
+  });
   const [nameError, setNameError] = useState(false);
   const nameRef = useRef<HTMLInputElement | null>(null);
 
@@ -46,13 +62,15 @@ export function ActivityForm({
     nameRef.current?.focus();
   }, []);
 
-  const submit = () => {
+  const submit = async () => {
+    if (emoji.pending) return;
     if (!draft.name.trim()) {
       setNameError(true);
       nameRef.current?.focus();
       return;
     }
-    onSubmit({ ...draft });
+    const snapshot = draft;
+    onSubmit({ ...snapshot, emoji: await emoji.resolve() });
   };
 
   return (
@@ -60,7 +78,7 @@ export function ActivityForm({
       className="space-y-3"
       onSubmit={(event) => {
         event.preventDefault();
-        submit();
+        void submit();
       }}
       onKeyDown={(event) => {
         if (event.key !== "Escape") return;
@@ -80,7 +98,14 @@ export function ActivityForm({
             nameError ? "border-destructive" : "border-input",
           ].join(" ")}
         >
-          <EmojiPicker value={draft.emoji} onChange={(emoji) => setDraft((d) => ({ ...d, emoji }))} />
+          <EmojiPicker
+            value={emoji.emoji}
+            stale={emoji.stale}
+            busy={emoji.pending}
+            hint={emoji.hint}
+            onChange={emoji.choose}
+            onAuto={emoji.auto}
+          />
           <span className="h-5 w-px shrink-0 bg-border" />
           <input
             id="activity-name"
@@ -177,10 +202,10 @@ export function ActivityForm({
         </button>
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || emoji.pending}
           className="inline-flex h-11 flex-[1.6] cursor-pointer items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:flex-none"
         >
-          {busy ? "Saving…" : submitLabel}
+          {emoji.pending ? "Choosing emoji…" : busy ? "Saving…" : submitLabel}
         </button>
       </div>
     </form>

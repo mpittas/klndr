@@ -34,6 +34,7 @@ export { useTimelineHistory } from "./hooks/history";
 export { useChecklist } from "./hooks/checklist";
 export { useNotesEditor } from "./hooks/notes";
 export { useLibraryActions } from "./hooks/library";
+export { useEmojiSuggester, EMOJI_TIMEOUT_MS } from "./hooks/emoji";
 export { useProfile, useUpdateProfile, type ProfileSource } from "./hooks/profile";
 
 // Pure helpers the views share

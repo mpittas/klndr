@@ -19,6 +19,8 @@ type DataContextValue = {
    * editor opened over it) records into, and undoes from, the same one. It starts afresh for a new person.
    */
   histories: HistoryHolder;
+  /** The emoji already suggested this session, by title (see `useEmojiSuggester`). Starts empty for a new person. */
+  emojiCache: Map<string, string>;
 };
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -69,9 +71,10 @@ export function DataProvider({ api, userId, notify, profile, persister, queryCli
   const stableNotify = useCallback<Notify>((message) => latestNotify.current?.(message), []);
 
   const histories = useMemo<HistoryHolder>(() => ({ current: null }), [client]);
+  const emojiCache = useMemo(() => new Map<string, string>(), [client]);
   const value = useMemo<DataContextValue>(
-    () => ({ api, notify: stableNotify, profile: profile ?? null, histories }),
-    [api, stableNotify, profile, histories],
+    () => ({ api, notify: stableNotify, profile: profile ?? null, histories, emojiCache }),
+    [api, stableNotify, profile, histories, emojiCache],
   );
   const tree = <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 

@@ -14,6 +14,8 @@ export type Category = {
   id: string;
   name: string;
   color: string;
+  /** Picked for the category's name (by the app, or by hand). Absent on categories made before there were any. */
+  emoji?: string;
 };
 
 export type ScheduledTask = {

@@ -84,8 +84,9 @@ describe("nextCategoryColor", () => {
   });
 
   it("counts a dropped colour as the one that replaced it", () => {
-    // sky is shown as indigo, so indigo counts as taken
-    expect(nextCategoryColor([{ color: "sky" }, { color: "emerald" }])).toBe(COLOR_KEYS[2]);
+    // sky is shown as cyan, so cyan counts as taken
+    const used = ["indigo", "orange", "emerald", "pink", "sky"].map((color) => ({ color }));
+    expect(nextCategoryColor(used)).toBe("yellow");
   });
 
   it("cycles through the palette once every colour is used", () => {

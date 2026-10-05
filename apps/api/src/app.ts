@@ -5,11 +5,13 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { JWTVerifyGetKey } from "jose";
 import { firebaseKeys, requireSession } from "./auth";
 import { createStoreFactory } from "./db";
+import { createEmojiSuggester, type EmojiSuggester } from "./emoji";
 import type { Env } from "./env";
 import { errorBody, HttpError } from "./errors";
 import { account } from "./routes/account";
 import { categories } from "./routes/categories";
 import { checklist } from "./routes/checklist";
+import { emoji } from "./routes/emoji";
 import { notes } from "./routes/notes";
 import { tasks } from "./routes/tasks";
 import { templates } from "./routes/templates";
@@ -24,6 +26,12 @@ export type ApiConfig = {
   keys?: JWTVerifyGetKey;
   /** Where each caller's data lives. Defaults to Firestore (or memory for the dev user). */
   storeFor?: (session: Session) => Store;
+  /** Picks an emoji for a title. Defaults to OpenAI when `openaiApiKey` is set, and to none otherwise. */
+  suggestEmoji?: EmojiSuggester;
+  /** Key for the OpenAI API, which `suggestEmoji` uses. Without one the app falls back to a neutral emoji. */
+  openaiApiKey?: string;
+  /** The OpenAI model that picks emoji. Defaults to a small, cheap one. */
+  emojiModel?: string;
 };
 
 /**
@@ -37,6 +45,9 @@ export type ApiConfig = {
 export function createApp(config: ApiConfig) {
   const keys = config.keys ?? firebaseKeys();
   const storeFor = config.storeFor ?? createStoreFactory(config.firebaseProjectId);
+  const suggestEmoji =
+    config.suggestEmoji ??
+    (config.openaiApiKey ? createEmojiSuggester({ apiKey: config.openaiApiKey, model: config.emojiModel }) : null);
 
   const app = new Hono<Env>();
 
@@ -58,11 +69,13 @@ export function createApp(config: ApiConfig) {
     });
     c.set("session", session);
     c.set("store", storeFor(session));
+    c.set("suggestEmoji", suggestEmoji);
     await next();
   });
   api.route("/tasks", tasks);
   api.route("/templates", templates);
   api.route("/categories", categories);
+  api.route("/emoji", emoji);
   api.route("/checklist", checklist);
   api.route("/notes", notes);
   api.route("/account", account);

@@ -5,7 +5,8 @@ import { useState } from "react";
 
 import { ChecklistHeader } from "@/components/daily-checklist/ChecklistHeader";
 import { ChecklistItemRow } from "@/components/daily-checklist/ChecklistItemRow";
-import { ChecklistQuickAdd, HABIT_EMOJIS } from "@/components/daily-checklist/ChecklistQuickAdd";
+import { ChecklistQuickAdd } from "@/components/daily-checklist/ChecklistQuickAdd";
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { Modal } from "@/components/Modal";
 import { useToast } from "@/toast";
 
@@ -212,27 +213,15 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
             void saveEdit();
           }}
         >
-          <div role="group" aria-labelledby="checklist-edit-emoji">
-            <span id="checklist-edit-emoji" className="block text-xs font-medium text-foreground">
-              Emoji
-            </span>
-            <div className="mt-1.5 flex flex-wrap gap-1.5 touch:gap-2">
-              {HABIT_EMOJIS.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={editEmoji === option}
-                  onClick={() => setEditEmoji(option)}
-                  className={[
-                    "flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border text-base transition touch:h-11 touch:w-11 touch:text-xl",
-                    editEmoji === option
-                      ? "border-primary bg-primary text-primary-foreground shadow-xs"
-                      : "border-input bg-background hover:bg-accent",
-                  ].join(" ")}
-                >
-                  {option}
-                </button>
-              ))}
+          <div>
+            <span className="block text-xs font-medium text-foreground">Emoji</span>
+            <div className="mt-1.5">
+              <EmojiPicker
+                value={editEmoji}
+                onChange={setEditEmoji}
+                label="Change emoji"
+                className="flex h-11 w-14 cursor-pointer items-center justify-center rounded-md border border-input bg-background text-2xl shadow-xs transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9 sm:w-12 sm:text-xl"
+              />
             </div>
           </div>
 

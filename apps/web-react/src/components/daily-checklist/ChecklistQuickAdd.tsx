@@ -1,8 +1,10 @@
 import { useState } from "react";
 
+import { EmojiPicker } from "@/components/EmojiPicker";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/Tooltip";
 
-export const HABIT_EMOJIS = [
+/** The emojis a new habit is given in turn, so adding several in a row needs no picking. */
+const HABIT_EMOJIS = [
   "💊", "🥤", "🚿", "💧", "🧘", "🏋️", "🏃", "🥗", "🍳",
   "📚", "🧹", "☀️", "🌙", "🦷", "🛌", "🚶", "☕", "✨",
 ];
@@ -22,7 +24,6 @@ export function ChecklistQuickAdd({
 }) {
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("💊");
-  const [pickerOpen, setPickerOpen] = useState(false);
   // The default list applies to every day; a one-off only to the day being viewed.
   const [everyDay, setEveryDay] = useState(true);
 
@@ -31,10 +32,8 @@ export function ChecklistQuickAdd({
     if (!trimmed) return;
     onSubmit({ title: trimmed, emoji, scope: everyDay ? "default" : "day" });
     setTitle("");
-    // Walk down the emoji list, so adding several habits in a row needs no tapping.
     const currentIndex = HABIT_EMOJIS.indexOf(emoji);
     if (currentIndex >= 0 && currentIndex < HABIT_EMOJIS.length - 1) setEmoji(HABIT_EMOJIS[currentIndex + 1]);
-    setPickerOpen(false);
   };
 
   return (
@@ -46,42 +45,12 @@ export function ChecklistQuickAdd({
           submit();
         }}
       >
-        <div className="relative shrink-0">
-          <button
-            type="button"
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-base transition-colors hover:bg-accent touch:h-11 touch:w-11 touch:text-lg"
-            title="Pick emoji"
-            aria-label="Pick emoji"
-            aria-expanded={pickerOpen}
-            onClick={() => setPickerOpen((open) => !open)}
-          >
-            {emoji}
-          </button>
-
-          {pickerOpen && (
-            <>
-              <div className="fixed inset-0 z-30" onClick={() => setPickerOpen(false)} />
-              <div className="absolute bottom-full left-0 z-40 mb-2 grid w-52 grid-cols-6 gap-1 rounded-xl border border-border bg-popover p-2 shadow-lg touch:w-72">
-                {HABIT_EMOJIS.map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    className={[
-                      "flex h-8 w-full cursor-pointer items-center justify-center rounded-md text-base transition-colors hover:bg-accent touch:h-11 touch:text-xl",
-                      emoji === option ? "bg-accent" : "",
-                    ].join(" ")}
-                    onClick={() => {
-                      setEmoji(option);
-                      setPickerOpen(false);
-                    }}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+        <EmojiPicker
+          value={emoji}
+          onChange={setEmoji}
+          label="Pick emoji"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-base transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none touch:h-11 touch:w-11 touch:text-lg"
+        />
 
         <input
           value={title}

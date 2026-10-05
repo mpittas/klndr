@@ -1,4 +1,4 @@
-import { cleanColor, cleanText, isColorKey, MAX_CATEGORY, type Category } from "@klndr/core";
+import { cleanColor, cleanText, isColorKey, MAX_CATEGORY, MAX_EMOJI, type Category } from "@klndr/core";
 import { Hono } from "hono";
 import type { Env } from "../env";
 import { HttpError } from "../errors";
@@ -13,7 +13,8 @@ categories.post("/", async (c) => {
   const name = cleanText(body.name, MAX_CATEGORY);
   if (!name) throw new HttpError(400, "Name is required");
 
-  const category = await c.get("store").createCategory({ name, color: cleanColor(body.color) });
+  const emoji = cleanText(body.emoji, MAX_EMOJI);
+  const category = await c.get("store").createCategory({ name, color: cleanColor(body.color), ...(emoji ? { emoji } : {}) });
   return c.json({ category }, 201);
 });
 
@@ -28,6 +29,8 @@ categories.patch("/:id", async (c) => {
     patch.name = name;
   }
   if (isColorKey(body.color)) patch.color = body.color;
+  const emoji = cleanText(body.emoji, MAX_EMOJI);
+  if (emoji) patch.emoji = emoji;
 
   const category = await c.get("store").updateCategory(id, patch);
   if (!category) throw new HttpError(404, "Not found");

@@ -9,8 +9,9 @@ import { Check, ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 
+import { CategoryMark } from "@/components/category/CategoryMark";
+import { useEmojiPicker } from "@/hooks/useEmojiField";
 import { useKeyboardInset, useMediaQuery } from "@/hooks/useViewport";
-import { paletteOf } from "@/lib/colors";
 import { useLibrary } from "@/lib/library";
 
 const PANEL_MAX_HEIGHT = 340;
@@ -37,6 +38,7 @@ export function CategorySelect({
   const categoriesQuery = useCategories();
   const { createCategory } = useLibraryActions();
   const { show: showLibrary } = useLibrary();
+  const pickEmoji = useEmojiPicker("category", categoriesQuery.data);
 
   const [open, setOpen] = useState(false);
   const isSheet = useMediaQuery(SHEET_QUERY);
@@ -138,7 +140,10 @@ export function CategorySelect({
     setBusy(true);
     setNewError(null);
     try {
-      const created = await createCategory({ draft: { name, color: nextCategoryColor(categories) } });
+      // The emoji is picked now, from the name, as the category is added.
+      const created = await createCategory({
+        draft: { name, color: nextCategoryColor(categories), emoji: await pickEmoji(name) },
+      });
       choose(created.name);
     } catch (err) {
       setNewError(err instanceof Error ? err.message : "Could not add category");
@@ -175,7 +180,9 @@ export function CategorySelect({
         className="flex h-11 w-full cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-2.5 text-left text-sm shadow-xs transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9 sm:px-2"
         onClick={() => (open ? hide() : show())}
       >
-        <span className={["h-2.5 w-2.5 shrink-0 rounded-full", paletteOf(selected?.color ?? "slate").dot].join(" ")} />
+        <span className="flex w-5 shrink-0 items-center justify-center" aria-hidden="true">
+          <CategoryMark emoji={selected?.emoji} color={selected?.color ?? "slate"} size="sm" />
+        </span>
         <span className="min-w-0 flex-1 truncate text-foreground">{value || "Choose a category"}</span>
         <ChevronDown
           className={["h-4 w-4 shrink-0 text-muted-foreground transition-transform", open ? "rotate-180" : ""].join(" ")}
@@ -234,8 +241,8 @@ export function CategorySelect({
                         className="flex w-full cursor-pointer items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm transition hover:bg-accent focus-visible:bg-accent focus-visible:outline-none touch:min-h-12 touch:px-3"
                         onClick={() => choose(entry.name)}
                       >
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center">
-                          <span className={["h-2.5 w-2.5 rounded-full", paletteOf(entry.color).dot].join(" ")} />
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center" aria-hidden="true">
+                          <CategoryMark emoji={entry.emoji} color={entry.color} size="md" />
                         </span>
                         <span className="min-w-0 flex-1 truncate font-medium text-foreground">{entry.name}</span>
                         {isCurrent(entry.name) ? (
@@ -278,7 +285,7 @@ export function CategorySelect({
                           disabled={busy || !newName.trim()}
                           className="h-10 shrink-0 cursor-pointer rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:px-3 sm:text-xs"
                         >
-                          Add
+                          {busy ? "Adding…" : "Add"}
                         </button>
                       </div>
                       {newError ? (

@@ -1,3 +1,4 @@
+import type { EmojiKind } from "./emojis";
 import type { ActivityTemplate, Category, ChecklistItem, DayChecklist, DayNotes, ScheduledTask } from "./types";
 
 /** Where the API lives and how to prove who is calling. Both are optional. */
@@ -54,6 +55,11 @@ export type ApiClient = {
   removeDayChecklistExtra(day: string, id: string): Promise<DayChecklist>;
   getDayNotes(day: string): Promise<DayNotes>;
   saveDayNotes(day: string, text: string): Promise<DayNotes>;
+  /**
+   * An emoji that suits `text` (an activity's or a category's name), or `null` when the server has none to
+   * offer (not set up, too slow, or an answer it can't use). Never a reason to stop what the person is doing.
+   */
+  suggestEmoji(text: string, kind: EmojiKind): Promise<string | null>;
   /** Delete every document the caller owns: the data half of deleting an account. */
   deleteAccount(): Promise<void>;
 };
@@ -233,6 +239,13 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
         body: JSON.stringify({ day, text }),
       });
       return data.dayNotes;
+    },
+    async suggestEmoji(text: string, kind: EmojiKind): Promise<string | null> {
+      const data = await request<{ emoji: string | null }>("/api/emoji", {
+        method: "POST",
+        body: JSON.stringify({ text, kind }),
+      });
+      return data.emoji;
     },
     async deleteAccount(): Promise<void> {
       await request<{ ok: true }>("/api/account", { method: "DELETE" });

@@ -13,6 +13,22 @@ Things only the owner can do, grouped by what each item unblocks. Exact steps gi
       `/day/<date>`). The site it replaces was served from `apps/web/.output/public`; the exact
       deploy steps are under Phase R below. Nothing changes until you run them.
 
+## Emoji picked by AI (2026-10-05)
+- [ ] Deploy `firestore.rules` (`firebase deploy --only firestore:rules`) **before or with** the release that has this
+      feature. Categories gained an optional `emoji` field, and until the rules allow it, creating or renaming a category
+      is refused (403 "Not allowed") because the app now sends one. The same file also carries the pending color-key change.
+- [ ] Set `OPENAI_API_KEY` on the Vercel project (Settings → Environment Variables, Production and Preview), and the same
+      variable on the `klndr-api` Cloud Run service if that is still deployed. Without it nothing breaks: the API answers
+      `{ "emoji": null }` and the app falls back to 📌 for an activity and 📁 for a category. Optional: `EMOJI_MODEL`
+      (default `gpt-5.6-luna`). The key stays on the server; the browser never sees it. Env vars only reach a new deployment,
+      so redeploy after setting it.
+- [ ] Locally: put the key in `apps/api/.env`, run `npm run emoji:check -w apps/api` (asks the model for a few emoji and
+      says why if it can't), then restart `npm run dev:api` (it does not re-read `.env` on its own).
+- [ ] Try it once with the key set: add an activity named "Gym session" and a category named "Groceries". The forms were
+      exercised in a browser with the API's answer stubbed, and the route and the request to OpenAI's API are covered by
+      tests against a fake `fetch`, but no real model call has been made from this repository yet. `emoji:check` is the
+      first thing that makes one: if it reports a 400, the message names the parameter OpenAI rejected.
+
 ## Environment (Windows) — Smart App Control
 - [ ] Decide how to handle Smart App Control, which blocks the Windows binary in
       `@oxc-parser/binding-win32-x64-msvc@0.143.0` — the exact version `nuxt@3.21.11` pins.

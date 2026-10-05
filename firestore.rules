@@ -56,7 +56,8 @@ service cloud.firestore {
 
     function isColor(v) {
       return v in ['indigo', 'emerald', 'amber', 'rose', 'sky', 'violet',
-                   'teal', 'orange', 'pink', 'lime', 'cyan', 'slate'];
+                   'teal', 'orange', 'pink', 'lime', 'cyan', 'red', 'yellow',
+                   'purple', 'fuchsia', 'slate'];
     }
 
     // Fields a client may change after creation.
@@ -132,10 +133,11 @@ service cloud.firestore {
 
       // ---------- categories ----------
       function validCategory(d) {
-        return d.keys().hasOnly(['name', 'color', 'createdAt'])
+        return d.keys().hasOnly(['name', 'color', 'emoji', 'createdAt'])
           && d.keys().hasAll(['name', 'color', 'createdAt'])
           && str(d.name, 1, 40)
-          && isColor(d.color);
+          && isColor(d.color)
+          && optStr(d.get('emoji', null), 32);
       }
 
       match /categories/{categoryId} {

@@ -6,11 +6,12 @@ describe("canonicalColor", () => {
     for (const key of COLOR_KEYS) expect(canonicalColor(key)).toBe(key);
   });
 
-  it("shows a dropped colour as the option that replaced it", () => {
-    expect(canonicalColor("sky")).toBe("indigo"); // sky and cyan were a second blue
-    expect(canonicalColor("cyan")).toBe("indigo");
-    expect(canonicalColor("teal")).toBe("emerald"); // teal and lime were a second green
-    expect(canonicalColor("lime")).toBe("emerald");
+  it("shows a dropped colour as the nearest option that is still offered", () => {
+    expect(canonicalColor("amber")).toBe("yellow");
+    expect(canonicalColor("rose")).toBe("red");
+    expect(canonicalColor("violet")).toBe("purple");
+    expect(canonicalColor("sky")).toBe("cyan");
+    expect(canonicalColor("teal")).toBe("emerald");
   });
 
   it("falls back to indigo for anything unknown", () => {
@@ -21,9 +22,9 @@ describe("canonicalColor", () => {
 });
 
 describe("the palette", () => {
-  it("accepts the twelve stored keys and offers eight of them", () => {
-    expect(ACCEPTED_COLOR_KEYS).toHaveLength(12);
-    expect(COLOR_KEYS).toHaveLength(8);
+  it("accepts sixteen stored keys and offers eleven of them", () => {
+    expect(ACCEPTED_COLOR_KEYS).toHaveLength(16);
+    expect(COLOR_KEYS).toHaveLength(11);
     for (const key of COLOR_KEYS) expect(ACCEPTED_COLOR_KEYS).toContain(key);
   });
 
