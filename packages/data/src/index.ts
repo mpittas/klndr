@@ -33,6 +33,7 @@ export { usePrefetchAroundDay } from "./hooks/prefetch";
 export { useDayTimeline } from "./hooks/timeline";
 export { useTimelineHistory } from "./hooks/history";
 export { useChecklist } from "./hooks/checklist";
+export { useTaskActions } from "./hooks/tasks";
 export { useNotesEditor } from "./hooks/notes";
 export { useLibraryActions } from "./hooks/library";
 export {
