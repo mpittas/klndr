@@ -1,0 +1,17 @@
+# Local Firebase config and overrides; the committed .env.example lists the names.
+.env
+.env.local
+.env.*.local
+
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.tsbuildinfo
+
+# Editor and OS cruft
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

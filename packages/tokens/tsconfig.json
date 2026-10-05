@@ -1,0 +1,20 @@
+{
+  // Design tokens, generated from the web app's own CSS and palette classes.
+  // `culori` is only used by the generator and the tests, never at runtime.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"]
+  },
+  "include": ["src", "tools", "scripts", "test", "generated"]
+}

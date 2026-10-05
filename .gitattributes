@@ -1,0 +1,4 @@
+# Files that tests compare byte for byte with what the code generates. Keep them LF on every machine:
+# on Windows, core.autocrlf would otherwise check them out as CRLF and those comparisons would fail.
+packages/tokens/generated/** text eol=lf
+packages/tokens/test/fixtures/** text eol=lf

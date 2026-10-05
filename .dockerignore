@@ -1,0 +1,25 @@
+# The build context for `apps/api/Dockerfile`, which is built from the repository root
+# (`docker build -f apps/api/Dockerfile .`). Everything the image needs is copied explicitly, so the
+# rest is excluded to keep the context small and the layer cache honest.
+
+.git
+.firebase
+.claude
+.agents
+agent
+
+**/node_modules
+
+# Build outputs and local state; none of it is needed to run the API.
+#
+# `apps/web-react/package.json` is *not* excluded: the `npm ci` layer validates the lockfile against
+# every workspace manifest, including the front end's.
+**/dist
+**/.tanstack
+**/.expo
+apps/mobile/ios
+apps/mobile/android
+
+**/*.log
+**/.env
+**/.env.*

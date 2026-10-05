@@ -1,0 +1,21 @@
+{
+  // Framework-light TypeScript source: no build step, so every consumer compiles it itself (Vite for the
+  // web app and the tests, Metro for the mobile app). It needs React and TanStack Query, and nothing from
+  // react-dom or react-native, so it runs on both.
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": []
+  },
+  "include": ["src"]
+}

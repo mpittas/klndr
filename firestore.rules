@@ -20,6 +20,8 @@ rules_version = '2';
 //   users/{uid}/tasks/{id}          scheduled tasks
 //
 // Default deny: anything not matched below is unreadable and unwritable.
+// The owner may also delete everything under their own uid (account deletion); nothing else about
+// ownership, shapes or limits changes.
 // The same rules protect both the web SDK and the Nuxt server, which
 // calls Firestore with the caller's own ID token (no admin credentials).
 // ===============================================================
@@ -54,7 +56,8 @@ service cloud.firestore {
 
     function isColor(v) {
       return v in ['indigo', 'emerald', 'amber', 'rose', 'sky', 'violet',
-                   'teal', 'orange', 'pink', 'lime', 'cyan', 'slate'];
+                   'teal', 'orange', 'pink', 'lime', 'cyan', 'red', 'yellow',
+                   'purple', 'fuchsia', 'slate'];
     }
 
     // Fields a client may change after creation.
@@ -95,7 +98,8 @@ service cloud.firestore {
         && onlyChanges(['displayName', 'photoURL', 'bio', 'phone', 'location',
                         'timezone', 'weekStartsOnMonday', 'defaultTaskDuration',
                         'updatedAt']);
-      allow delete: if false;
+      // Only account deletion removes the profile, and it does so last.
+      allow delete: if isOwner(uid);
 
       // ---------- one-time starter-data marker ----------
       match /meta/seed {
@@ -103,7 +107,8 @@ service cloud.firestore {
         allow create: if isOwner(uid)
           && request.resource.data.keys().hasOnly(['seededAt'])
           && request.resource.data.seededAt == request.time;
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if isOwner(uid);
       }
 
       // ---------- one-time default-checklist marker ----------
@@ -112,7 +117,8 @@ service cloud.firestore {
         allow create: if isOwner(uid)
           && request.resource.data.keys().hasOnly(['seededAt'])
           && request.resource.data.seededAt == request.time;
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if isOwner(uid);
       }
 
       // ---------- one-time categories marker ----------
@@ -121,15 +127,17 @@ service cloud.firestore {
         allow create: if isOwner(uid)
           && request.resource.data.keys().hasOnly(['seededAt'])
           && request.resource.data.seededAt == request.time;
-        allow update, delete: if false;
+        allow update: if false;
+        allow delete: if isOwner(uid);
       }
 
       // ---------- categories ----------
       function validCategory(d) {
-        return d.keys().hasOnly(['name', 'color', 'createdAt'])
+        return d.keys().hasOnly(['name', 'color', 'emoji', 'createdAt'])
           && d.keys().hasAll(['name', 'color', 'createdAt'])
           && str(d.name, 1, 40)
-          && isColor(d.color);
+          && isColor(d.color)
+          && optStr(d.get('emoji', null), 32);
       }
 
       match /categories/{categoryId} {

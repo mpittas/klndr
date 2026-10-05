@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover lets the layout use the safe-area insets (notch, home indicator);
+         interactive-widget makes Android resize the page, not overlay it, when the keyboard opens. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <title>klndr. · Daily Task Scheduler</title>
+    <meta
+      name="description"
+      content="Plan your day on a calendar, then drag activities like cleaning, workouts and project work onto an hour-by-hour timeline."
+    />
+    <!-- Colors the browser chrome to match the page background in each theme. -->
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#313338" media="(prefers-color-scheme: dark)" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'><rect width='32' height='32' rx='8' fill='%230f172a'/><rect x='6' y='8' width='20' height='18' rx='3' stroke='white' stroke-width='2'/><path d='M19 5v4M13 5v4M6 14h20M11 18h3M11 21h7' stroke='white' stroke-width='2' stroke-linecap='round'/></svg>"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    />
+    <script>
+      // Apply the saved (or OS) theme before first paint to avoid a light/dark flash (see src/theme.ts).
+      try {
+        var t = localStorage.getItem("klndr-theme");
+        if (t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+/*
+ * The mobile app's stylesheet.
+ *
+ * Tailwind (through Uniwind) plus the theme, the radii, the spacing and the type scale generated from
+ * @klndr/tokens — the same source of truth the web app imports, so `bg-card`, `rounded-md`, `p-md`
+ * and `text-body` mean the same thing in both apps. Imported by the root layout.
+ *
+ * The file sits in `src`, and Tailwind scans for class names from the directory the stylesheet is in,
+ * which is where all of this app's code lives.
+ */
+@import "tailwindcss";
+@import "uniwind";
+@import "@klndr/tokens/uniwind.css";

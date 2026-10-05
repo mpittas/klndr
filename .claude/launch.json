@@ -2,25 +2,36 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "dev",
+      "name": "api",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "port": 3000
+      "runtimeArgs": ["run", "dev", "-w", "apps/api"],
+      "port": 3001
     },
     {
-      "name": "demo",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["nuxt", "dev", "--dotenv", ".env.demo"],
+      "name": "web-react",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "-w", "apps/web-react"],
+      "port": 5173
+    },
+    {
+      "name": "web-react-demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "-w", "apps/web-react", "--", "--port", "5174", "--strictPort"],
       "env": {
-        "FIREBASE_API_KEY": "",
-        "FIREBASE_AUTH_DOMAIN": "",
-        "FIREBASE_PROJECT_ID": "",
-        "FIREBASE_STORAGE_BUCKET": "",
-        "FIREBASE_MESSAGING_SENDER_ID": "",
-        "FIREBASE_APP_ID": ""
+        "VITE_FIREBASE_API_KEY": "",
+        "VITE_FIREBASE_AUTH_DOMAIN": "",
+        "VITE_FIREBASE_PROJECT_ID": "",
+        "VITE_FIREBASE_STORAGE_BUCKET": "",
+        "VITE_FIREBASE_MESSAGING_SENDER_ID": "",
+        "VITE_FIREBASE_APP_ID": ""
       },
-      "port": 3100,
-      "autoPort": true
+      "port": 5174
+    },
+    {
+      "name": "mobile",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "-w", "apps/mobile"],
+      "port": 8081
     }
   ]
 }

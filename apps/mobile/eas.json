@@ -1,0 +1,37 @@
+/**
+ * EAS build profiles.
+ *
+ * `development` is the one used day to day: a dev client build (native modules, so Firebase and the
+ * later native work are available) installed on a device, talking to a local API.
+ * `EXPO_PUBLIC_DATA_MODE` is pinned to `api` in every profile: the Firestore mode of Phase 3 is
+ * opt-in and never a build default (see PLAN 3.4).
+ */
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_DATA_MODE": "api"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_DATA_MODE": "api"
+      }
+    },
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_DATA_MODE": "api"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
