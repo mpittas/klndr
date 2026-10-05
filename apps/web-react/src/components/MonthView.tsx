@@ -1,8 +1,6 @@
 import {
   addDaysISO,
   formatDuration,
-  getMonthIndex,
-  getYear,
   isSameMonth,
   longDate,
   monthMatrix,
@@ -10,10 +8,9 @@ import {
   todayISO,
   type ScheduledTask,
 } from "@klndr/core";
-import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { DateNavigatorModal } from "@/components/month-view/DateNavigatorModal";
+import { DatePickerModal } from "@/components/DatePickerModal";
 import type { DayCell } from "@/components/month-view/DayCell";
 import { MonthGrid } from "@/components/month-view/MonthGrid";
 import { MonthSidebar } from "@/components/month-view/MonthSidebar";
@@ -22,16 +19,11 @@ import { MonthViewHeader } from "@/components/month-view/MonthViewHeader";
 const MAX_VISIBLE = 3;
 
 export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTask[] }) {
-  const navigate = useNavigate();
   const today = todayISO();
   const [isDateSelectorOpen, setDateSelectorOpen] = useState(false);
 
-  const activeYear = getYear(month);
-  const activeMonthIndex = getMonthIndex(month);
   const isCurrentMonth = isSameMonth(month, today);
 
-  const onSelectMonth = (monthIso: string) => void navigate({ to: "/calendar", search: { m: monthIso } });
-  const onOpenDay = (dateIso: string) => void navigate({ to: "/day/$date", params: { date: dateIso } });
 
   // The month grid reads the blocks by day, each day's list in start order.
   const byDay = useMemo(() => {
@@ -99,15 +91,12 @@ export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTas
         <MonthSidebar upcoming={upcoming} />
       </div>
 
-      <DateNavigatorModal
+      <DatePickerModal
         open={isDateSelectorOpen}
-        month={month}
-        activeYear={activeYear}
-        activeMonthIndex={activeMonthIndex}
+        initial={month}
+        activeMonth={month.slice(0, 7)}
         today={today}
         onClose={() => setDateSelectorOpen(false)}
-        onSelectMonth={onSelectMonth}
-        onOpenDay={onOpenDay}
       />
     </div>
   );

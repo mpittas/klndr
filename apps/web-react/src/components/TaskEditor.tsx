@@ -10,11 +10,13 @@ import {
 } from "@klndr/core";
 import { useCategoryColor } from "@klndr/data";
 import { Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 
+import { ActivityPicker } from "@/components/ActivityPicker";
 import { CategorySelect } from "@/components/category/CategorySelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { Modal } from "@/components/Modal";
+import { TimePicker } from "@/components/TimePicker";
 import { useEmojiField } from "@/hooks/useEmojiField";
 
 /** What the editor was opened for. */
@@ -113,6 +115,7 @@ function TaskEditorDialog({
   onDeleteTemplate,
 }: Omit<TaskEditorProps, "request"> & { open: boolean; request: EditorRequest }) {
   const colorOf = useCategoryColor();
+  const startLabelId = useId();
 
   const [draft, setDraft] = useState(() => draftFrom(request));
   // A new block gets its emoji as its title is typed. One started from an activity has that activity's, and an
@@ -214,7 +217,7 @@ function TaskEditorDialog({
   return (
     <Modal
       open={open}
-      title={isEdit ? "Edit time block" : "New time block"}
+      title={isEdit ? "Edit block" : "New block"}
       subtitle={subtitle}
       onClose={onClose}
       footer={
@@ -277,7 +280,7 @@ function TaskEditorDialog({
               disabled={busy}
               className="inline-flex h-11 flex-[1.6] cursor-pointer items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 disabled:opacity-50 sm:h-9 sm:flex-none sm:text-xs"
             >
-              {busy ? "Saving…" : isEdit ? "Save changes" : "Add to schedule"}
+              {busy ? "Saving…" : isEdit ? "Save changes" : "Add block"}
             </button>
           </div>
         </div>
@@ -291,51 +294,9 @@ function TaskEditorDialog({
           submit();
         }}
       >
-        {/* Tap an activity to fill in the name, category and length; the time is set below */}
-        {!isEdit && templates.length > 0 ? (
-          <div>
-            <span id="task-activity-label" className="text-xs font-medium text-foreground">
-              Start from an activity
-            </span>
-            <div
-              role="radiogroup"
-              aria-labelledby="task-activity-label"
-              className="mt-1.5 flex max-h-[7.5rem] flex-wrap gap-1.5 overflow-y-auto overscroll-contain"
-            >
-              {[null, ...templates].map((choice) => {
-                const selected = draft.templateId === (choice?.id ?? null);
-                return (
-                  <button
-                    key={choice?.id ?? "custom"}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    className={[
-                      "inline-flex h-9 max-w-full cursor-pointer items-center gap-1.5 rounded-full border px-3 text-xs font-medium transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-7 sm:px-2.5",
-                      selected
-                        ? "border-primary bg-primary text-primary-foreground shadow-xs"
-                        : "border-input bg-background text-foreground hover:bg-accent",
-                    ].join(" ")}
-                    onClick={() => applyTemplate(choice?.id ?? null)}
-                  >
-                    {choice ? (
-                      <>
-                        <span aria-hidden="true">{choice.emoji}</span>
-                        <span className="truncate">{choice.name}</span>
-                      </>
-                    ) : (
-                      "Custom"
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
-
         <div>
           <label htmlFor="task-title" className="text-xs font-medium text-foreground">
-            Activity Name
+            Name
           </label>
           <div className="mt-1.5 flex h-11 w-full items-center rounded-md border border-input bg-background shadow-xs transition-colors focus-within:ring-1 focus-within:ring-ring sm:h-10">
             <EmojiPicker
@@ -362,6 +323,11 @@ function TaskEditorDialog({
           </div>
         </div>
 
+        {/* Or fill in the name, category and length from an activity; the time is set below */}
+        {!isEdit && templates.length > 0 ? (
+          <ActivityPicker value={draft.templateId} templates={templates} onChange={applyTemplate} />
+        ) : null}
+
         <div className="grid grid-cols-2 gap-3">
           <label className="block min-w-0">
             <span className="text-xs font-medium text-foreground">Date</span>
@@ -372,16 +338,19 @@ function TaskEditorDialog({
               onChange={(event) => patch({ day: event.target.value })}
             />
           </label>
-          <label className="block min-w-0">
-            <span className="text-xs font-medium text-foreground">Start Time</span>
-            <input
-              value={draft.start}
-              type="time"
-              step={900}
-              className={CONTROL_CLASS}
-              onChange={(event) => patch({ start: event.target.value })}
-            />
-          </label>
+          <div className="block min-w-0">
+            <span id={startLabelId} className="text-xs font-medium text-foreground">
+              Start Time
+            </span>
+            <div className="mt-1.5">
+              <TimePicker
+                value={draft.start}
+                labelledBy={startLabelId}
+                className={CONTROL_CLASS.replace("mt-1.5 ", "").replace("px-3", "px-1.5 sm:px-2")}
+                onChange={(start) => patch({ start })}
+              />
+            </div>
+          </div>
           <label className="block min-w-0">
             <span className="text-xs font-medium text-foreground">Duration</span>
             <select

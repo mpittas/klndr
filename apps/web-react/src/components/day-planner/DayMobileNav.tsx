@@ -31,7 +31,7 @@ export function DayMobileNav({
         onClick={onCreateBlock}
       >
         <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-        <span>Task</span>
+        <span>Block</span>
       </button>
 
       <button type="button" className={TAB} onClick={() => onOpenSheet("checklist")}>

@@ -29,6 +29,7 @@ export {
 } from "./hooks/queries";
 
 // A day, as a screen uses it
+export { usePrefetchAroundDay } from "./hooks/prefetch";
 export { useDayTimeline } from "./hooks/timeline";
 export { useTimelineHistory } from "./hooks/history";
 export { useChecklist } from "./hooks/checklist";

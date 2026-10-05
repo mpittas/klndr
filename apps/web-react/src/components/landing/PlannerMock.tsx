@@ -273,7 +273,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
             </div>
             <span className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md bg-primary px-2.5 text-xs font-medium text-primary-foreground">
               <Plus className="h-3.5 w-3.5" />
-              Task
+              Block
             </span>
           </div>
 

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authed/calendar")({
 });
 
 function CalendarPage() {
-  useDocumentTitle("klndr. · Daily Task Scheduler");
+  useDocumentTitle("klndr. · Day planner");
 
   const { m } = Route.useSearch();
   const today = todayISO();

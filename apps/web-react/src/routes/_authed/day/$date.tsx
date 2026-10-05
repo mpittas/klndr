@@ -1,5 +1,5 @@
 import { isValidISODate, todayISO } from "@klndr/core";
-import { useDayTasks, useTemplates } from "@klndr/data";
+import { useDayTasks, usePrefetchAroundDay, useTemplates } from "@klndr/data";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { DayPlanner } from "@/components/DayPlanner";
@@ -27,6 +27,9 @@ function DayPage() {
 
   const failed = tasks.isError || templates.isError;
   const ready = tasks.data !== undefined && templates.data !== undefined;
+
+  // Neighbouring days load in the background once this one has, so stepping to them is instant.
+  usePrefetchAroundDay(day, ready);
 
   const retry = () => {
     void tasks.refetch();

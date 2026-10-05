@@ -188,7 +188,7 @@ export default function DayTab() {
       </Animated.View>
 
       <Pressable
-        accessibilityLabel="New task"
+        accessibilityLabel="New block"
         accessibilityRole="button"
         onPress={() => createAt(clampStart(snapMinutes(nowMinutes(), 30)))}
         style={({ pressed }) => ({

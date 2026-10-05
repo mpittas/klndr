@@ -103,7 +103,7 @@ DayForge is an intentional, distraction-free daily planner. The interface is cal
 
 ## Components
 
-- **Task Cards**: Tactile tiles with 1px cohesive borders, dark readable labels, completion toggle, and subtle hover-only controls.
+- **Block Cards**: Tactile tiles with 1px cohesive borders, dark readable labels, completion toggle, and subtle hover-only controls.
 - **Activity Palettes**: Draggable items with clear drag handles and grab/grabbing cursors.
 - **Timeline Grid**: Crisp 30-minute rows, clean gutter labels, and a precise current-time indicator.
 - **Timeline Blocks** (`TimeBlock.tsx`): One anatomy at every length: emoji and title, the time beneath (beside it on 15-minute blocks), and a completion ring on the right. Opaque category tint with a matched 1px border, no shadow, no side bar, and a 6px radius so short and long blocks share their corners. Done blocks keep their color but fade. Notes, durations and other details live in the editor, not on the block.

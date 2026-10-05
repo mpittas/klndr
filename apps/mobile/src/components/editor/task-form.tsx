@@ -154,11 +154,44 @@ export function TaskForm(props: TaskFormProps) {
       >
         <View className="gap-xs">
           <Text accessibilityRole="header" variant="title">
-            {editing ? "Edit time block" : "New time block"}
+            {editing ? "Edit block" : "New block"}
           </Text>
           <Text numeric tone="muted" variant="caption">
             {formatTime(start)} · {formatDuration(duration)}
           </Text>
+        </View>
+
+        <View className="flex-row items-end gap-sm">
+          <Pressable
+            accessibilityHint="Opens the emoji picker"
+            accessibilityLabel={`Emoji, ${emoji || "none"}`}
+            accessibilityRole="button"
+            onPress={chooseEmoji}
+            style={({ pressed }) => ({
+              width: 56,
+              height: 44,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: colors.input,
+              backgroundColor: colors.card,
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <Text style={{ fontSize: 24, lineHeight: 30 }}>{emoji || "＋"}</Text>
+          </Pressable>
+          <TextField
+            autoCapitalize="sentences"
+            className="flex-1"
+            label="Name"
+            maxLength={MAX_TITLE}
+            onChangeText={setTitle}
+            onSubmitEditing={() => void submit()}
+            placeholder="e.g. Deep focus, Workout"
+            returnKeyType="done"
+            value={title}
+          />
         </View>
 
         {!editing && templates.length > 0 ? (
@@ -199,39 +232,6 @@ export function TaskForm(props: TaskFormProps) {
             </ScrollView>
           </View>
         ) : null}
-
-        <View className="flex-row items-end gap-sm">
-          <Pressable
-            accessibilityHint="Opens the emoji picker"
-            accessibilityLabel={`Emoji, ${emoji || "none"}`}
-            accessibilityRole="button"
-            onPress={chooseEmoji}
-            style={({ pressed }) => ({
-              width: 56,
-              height: 44,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: colors.input,
-              backgroundColor: colors.card,
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            <Text style={{ fontSize: 24, lineHeight: 30 }}>{emoji || "＋"}</Text>
-          </Pressable>
-          <TextField
-            autoCapitalize="sentences"
-            className="flex-1"
-            label="Activity name"
-            maxLength={MAX_TITLE}
-            onChangeText={setTitle}
-            onSubmitEditing={() => void submit()}
-            placeholder="e.g. Deep focus, Workout"
-            returnKeyType="done"
-            value={title}
-          />
-        </View>
 
         <View className="flex-row gap-md">
           <DateTimePicker
@@ -312,7 +312,7 @@ export function TaskForm(props: TaskFormProps) {
           <Button disabled={busy} className="flex-1" label="Cancel" onPress={onClose} variant="secondary" />
           <Button
             className="flex-[1.6]"
-            label={editing ? "Save changes" : "Add to schedule"}
+            label={editing ? "Save changes" : "Add block"}
             loading={busy}
             onPress={() => void submit()}
           />

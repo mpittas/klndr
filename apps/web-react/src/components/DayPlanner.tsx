@@ -155,7 +155,7 @@ export function DayPlanner({ day }: { day: string }) {
       start,
       duration: template?.defaultDuration ?? 60,
       color: template ? colorOf(template) : "indigo",
-      label: template?.name ?? "New Block",
+      label: template?.name ?? "New block",
       emoji: template?.emoji ?? "",
     });
   };
