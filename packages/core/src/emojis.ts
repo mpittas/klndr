@@ -147,7 +147,7 @@ export const FALLBACK_EMOJI: Record<EmojiKind, string> = { activity: "📌", cat
 export const normalizeEmojiTitle = (title: string) => title.trim().replace(/\s+/g, " ").toLowerCase();
 
 /**
- * Whether saving needs to pick an emoji first: there is none yet, or the emoji was picked for the app (not by
+ * Whether the title needs an emoji picked for it: there is none yet, or the emoji was picked by the app (not by
  * hand) for a title that has since changed. An emoji chosen by hand is never replaced.
  *
  * `emoji` is `null` while it is still to be picked; `pickedFor` is the title it was picked for; `byHand` says the
@@ -158,3 +158,69 @@ export function emojiNeedsPicking(state: { emoji: string | null; pickedFor: stri
   if (state.emoji === null) return true;
   return !state.byHand && normalizeEmojiTitle(state.title) !== normalizeEmojiTitle(state.pickedFor);
 }
+
+/**
+ * The emoji of a form's title field, picked for the title while the person fills the form in, so saving never
+ * waits for it. `title` is what the field says now; `asked` is a pick on its way, whose `answer` saving can
+ * wait on in the background. An answer only lands while it is still for the title in the field and nobody has
+ * chosen an emoji since.
+ */
+export type EmojiFieldState = {
+  emoji: string | null;
+  pickedFor: string;
+  byHand: boolean;
+  title: string;
+  asked: { id: number; title: string; answer: Promise<string> } | null;
+};
+
+export type EmojiFieldAction =
+  /** The title changed. `known` is an emoji the person already uses for exactly that name: it applies at once. */
+  | { type: "title"; title: string; known?: string | null }
+  /** The person picked one: it stays whatever the title becomes. */
+  | { type: "choose"; emoji: string }
+  /** "Pick for me": the app chooses again, from the title as it is now. */
+  | { type: "auto" }
+  | { type: "asked"; id: number; title: string; answer: Promise<string> }
+  | { type: "answered"; id: number; emoji: string }
+  | { type: "reset"; state: EmojiFieldState };
+
+export const emojiFieldState = (emoji: string | null, title: string, byHand = false): EmojiFieldState => ({
+  emoji,
+  pickedFor: title,
+  byHand,
+  title,
+  asked: null,
+});
+
+const sameTitle = (a: string, b: string) => normalizeEmojiTitle(a) === normalizeEmojiTitle(b);
+
+export function emojiFieldReducer(state: EmojiFieldState, action: EmojiFieldAction): EmojiFieldState {
+  switch (action.type) {
+    case "title": {
+      // An answer still on its way for another title is no longer wanted (it is still remembered for later).
+      const asked = state.asked && sameTitle(state.asked.title, action.title) ? state.asked : null;
+      const next = { ...state, title: action.title, asked };
+      return action.known && emojiNeedsPicking(next)
+        ? { ...next, emoji: action.known, pickedFor: action.title, asked: null }
+        : next;
+    }
+    case "choose":
+      return { ...state, emoji: action.emoji, byHand: true, asked: null };
+    case "auto":
+      // Nothing to pick from yet: back to the placeholder, and picked once there is a title.
+      if (!normalizeEmojiTitle(state.title)) return { ...state, emoji: null, pickedFor: "", byHand: false, asked: null };
+      // The emoji showing stays until the new one arrives; forgetting what it was picked for makes it due. A pick
+      // already on its way is for this title (another title would have dropped it), so it is kept.
+      return { ...state, pickedFor: "", byHand: false };
+    case "asked":
+      return { ...state, asked: { id: action.id, title: action.title, answer: action.answer } };
+    case "answered":
+      if (state.asked?.id !== action.id) return state;
+      return { ...state, emoji: action.emoji, pickedFor: state.asked.title, byHand: false, asked: null };
+    case "reset":
+      return action.state;
+  }
+}
+
+/** The field has a title with no emoji picked for it, and nothing has been asked for yet. */
+export const emojiFieldDue = (state: EmojiFieldState) => state.asked === null && emojiNeedsPicking(state);

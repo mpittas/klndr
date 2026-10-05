@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { EMOJI_TIMEOUT_MS, useEmojiSuggester } from "../src/hooks/emoji";
+import { EMOJI_TIMEOUT_MS, useEmojiSuggester, useRememberedEmoji } from "../src/hooks/emoji";
 import { harness } from "./harness";
 import { createServer } from "./world";
 
@@ -75,5 +75,23 @@ describe("useEmojiSuggester", () => {
     await first.result.current("Gym", "activity");
     const second = mount(async () => "🧗", "user-2");
     expect(await second.result.current("Gym", "activity")).toBe("🧗");
+  });
+});
+
+describe("useRememberedEmoji", () => {
+  it("answers at once, without asking, for a title already picked this session", async () => {
+    const server = createServer();
+    const spy = vi.fn(async () => "🏋️");
+    server.api.suggestEmoji = spy as typeof server.api.suggestEmoji;
+    const h = harness(server);
+    const { result } = renderHook(() => ({ suggest: useEmojiSuggester(), remembered: useRememberedEmoji() }), {
+      wrapper: h.wrapper,
+    });
+
+    expect(result.current.remembered("Gym", "activity")).toBeNull();
+    await result.current.suggest("Gym", "activity");
+    expect(result.current.remembered(" gym ", "activity")).toBe("🏋️");
+    expect(result.current.remembered("Gym", "category")).toBeNull();
+    expect(spy).toHaveBeenCalledTimes(1);
   });
 });

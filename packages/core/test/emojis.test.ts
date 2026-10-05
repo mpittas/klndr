@@ -5,6 +5,9 @@ import {
   RECENT_EMOJIS_MAX,
   buildEmojiGroups,
   buildEmojiRows,
+  emojiFieldDue,
+  emojiFieldReducer,
+  emojiFieldState,
   emojiNeedsPicking,
   isEmojiKind,
   moveEmojiCursor,
@@ -13,6 +16,7 @@ import {
   rememberEmoji,
   searchEmojis,
   type CompactEmoji,
+  type EmojiFieldState,
   type KeyValueStorage,
 } from "../src/index";
 
@@ -211,5 +215,72 @@ describe("emoji picked for a title", () => {
     expect(isEmojiKind("category")).toBe(true);
     expect(isEmojiKind("habit")).toBe(false);
     expect(Object.keys(FALLBACK_EMOJI).sort()).toEqual(["activity", "category"]);
+  });
+});
+
+describe("the emoji of a title field", () => {
+  const answer = Promise.resolve("🏋️");
+  const typed = (state: EmojiFieldState, title: string, known?: string) =>
+    emojiFieldReducer(state, { type: "title", title, known });
+  const asked = (state: EmojiFieldState, id = 1) =>
+    emojiFieldReducer(state, { type: "asked", id, title: state.title, answer });
+
+  it("is due once a new item has a title, and not before", () => {
+    const empty = emojiFieldState(null, "");
+    expect(emojiFieldDue(empty)).toBe(false);
+    expect(emojiFieldDue(typed(empty, "Gym"))).toBe(true);
+  });
+
+  it("is no longer due while a pick is on its way", () => {
+    expect(emojiFieldDue(asked(typed(emojiFieldState(null, ""), "Gym")))).toBe(false);
+  });
+
+  it("takes the answer for the title in the field", () => {
+    const state = emojiFieldReducer(asked(typed(emojiFieldState(null, ""), "Gym")), { type: "answered", id: 1, emoji: "🏋️" });
+    expect(state).toMatchObject({ emoji: "🏋️", pickedFor: "Gym", byHand: false, asked: null });
+    expect(emojiFieldDue(state)).toBe(false);
+  });
+
+  it("drops an answer for a title that has since changed, and is due again", () => {
+    const moved = typed(asked(typed(emojiFieldState(null, ""), "Gym")), "Reading");
+    expect(moved.asked).toBeNull();
+    expect(emojiFieldDue(moved)).toBe(true);
+    expect(emojiFieldReducer(moved, { type: "answered", id: 1, emoji: "🏋️" }).emoji).toBeNull();
+  });
+
+  it("keeps waiting when the title only changed in case or spacing", () => {
+    expect(typed(asked(typed(emojiFieldState(null, ""), "Gym")), "gym ").asked?.id).toBe(1);
+  });
+
+  it("drops an answer once the person has chosen an emoji", () => {
+    const chosen = emojiFieldReducer(asked(typed(emojiFieldState(null, ""), "Gym")), { type: "choose", emoji: "🔥" });
+    expect(emojiFieldReducer(chosen, { type: "answered", id: 1, emoji: "🏋️" })).toMatchObject({ emoji: "🔥", byHand: true });
+    expect(emojiFieldDue(typed(chosen, "Reading"))).toBe(false);
+  });
+
+  it("takes an emoji the person already uses for that name at once", () => {
+    expect(typed(emojiFieldState(null, ""), "Gym", "🏋️")).toMatchObject({ emoji: "🏋️", pickedFor: "Gym", byHand: false });
+  });
+
+  it("leaves an emoji chosen by hand alone, even for a known name", () => {
+    expect(typed(emojiFieldState("🔥", "Run", true), "Gym", "🏋️").emoji).toBe("🔥");
+  });
+
+  it("keeps an edited item's emoji until its title changes", () => {
+    const editing = emojiFieldState("🏋️", "Gym");
+    expect(emojiFieldDue(typed(editing, "Gym"))).toBe(false);
+    expect(emojiFieldDue(typed(editing, "Gym class"))).toBe(true);
+  });
+
+  it("picks again on \"Pick for me\", showing the current emoji until the new one comes", () => {
+    const state = emojiFieldReducer(emojiFieldState("🔥", "Gym", true), { type: "auto" });
+    expect(state).toMatchObject({ emoji: "🔥", byHand: false });
+    expect(emojiFieldDue(state)).toBe(true);
+  });
+
+  it("goes back to the placeholder on \"Pick for me\" when there is no title yet", () => {
+    const state = emojiFieldReducer(emojiFieldState("🔥", "", true), { type: "auto" });
+    expect(state).toMatchObject({ emoji: null, byHand: false });
+    expect(emojiFieldDue(state)).toBe(false);
   });
 });

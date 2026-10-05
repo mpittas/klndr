@@ -118,7 +118,9 @@ export function EmojiPicker({
   value,
   onChange,
   onAuto,
-  autoDescription = "Chosen for you when you save",
+  autoDescription = "Chosen from the name",
+  automatic,
+  autoDisabled = false,
   stale = false,
   busy = false,
   placeholder,
@@ -131,11 +133,15 @@ export function EmojiPicker({
   onChange: (next: string) => void;
   /** Adds "Pick for me" to the panel, which calls this. */
   onAuto?: () => void;
-  /** What the "Pick for me" row says about when the emoji is chosen. */
+  /** What the "Pick for me" row says about how the emoji is chosen. */
   autoDescription?: string;
+  /** The emoji showing is the app's choice, so "Pick for me" is ticked. By default, only while there is none. */
+  automatic?: boolean;
+  /** There is nothing to pick from yet (no name): "Pick for me" says so and can't be used. */
+  autoDisabled?: boolean;
   /** A new emoji is about to replace this one: it gets a small sparkle. */
   stale?: boolean;
-  /** An emoji is being chosen right now: the button pulses and can't be opened. */
+  /** An emoji is being chosen right now: the button pulses, and can still be opened to choose one by hand. */
   busy?: boolean;
   /** Drawn instead of an emoji while `value` is `null`; the default is a dashed square with a sparkle. */
   placeholder?: ReactNode;
@@ -367,7 +373,6 @@ export function EmojiPicker({
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-busy={busy || undefined}
-        disabled={busy}
         onClick={() => (open ? hide() : show())}
         className={className}
       >
@@ -432,20 +437,32 @@ export function EmojiPicker({
               {onAuto && !searching && (
                 <button
                   type="button"
-                  className="flex w-full shrink-0 cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none touch:min-h-12"
+                  disabled={autoDisabled}
+                  className="flex w-full shrink-0 cursor-pointer items-center gap-2.5 border-b border-border px-3 py-2 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none disabled:cursor-default disabled:opacity-60 disabled:hover:bg-transparent touch:min-h-12"
                   onClick={() => {
                     onAuto();
                     hide();
                   }}
                 >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
-                    <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-                  </span>
+                  {/* The app's pick, once there is one; until then (or when one was chosen by hand), the sparkle. */}
+                  {automatic && value && !busy ? (
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-accent text-base leading-none">
+                      {value}
+                    </span>
+                  ) : (
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
+                      <Sparkles className={["h-3.5 w-3.5", busy ? "motion-safe:animate-pulse" : ""].join(" ")} aria-hidden="true" />
+                    </span>
+                  )}
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium text-foreground">Pick for me</span>
-                    <span className="block truncate text-xs text-muted-foreground">{autoDescription}</span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {autoDisabled ? "Type a name first" : busy ? "Picking one from the name…" : autoDescription}
+                    </span>
                   </span>
-                  {value === null ? <Check className="h-3.5 w-3.5 shrink-0 text-foreground" strokeWidth={3} aria-hidden="true" /> : null}
+                  {(automatic ?? value === null) && !autoDisabled ? (
+                    <Check className="h-3.5 w-3.5 shrink-0 text-foreground" strokeWidth={3} aria-hidden="true" />
+                  ) : null}
                 </button>
               )}
 

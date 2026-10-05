@@ -764,6 +764,9 @@ the tree aliasing or stubbing the deleted app. One implementation, and it is the
 
 ## 2026-10-05 — Emoji picked by AI when a form is saved
 
+> **Superseded the same day** by "Emoji picked while the title is typed" below: saving no longer waits for the
+> emoji. The rest of this entry (the model, the API route, categories getting an emoji) still holds.
+
 **Decision: the emoji is chosen when the person saves, never while they type or leave the title field.** A new
 activity, block or category starts with no emoji: the picker shows a dashed sparkle placeholder (not 📌), and the
 button says "Choosing emoji…" for the second or so it takes. `useEmojiField` (web) owns the state; the rule itself
@@ -806,3 +809,29 @@ shows the answers. Vercel's AI Gateway (no markup, one key, models as strings) w
 
 **Not done:** the checklist's habits (they walk a fixed list of emoji, and weren't asked for); no rate limit on
 `/api/emoji` beyond needing a session (an in-memory limit means little on serverless — use Vercel's if abuse shows up).
+
+## 2026-10-05 — Emoji picked while the title is typed; saving never waits for it
+
+**Why:** picking on save made the Save / Add button wait a second or more ("Choosing emoji…") when the person
+expects the item to appear the moment they click. The emoji also stayed a surprise until after saving.
+
+**Decision: the emoji is picked while the form is filled in.** Once typing pauses (600 ms), at once when the title
+field is left, and at once on "Pick for me". The emoji appears in the field (it pops in), so the person sees it and can
+change it before saving. A title the person already uses, or one picked earlier this session, shows its emoji without
+waiting. Structured (a similar planner) updates a task's icon live as its title is typed; this is the same idea with
+a pause, so a half-typed title isn't sent.
+
+**Decision: saving never waits.** If the pick isn't back when the person saves (Enter right after typing, the quick
+adds that never leave the field), the item is saved with the emoji showing (📌 / 📁 for a new one, no emoji for a
+category added from the category select) and `fillEmoji` (`@klndr/data`) puts the picked one on it when it arrives:
+on screen at once, then on the server, quietly (no message, no undo step). It does nothing if the person changed the
+emoji in the meantime. On screen the swap pops (`EmojiPop`), so it reads as the app finishing, not as a glitch.
+
+**Decision: an emoji chosen by hand always wins.** An answer still on its way is dropped when the person picks one,
+or when the title changes to something else; the rules are the pure `emojiFieldReducer` in `@klndr/core` (tested),
+and `useEmojiField` (web) runs them. The picker button pulses while a pick is on its way but stays usable (it was
+disabled before, which would swallow the click that also leaves the title field). "Pick for me" shows the emoji it
+chose, says "Type a name first" while there is no title, and "Picking one from the name…" while it works.
+
+**Cost:** a pick per paused title rather than per save; cancelled forms and retyped titles can ask more than once.
+At about 190 input and 4 output tokens a pick, that is still well under a cent per hundred picks.

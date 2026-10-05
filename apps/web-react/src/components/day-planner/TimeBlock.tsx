@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 
+import { EmojiPop } from "@/components/EmojiPop";
 import { paletteOf } from "@/lib/colors";
 
 type TimeBlockProps = {
@@ -61,7 +62,7 @@ export function TimeBlock({
             !short && lines === 2 ? "line-clamp-2 break-words" : "truncate",
           ].join(" ")}
         >
-          {emoji ? <span className={done ? "opacity-50" : undefined}>{emoji}</span> : null}
+          {emoji ? <EmojiPop emoji={emoji} className={done ? "opacity-50" : undefined} /> : null}
           {emoji ? "\u00a0" : null}
           {title}
         </p>

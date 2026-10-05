@@ -32,7 +32,7 @@ type TaskEditorProps = {
   templates: ActivityTemplate[];
   onClose: () => void;
   /** Waits for the server and throws its message, so the form can show it. */
-  onSave: (vars: { id: string | null; payload: TaskDraft }) => Promise<unknown>;
+  onSave: (vars: { id: string | null; payload: TaskDraft }) => Promise<ScheduledTask>;
   onDelete: (task: ScheduledTask) => Promise<unknown>;
   onDeleteTemplate: (id: string) => Promise<unknown>;
 };
@@ -115,8 +115,8 @@ function TaskEditorDialog({
   const colorOf = useCategoryColor();
 
   const [draft, setDraft] = useState(() => draftFrom(request));
-  // A new block has no emoji yet: it is picked when the form is saved. One started from an activity has that
-  // activity's, and an edited one keeps its own unless its title changes (see `useEmojiField`).
+  // A new block gets its emoji as its title is typed. One started from an activity has that activity's, and an
+  // edited one keeps its own unless its title changes (see `useEmojiField`).
   const start = request.mode === "edit" ? request.task : null;
   const emoji = useEmojiField({
     kind: "activity",
@@ -182,12 +182,12 @@ function TaskEditorDialog({
     }
     if (busy) return;
     const snapshot = draft;
+    // Saving never waits for the emoji: one still being picked is put on the block once it has been saved.
+    const picked = emoji.forSave();
     void attempt(async () => {
-      // Picked now, on save, and shown in the form while the block is being saved.
-      const picked = await emoji.resolve();
       const payload: TaskDraft = {
         title: snapshot.title.trim(),
-        emoji: picked,
+        emoji: picked.emoji,
         color,
         category,
         day: snapshot.day,
@@ -197,7 +197,8 @@ function TaskEditorDialog({
         completed: snapshot.completed,
         templateId: snapshot.templateId,
       };
-      return onSave({ id: request.task?.id ?? null, payload });
+      const saved = await onSave({ id: request.task?.id ?? null, payload });
+      picked.fill?.({ kind: "task", id: saved.id });
     }, "Something went wrong");
   };
 
@@ -276,7 +277,7 @@ function TaskEditorDialog({
               disabled={busy}
               className="inline-flex h-11 flex-[1.6] cursor-pointer items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 disabled:opacity-50 sm:h-9 sm:flex-none sm:text-xs"
             >
-              {emoji.pending ? "Choosing emoji…" : busy ? "Saving…" : isEdit ? "Save changes" : "Add to schedule"}
+              {busy ? "Saving…" : isEdit ? "Save changes" : "Add to schedule"}
             </button>
           </div>
         </div>
@@ -339,8 +340,9 @@ function TaskEditorDialog({
           <div className="mt-1.5 flex h-11 w-full items-center rounded-md border border-input bg-background shadow-xs transition-colors focus-within:ring-1 focus-within:ring-ring sm:h-10">
             <EmojiPicker
               value={emoji.emoji}
-              stale={emoji.stale}
-              busy={emoji.pending}
+              busy={emoji.picking}
+              automatic={emoji.automatic}
+              autoDisabled={!draft.title.trim()}
               hint={emoji.hint}
               onChange={emoji.choose}
               onAuto={emoji.auto}
@@ -355,6 +357,7 @@ function TaskEditorDialog({
               placeholder="e.g. Deep focus, Workout"
               className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none"
               onChange={(event) => patch({ title: event.target.value })}
+              onBlur={emoji.settle}
             />
           </div>
         </div>

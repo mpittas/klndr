@@ -1,3 +1,4 @@
+import { EmojiPop } from "@/components/EmojiPop";
 import { paletteOf } from "@/lib/colors";
 
 /**
@@ -17,7 +18,7 @@ export function CategoryMark({ emoji, color, size = "md" }: { emoji?: string; co
       ].join(" ")}
       aria-hidden="true"
     >
-      {emoji}
+      <EmojiPop emoji={emoji} />
     </span>
   );
 }

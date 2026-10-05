@@ -4,7 +4,7 @@ import {
   withImplicitCategories,
   type ActivityTemplate,
 } from "@klndr/core";
-import { useCategories, useLibraryActions } from "@klndr/data";
+import { useCategories, useEmojiFill, useLibraryActions } from "@klndr/data";
 import { Check, ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
@@ -38,7 +38,8 @@ export function CategorySelect({
   const categoriesQuery = useCategories();
   const { createCategory } = useLibraryActions();
   const { show: showLibrary } = useLibrary();
-  const pickEmoji = useEmojiPicker("category", categoriesQuery.data);
+  const categoryEmoji = useEmojiPicker("category", categoriesQuery.data);
+  const fillEmoji = useEmojiFill();
 
   const [open, setOpen] = useState(false);
   const isSheet = useMediaQuery(SHEET_QUERY);
@@ -140,10 +141,12 @@ export function CategorySelect({
     setBusy(true);
     setNewError(null);
     try {
-      // The emoji is picked now, from the name, as the category is added.
+      // Added at once; its emoji follows when it has been picked (straight away for a name picked this session).
+      const known = categoryEmoji.peek(name);
       const created = await createCategory({
-        draft: { name, color: nextCategoryColor(categories), emoji: await pickEmoji(name) },
+        draft: { name, color: nextCategoryColor(categories), ...(known ? { emoji: known } : {}) },
       });
+      if (!known) void fillEmoji({ kind: "category", id: created.id }, null, categoryEmoji.pick(name));
       choose(created.name);
     } catch (err) {
       setNewError(err instanceof Error ? err.message : "Could not add category");

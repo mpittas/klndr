@@ -11,7 +11,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CategoryMark } from "@/components/category/CategoryMark";
 import { EmojiPicker } from "@/components/EmojiPicker";
-import { useEmojiPicker } from "@/hooks/useEmojiField";
+import { EmojiPop } from "@/components/EmojiPop";
+import { useEmojiField } from "@/hooks/useEmojiField";
 import { paletteOf } from "@/lib/colors";
 import { useLibrary } from "@/lib/library";
 
@@ -67,9 +68,8 @@ export function ActivityPalette({
   // Quick add: a short form at the bottom of a category, kept open between adds.
   const [adding, setAdding] = useState<string | null>(null);
   const [addName, setAddName] = useState("");
-  // `null` is "pick one for me": the name is read when it is added. A hand-picked emoji is for one add.
-  const [addEmoji, setAddEmoji] = useState<string | null>(null);
-  const pickEmoji = useEmojiPicker("activity", templates);
+  // Picked as the name is typed; a hand-picked emoji is for one add.
+  const addEmoji = useEmojiField({ kind: "activity", initial: null, initialTitle: "", title: addName, known: templates });
   const [addDuration, setAddDuration] = useState(60);
   // Saves in flight. Several can overlap when names are typed in quick succession.
   const [addPending, setAddPending] = useState(0);
@@ -156,7 +156,7 @@ export function ActivityPalette({
   const startAdd = (category: string) => {
     setAdding(category);
     setAddName("");
-    setAddEmoji(null);
+    addEmoji.reset();
     setAddError(null);
     setCollapsed((current) => current.filter((c) => c !== category));
     requestAnimationFrame(() => {
@@ -178,22 +178,24 @@ export function ActivityPalette({
     }
     setAddPending((n) => n + 1);
     setAddError(null);
-    const chosen = addEmoji;
+    // Added at once, even when its emoji is still being picked: that one is put on the activity when it arrives.
+    const picked = addEmoji.forSave();
     // Cleared at once so the next name can be typed while this one saves; put back if saving fails.
     setAddName("");
-    setAddEmoji(null);
+    addEmoji.reset();
     try {
-      await saveTemplate({
+      const saved = await saveTemplate({
         id: null,
         draft: {
           name,
-          emoji: chosen ?? (await pickEmoji(name)),
+          emoji: picked.emoji,
           color: colorOf({ category }),
           category,
           defaultDuration: addDuration,
           notes: null,
         },
       });
+      picked.fill?.({ kind: "template", id: saved.id });
     } catch (err) {
       setAddName((current) => (current ? current : name));
       setAddError(err instanceof Error ? err.message : "Could not add that activity");
@@ -348,7 +350,7 @@ export function ActivityPalette({
                         paletteOf(colorOf(template)).icon,
                       ].join(" ")}
                     >
-                      {template.emoji}
+                      <EmojiPop emoji={template.emoji} />
                     </span>
                     <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
                       {template.name}
@@ -392,11 +394,13 @@ export function ActivityPalette({
                     >
                       <div className="flex h-8 items-center rounded-md border border-input bg-background transition-colors focus-within:ring-1 focus-within:ring-ring">
                         <EmojiPicker
-                          value={addEmoji}
-                          hint={addEmoji === null ? "Emoji picked for you when you add it. Click to choose your own." : undefined}
-                          autoDescription="Chosen for you when you add it"
-                          onChange={setAddEmoji}
-                          onAuto={() => setAddEmoji(null)}
+                          value={addEmoji.emoji}
+                          busy={addEmoji.picking}
+                          automatic={addEmoji.automatic}
+                          autoDisabled={!addName.trim()}
+                          hint={addEmoji.hint}
+                          onChange={addEmoji.choose}
+                          onAuto={addEmoji.auto}
                         />
                         <span className="h-4 w-px shrink-0 bg-border" />
                         <input
@@ -409,6 +413,7 @@ export function ActivityPalette({
                           placeholder="New activity, press Enter"
                           className="h-full min-w-0 flex-1 bg-transparent px-2 text-xs placeholder:text-muted-foreground focus-visible:outline-none"
                           onChange={(event) => setAddName(event.target.value)}
+                          onBlur={addEmoji.settle}
                         />
                       </div>
                       <div className="flex items-center gap-1.5">
