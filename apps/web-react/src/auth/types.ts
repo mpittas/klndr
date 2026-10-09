@@ -18,6 +18,8 @@ export type AuthUser = {
  * - `unavailable` — the build has no usable Firebase configuration (and no `.env`): development without
  *   Firebase. The gate stays open and the API answers as its `local-dev` user.
  * - `signed-out` / `signed-in` — the two halves of the router.
+ * - `guest` — someone using the app without an account. Their planner lives in this browser (see
+ *   `guest/`), so they have the same screens as a signed-in person, minus what needs an account.
  *
  * A signed-in person can have no profile for a moment (it failed to load, say): `profileError` says why
  * and `retryProfile` tries again, as the web app's profile error does.
@@ -26,4 +28,11 @@ export type AuthState =
   | { status: "loading" }
   | { status: "unavailable"; message: string }
   | { status: "signed-out" }
-  | { status: "signed-in"; user: AuthUser; profile: UserProfile | null; profileError: string | null };
+  | { status: "signed-in"; user: AuthUser; profile: UserProfile | null; profileError: string | null }
+  | { status: "guest"; user: AuthUser; profile: UserProfile | null; profileError: string | null };
+
+/** A state with a person in it: a signed-in account or a guest. Screens that show the person use this. */
+export type SignedInState = Extract<AuthState, { user: AuthUser }>;
+
+export const isSignedIn = (state: AuthState): state is SignedInState =>
+  state.status === "signed-in" || state.status === "guest";

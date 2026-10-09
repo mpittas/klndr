@@ -2,8 +2,9 @@ import { MIN_PASSWORD_LENGTH, authErrorMessage, signUpProblem } from "@klndr/cor
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 
-import { useAuth } from "@/auth";
+import { isSignedIn, useAuth } from "@/auth";
 import { AuthCard, ErrorAlert, FirebaseNotice } from "@/components/AuthCard";
+import { ContinueAsGuest } from "@/components/ContinueAsGuest";
 import { ProviderButton } from "@/components/ProviderButton";
 import { AppleIcon, GoogleIcon } from "@/components/SocialIcons";
 import { TextField } from "@/components/TextField";
@@ -30,12 +31,14 @@ function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const signedIn = auth.state.status === "signed-in";
+  const signedIn = isSignedIn(auth.state);
+  // A new account lands on its profile; a guest, who has nothing to set up yet, goes straight to the calendar.
+  const guest = auth.state.status === "guest";
 
   // Wait for the auth state rather than navigating from the handler, as on `/login`.
   useEffect(() => {
-    if (signedIn) void navigate({ to: "/profile", replace: true });
-  }, [signedIn, navigate]);
+    if (signedIn) void navigate({ to: guest ? "/calendar" : "/profile", replace: true });
+  }, [signedIn, guest, navigate]);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -160,6 +163,8 @@ function SignUpPage() {
           Sign up with Google
         </ProviderButton>
       </div>
+
+      <ContinueAsGuest disabled={busy} onContinue={auth.continueAsGuest} />
 
       <p className="text-center text-xs text-muted-foreground sm:text-sm">
         Already have an account?{" "}

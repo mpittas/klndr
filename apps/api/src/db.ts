@@ -234,7 +234,18 @@ const byStart = (a: ScheduledTask, b: ScheduledTask) =>
 // ---------------------------------------------------------------------------
 // In-memory store: local development only, used when Firebase isn't configured.
 // ---------------------------------------------------------------------------
-class MemoryStore implements Store {
+/** Everything a `MemoryStore` holds, as plain JSON, so a browser can keep it between visits. */
+export type MemorySnapshot = {
+  seq: number;
+  templates: ActivityTemplate[];
+  categories: Category[];
+  tasks: ScheduledTask[];
+  checklistItems: ChecklistItem[];
+  checklistDays: [string, DayChecklist][];
+  notes: [string, DayNotes][];
+};
+
+export class MemoryStore implements Store {
   private templates: ActivityTemplate[] = [];
   private categories: Category[] = [];
   private tasks: ScheduledTask[] = [];
@@ -243,7 +254,18 @@ class MemoryStore implements Store {
   private notes = new Map<string, DayNotes>();
   private seq = 1;
 
-  constructor() {
+  /** A new store starts with the demo data; pass a snapshot to carry on from where it was saved. */
+  constructor(saved?: MemorySnapshot) {
+    if (saved) {
+      this.seq = saved.seq;
+      this.templates = saved.templates;
+      this.categories = saved.categories;
+      this.tasks = saved.tasks;
+      this.checklistItems = saved.checklistItems;
+      this.checklistDays = new Map(saved.checklistDays);
+      this.notes = new Map(saved.notes);
+      return;
+    }
     for (const tpl of DEFAULT_TEMPLATES) {
       this.templates.push({ id: String(this.seq++), ...tpl, archived: false });
     }
@@ -467,6 +489,18 @@ class MemoryStore implements Store {
     this.checklistItems = [];
     this.checklistDays.clear();
     this.notes.clear();
+  }
+
+  snapshot(): MemorySnapshot {
+    return {
+      seq: this.seq,
+      templates: this.templates,
+      categories: this.categories,
+      tasks: this.tasks,
+      checklistItems: this.checklistItems,
+      checklistDays: [...this.checklistDays],
+      notes: [...this.notes],
+    };
   }
 }
 

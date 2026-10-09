@@ -15,4 +15,5 @@ export {
 } from "./service";
 export { isFirebaseConfigured } from "@/env";
 export type { LinkableProvider } from "./service";
-export type { AuthState, AuthUser } from "./types";
+export { isSignedIn } from "./types";
+export type { AuthState, AuthUser, SignedInState } from "./types";

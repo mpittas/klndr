@@ -2,8 +2,9 @@ import { authErrorMessage, signInProblem } from "@klndr/core";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 
-import { useAuth } from "@/auth";
+import { isSignedIn, useAuth } from "@/auth";
 import { AuthCard, ErrorAlert, FirebaseNotice, SuccessAlert } from "@/components/AuthCard";
+import { ContinueAsGuest } from "@/components/ContinueAsGuest";
 import { ProviderButton } from "@/components/ProviderButton";
 import { AppleIcon, GoogleIcon } from "@/components/SocialIcons";
 import { TextField } from "@/components/TextField";
@@ -38,7 +39,7 @@ function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
 
-  const signedIn = auth.state.status === "signed-in";
+  const signedIn = isSignedIn(auth.state);
 
   // The auth state, not the submit handler, decides where we land: `signIn` resolves before Firebase's
   // listener has moved the app to signed-in, so navigating from the handler would race the guard.
@@ -189,6 +190,8 @@ function LoginPage() {
           Sign in with Google
         </ProviderButton>
       </div>
+
+      <ContinueAsGuest disabled={busy} onContinue={auth.continueAsGuest} />
 
       <p className="text-center text-xs text-muted-foreground sm:text-sm">
         Don't have an account?{" "}
