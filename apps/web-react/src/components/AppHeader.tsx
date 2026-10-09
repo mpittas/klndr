@@ -2,7 +2,7 @@ import { todayISO } from "@klndr/core";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Calendar, Clock, Moon, Sun } from "lucide-react";
 
-import { useAuth } from "@/auth";
+import { isSignedIn, useAuth } from "@/auth";
 import { isFirebaseConfigured } from "@/env";
 import { useTheme } from "@/theme";
 
@@ -18,8 +18,8 @@ export function AppHeader() {
   const theme = useTheme();
 
   const today = todayISO();
-  const user = state.status === "signed-in" ? state.user : null;
-  const profile = state.status === "signed-in" ? state.profile : null;
+  const user = isSignedIn(state) ? state.user : null;
+  const profile = isSignedIn(state) ? state.profile : null;
   const loading = state.status === "loading";
 
   const isDayView = path.startsWith("/day");

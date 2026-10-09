@@ -8,6 +8,7 @@ import {
 import type { ProfileSource } from "@klndr/data";
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 
+import { GUEST_UID, loadGuestProfile, saveGuestProfile } from "@/guest/storage";
 import { getFirebaseServices } from "./firebase";
 import type { AuthUser } from "./types";
 
@@ -33,6 +34,8 @@ const serverNow = () => new Date().toISOString();
 
 export const profileStore: ProfileStore = {
   async read(uid) {
+    // A guest's profile stays in this browser; no account exists to write it to.
+    if (uid === GUEST_UID) return loadGuestProfile();
     const { db } = getFirebaseServices();
     if (!db) return devProfiles.get(uid) ?? null;
     const snapshot = await getDoc(doc(db, "users", uid));
@@ -40,6 +43,10 @@ export const profileStore: ProfileStore = {
   },
 
   async create(uid, fields) {
+    if (uid === GUEST_UID) {
+      saveGuestProfile({ ...fields, createdAt: serverNow(), updatedAt: serverNow() });
+      return;
+    }
     const { db } = getFirebaseServices();
     if (!db) {
       devProfiles.set(uid, { ...fields, createdAt: serverNow(), updatedAt: serverNow() });
@@ -53,6 +60,10 @@ export const profileStore: ProfileStore = {
   },
 
   async update(uid, fields) {
+    if (uid === GUEST_UID) {
+      saveGuestProfile({ ...(loadGuestProfile() ?? {}), ...fields, updatedAt: serverNow() });
+      return;
+    }
     const { db } = getFirebaseServices();
     if (!db) {
       devProfiles.set(uid, { ...(devProfiles.get(uid) ?? {}), ...fields, updatedAt: serverNow() });

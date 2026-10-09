@@ -4,7 +4,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Mail } from "lucide-react";
 import { useState, type FormEventHandler } from "react";
 
-import { currentProviderIds, useAuth, type AuthUser, type LinkableProvider } from "@/auth";
+import { currentProviderIds, isSignedIn, useAuth, type AuthUser, type LinkableProvider } from "@/auth";
 import { ErrorAlert, SuccessAlert } from "@/components/AuthCard";
 import { TextField } from "@/components/TextField";
 import { AccountActionsCard } from "@/components/profile/AccountActionsCard";
@@ -73,8 +73,9 @@ function ProfilePage() {
   const profileQuery = useProfile();
   const update = useUpdateProfile();
 
-  const user = state.status === "signed-in" ? state.user : null;
-  const profileError = state.status === "signed-in" ? state.profileError : null;
+  const user = isSignedIn(state) ? state.user : null;
+  const profileError = isSignedIn(state) ? state.profileError : null;
+  const guest = state.status === "guest";
 
   const loaded = profileQuery.data;
   const [form, setForm] = useState<ProfileForm>(() => (loaded ? formFromProfile(loaded) : formFromAccount(user)));
@@ -199,7 +200,13 @@ function ProfilePage() {
         </div>
       ) : (
         <div className="space-y-6">
-          <ProfileCard initials={initials} displayName={form.displayName || ""} email={user.email || ""} uid={user.uid} />
+          <ProfileCard
+            initials={initials}
+            displayName={form.displayName || ""}
+            email={user.email || ""}
+            uid={user.uid}
+            guest={guest}
+          />
 
           {profileError ? (
             <div className="flex items-center justify-between gap-2.5 rounded-lg border border-rose-200/80 bg-rose-50/80 p-3 text-xs font-medium text-rose-800 sm:text-sm dark:border-rose-400/25 dark:bg-rose-500/10 dark:text-rose-200">
@@ -365,13 +372,23 @@ function ProfilePage() {
             </form>
           </div>
 
-          <SignInMethodsCard
-            providerIds={providerIds}
-            appleEnabled={isAppleSignInEnabled}
-            busy={linking}
-            error={linkError}
-            onConnect={(provider) => void handleConnect(provider)}
-          />
+          {guest ? (
+            <div className="rounded-xl border border-border bg-card p-5 shadow-xs sm:p-6">
+              <h3 className="text-sm font-semibold text-foreground">Guest mode</h3>
+              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                Your planner and profile are saved in this browser only. To create an account or sign in, sign out
+                first.
+              </p>
+            </div>
+          ) : (
+            <SignInMethodsCard
+              providerIds={providerIds}
+              appleEnabled={isAppleSignInEnabled}
+              busy={linking}
+              error={linkError}
+              onConnect={(provider) => void handleConnect(provider)}
+            />
+          )}
 
           <AccountActionsCard onLogout={() => void handleLogout()} />
 
