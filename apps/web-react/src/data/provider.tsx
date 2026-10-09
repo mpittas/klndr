@@ -2,7 +2,8 @@ import { DataProvider } from "@klndr/data";
 import { useCallback, useMemo, type PropsWithChildren } from "react";
 
 import { api } from "@/api";
-import { DEV_USER, useAuth } from "@/auth";
+import { DEV_USER, isSignedIn, useAuth } from "@/auth";
+import { guestApi } from "@/guest/api";
 import { useToast } from "@/toast";
 
 import { createLiveChanges } from "./live-changes";
@@ -23,15 +24,18 @@ export function AppDataProvider({ children }: PropsWithChildren) {
   const toast = useToast();
   const notify = useCallback((message: string) => toast.show(message), [toast]);
 
-  const userId =
-    state.status === "signed-in" ? state.user.uid : state.status === "unavailable" ? DEV_USER.uid : null;
+  const userId = isSignedIn(state) ? state.user.uid : state.status === "unavailable" ? DEV_USER.uid : null;
 
-  // Only a signed-in person has other devices to hear from (not the credential-free development user).
+  // Only a signed-in person has other devices to hear from (not the credential-free development user, nor a
+  // guest, whose planner lives in this browser).
   const signedInUid = state.status === "signed-in" ? state.user.uid : null;
   const liveChanges = useMemo(() => (signedInUid ? createLiveChanges(signedInUid) : undefined), [signedInUid]);
 
+  // A guest's requests are answered in this browser, not sent to the API.
+  const client = state.status === "guest" ? guestApi : api;
+
   return (
-    <DataProvider api={api} userId={userId} notify={notify} syncTabs liveChanges={liveChanges} profile={profileSource ?? undefined}>
+    <DataProvider api={client} userId={userId} notify={notify} syncTabs liveChanges={liveChanges} profile={profileSource ?? undefined}>
       {children}
     </DataProvider>
   );

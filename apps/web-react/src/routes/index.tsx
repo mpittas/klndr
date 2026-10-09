@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 
-import { isFirebaseConfigured, useAuth } from "@/auth";
+import { isFirebaseConfigured, isSignedIn, useAuth } from "@/auth";
 import { LandingCompare } from "@/components/landing/LandingCompare";
 import { LandingCta } from "@/components/landing/LandingCta";
 import { LandingFeatures } from "@/components/landing/LandingFeatures";
@@ -27,7 +27,7 @@ function LandingPage() {
   useDocumentTitle("klndr. · Plan your day, block by block");
 
   const { state } = useAuth();
-  const signedIn = state.status === "signed-in";
+  const signedIn = isSignedIn(state);
 
   // Signed-in visitors get the calendar wording. Without Firebase (local development) there are no
   // accounts, so the calendar is the place to start as well.

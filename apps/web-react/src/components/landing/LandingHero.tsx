@@ -1,6 +1,7 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowDown, ArrowRight, ArrowUp, Check } from "lucide-react";
 
+import { useAuth } from "@/auth";
 import { PlannerMock } from "@/components/landing/PlannerMock";
 import type { LandingStart } from "@/components/landing/types";
 
@@ -12,6 +13,15 @@ const ROUTINES_TOTAL = 4;
 const RING = 2 * Math.PI * 15;
 
 export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn: boolean }) {
+  const { continueAsGuest } = useAuth();
+  const navigate = useNavigate();
+
+  // A guest needs no account, so the planner opens at once.
+  const tryAsGuest = () => {
+    continueAsGuest();
+    void navigate({ to: "/calendar" });
+  };
+
   return (
     // overflow-clip, not hidden: a hidden overflow is a scroll container and would pin the tilt's view timeline.
     <section className="relative isolate overflow-clip">
@@ -55,12 +65,21 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
             </Link>
             {!signedIn ? (
-              <Link
-                to="/login"
-                className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-background/80 px-6 text-[15px] font-medium text-foreground shadow-2xs backdrop-blur transition hover:bg-accent active:scale-[0.98]"
-              >
-                Log in
-              </Link>
+              <>
+                <button
+                  type="button"
+                  onClick={tryAsGuest}
+                  className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-background/80 px-6 text-[15px] font-medium text-foreground shadow-2xs backdrop-blur transition hover:bg-accent active:scale-[0.98]"
+                >
+                  Try as a guest
+                </button>
+                <Link
+                  to="/login"
+                  className="inline-flex h-12 items-center justify-center rounded-xl border border-border bg-background/80 px-6 text-[15px] font-medium text-foreground shadow-2xs backdrop-blur transition hover:bg-accent active:scale-[0.98]"
+                >
+                  Log in
+                </Link>
+              </>
             ) : (
               <a
                 href="#how-it-works"

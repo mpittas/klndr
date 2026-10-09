@@ -172,3 +172,19 @@ describe("failures", () => {
     await expect(createApiClient().getTemplates()).rejects.toThrow("Request failed (502)");
   });
 });
+
+describe("sending requests", () => {
+  it("sends through the fetch it is given, instead of the network", async () => {
+    const calls = stubFetch({ tasks: [] });
+    const seen: string[] = [];
+    const send = async (url: string) => {
+      seen.push(url);
+      return new Response(JSON.stringify({ tasks: [] }), { status: 200 });
+    };
+
+    await createApiClient({ baseUrl: "", fetch: send }).getTasksForDay("2026-10-03");
+
+    expect(seen).toEqual(["/api/tasks?day=2026-10-03"]);
+    expect(calls).toEqual([]);
+  });
+});

@@ -11,9 +11,10 @@ import {
 } from "react";
 
 import { isFirebaseConfigured } from "@/env";
+import { clearGuestData, GUEST_UID, isGuestSession, setGuestSession } from "@/guest/storage";
 import { createProfileSource, profileLoader } from "./profile";
 import * as service from "./service";
-import type { AuthState, AuthUser } from "./types";
+import { isSignedIn, type AuthState, type AuthUser } from "./types";
 
 /**
  * Who is signed in, for the whole app, and the router gate's one question: signed in, or not.
@@ -32,8 +33,12 @@ export type AuthContextValue = {
   /** Attach Google or Apple to the signed-in account, so either one opens the same data. */
   linkProvider(provider: service.LinkableProvider): Promise<void>;
   requestPasswordReset(email: string): Promise<void>;
+  /** Signs a guest out too; their planner stays in this browser for the next guest visit. */
   signOut(): Promise<void>;
+  /** For a guest, this clears their planner from the browser; for an account, it deletes the account. */
   deleteAccount(options?: { password?: string }): Promise<void>;
+  /** Use the app without an account. The planner is kept in this browser (see `src/guest/`). */
+  continueAsGuest(): void;
   /** Try the profile again after it failed to load. */
   retryProfile(): void;
 };
@@ -49,6 +54,11 @@ const UNAVAILABLE_MESSAGE =
  */
 export const DEV_USER: AuthUser = { uid: "local-dev", email: null, displayName: "Local Dev", photoURL: null };
 
+/** The person a guest is shown as. Their data is keyed by `GUEST_UID`, which no Firebase account has. */
+const GUEST_USER: AuthUser = { uid: GUEST_UID, email: null, displayName: "Guest", photoURL: null };
+
+const guestState = (): AuthState => ({ status: "guest", user: GUEST_USER, profile: null, profileError: null });
+
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 /**
@@ -62,33 +72,56 @@ const actions = {
   signInWithApple: () => service.signInWithApple(),
   linkProvider: (provider) => service.linkProvider(provider),
   requestPasswordReset: (email) => service.requestPasswordReset(email.trim()),
-  signOut: () => service.signOutUser(),
-  deleteAccount: (options) => service.deleteAccount(options),
-} satisfies Omit<AuthContextValue, "state" | "profileSource" | "retryProfile">;
+} satisfies Omit<
+  AuthContextValue,
+  "state" | "profileSource" | "retryProfile" | "signOut" | "deleteAccount" | "continueAsGuest"
+>;
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [state, setState] = useState<AuthState>(() =>
-    isFirebaseConfigured ? { status: "loading" } : { status: "unavailable", message: UNAVAILABLE_MESSAGE },
-  );
+  const [state, setState] = useState<AuthState>(() => {
+    if (isFirebaseConfigured) return { status: "loading" };
+    if (isGuestSession()) return guestState();
+    return { status: "unavailable", message: UNAVAILABLE_MESSAGE };
+  });
   // Each sign-in change gets a number, so a slow profile read for someone who has since signed out (or in
   // as somebody else) cannot overwrite what is now on screen.
   const generation = useRef(0);
-  const currentUser = useRef<AuthUser | null>(null);
+  // Who is on screen, as an account or as a guest, so the profile can be read again when it failed. Starts
+  // as the initial state does: a guest from last time, in a build without Firebase, is already shown as one.
+  const current = useRef<{ user: AuthUser; status: "signed-in" | "guest" } | null>(
+    !isFirebaseConfigured && isGuestSession() ? { user: GUEST_USER, status: "guest" } : null,
+  );
 
-  const loadProfileFor = useCallback(async (user: AuthUser) => {
+  const loadProfileFor = useCallback(async (user: AuthUser, status: "signed-in" | "guest") => {
     const mine = ++generation.current;
     try {
       const profile = await profileLoader.load(user);
-      if (generation.current === mine) setState({ status: "signed-in", user, profile, profileError: null });
+      if (generation.current === mine) setState({ status, user, profile, profileError: null });
     } catch (error) {
       console.warn("Could not load the profile:", error);
       if (generation.current === mine) {
-        setState({ status: "signed-in", user, profile: null, profileError: PROFILE_ERROR });
+        setState({ status, user, profile: null, profileError: PROFILE_ERROR });
       }
     }
   }, []);
 
+  const enterGuest = useCallback(() => {
+    setGuestSession(true);
+    current.current = { user: GUEST_USER, status: "guest" };
+    setState(guestState());
+    void loadProfileFor(GUEST_USER, "guest");
+  }, [loadProfileFor]);
+
+  // Leaves the signed-in screens. The caller decides what happens to the data.
+  const leaveAccount = useCallback(() => {
+    generation.current += 1;
+    current.current = null;
+    setState({ status: "signed-out" });
+  }, []);
+
   useEffect(() => {
+    // Without Firebase there is no sign-in to wait for; a guest from last time is already shown as one
+    // (see the initial state). Their profile is loaded on demand by the profile screen.
     if (!isFirebaseConfigured) return;
 
     // Only the first answer keeps `loading` (until the profile is read). Every answer after that moves
@@ -100,14 +133,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
       firstAnswer = false;
 
       if (!firebaseUser) {
+        // A guest who was in guest mode when the page opened goes back to being one.
+        if (isGuestSession()) {
+          enterGuest();
+          return;
+        }
         generation.current += 1;
-        currentUser.current = null;
+        current.current = null;
         setState({ status: "signed-out" });
         return;
       }
 
       const user = service.toAuthUser(firebaseUser);
-      currentUser.current = user;
+      setGuestSession(false);
+      current.current = { user, status: "signed-in" };
 
       if (!wasFirst) {
         // Keep whatever is on screen for the person already shown; a different uid starts clean.
@@ -118,16 +157,37 @@ export function AuthProvider({ children }: PropsWithChildren) {
         );
       }
 
-      void loadProfileFor(user);
+      void loadProfileFor(user, "signed-in");
     });
-  }, [loadProfileFor]);
+  }, [loadProfileFor, enterGuest]);
 
   const retryProfile = useCallback(() => {
-    if (currentUser.current) void loadProfileFor(currentUser.current);
+    if (current.current) void loadProfileFor(current.current.user, current.current.status);
   }, [loadProfileFor]);
 
+  const signOut = useCallback(async () => {
+    if (current.current?.status === "guest") {
+      setGuestSession(false);
+      leaveAccount();
+      return;
+    }
+    await service.signOutUser();
+  }, [leaveAccount]);
+
+  const deleteAccount = useCallback(
+    async (options?: { password?: string }) => {
+      if (current.current?.status === "guest") {
+        clearGuestData();
+        leaveAccount();
+        return;
+      }
+      await service.deleteAccount(options);
+    },
+    [leaveAccount],
+  );
+
+  const user = isSignedIn(state) ? state.user : null;
   const status = state.status;
-  const user = state.status === "signed-in" ? state.user : null;
 
   const profileSource = useMemo<ProfileSource | null>(() => {
     if (user) return createProfileSource(user);
@@ -137,8 +197,16 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, [status, user]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ state, profileSource, ...actions, retryProfile }),
-    [state, profileSource, retryProfile],
+    () => ({
+      state,
+      profileSource,
+      ...actions,
+      signOut,
+      deleteAccount,
+      continueAsGuest: enterGuest,
+      retryProfile,
+    }),
+    [state, profileSource, signOut, deleteAccount, enterGuest, retryProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

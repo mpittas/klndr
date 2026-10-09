@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { isFirebaseConfigured, useAuth } from "@/auth";
+import { isFirebaseConfigured, isSignedIn, useAuth } from "@/auth";
 import { LandingLogo } from "@/components/landing/LandingLogo";
 import type { LandingStart } from "@/components/landing/types";
 import { useTheme } from "@/theme";
@@ -16,7 +16,7 @@ const LINKS = [
 export function LandingNav({ start }: { start: LandingStart }) {
   const { state } = useAuth();
   const { toggle: toggleTheme } = useTheme();
-  const signedIn = state.status === "signed-in";
+  const signedIn = isSignedIn(state);
 
   // The bar is see-through over the hero and tucks into a floating pill once the page scrolls under it.
   const [scrolled, setScrolled] = useState(false);

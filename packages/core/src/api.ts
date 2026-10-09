@@ -12,6 +12,11 @@ export type ApiClientOptions = {
    * device can ignore its own when it hears about it from the others.
    */
   clientId?: string;
+  /**
+   * How a request is sent. Defaults to the browser's `fetch`; guest mode passes one that answers from the
+   * API running in this tab, so the same client code works without a server.
+   */
+  fetch?: (input: string, init: RequestInit) => Promise<Response>;
 };
 
 export type TaskDraft = {
@@ -72,10 +77,11 @@ export type ApiClient = {
 export function createApiClient(options: ApiClientOptions = {}): ApiClient {
   const baseUrl = (options.baseUrl ?? "").replace(/\/+$/, "");
   const getToken = options.getToken;
+  const send = options.fetch ?? ((input: string, init: RequestInit) => fetch(input, init));
 
   async function request<T>(path: string, init: RequestInit): Promise<T> {
     const token = getToken ? await getToken() : null;
-    const response = await fetch(`${baseUrl}${path}`, {
+    const response = await send(`${baseUrl}${path}`, {
       ...init,
       headers: {
         "Content-Type": "application/json",
