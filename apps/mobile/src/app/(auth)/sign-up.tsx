@@ -77,13 +77,17 @@ export default function SignUpScreen() {
 
         {error ? <FormMessage kind="error">{error}</FormMessage> : null}
 
-        <Button label="Create account" loading={busy} onPress={signUp} />
+        <Button label="Create account" loading={busy} onPress={signUp} size="large" />
       </View>
 
       <View className="gap-sm">
-        <Text className="text-center" tone="muted" variant="caption">
-          or
-        </Text>
+        <View className="flex-row items-center gap-sm py-xs">
+          <View className="h-px flex-1 bg-border" />
+          <Text tone="muted" variant="caption">
+            or
+          </Text>
+          <View className="h-px flex-1 bg-border" />
+        </View>
         <AppleButton
           disabled={busy}
           onPress={() => void submit(async () => void (await service.signInWithApple()))}

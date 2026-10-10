@@ -17,13 +17,16 @@ export type DateTimePickerProps = {
   onDismiss?: () => void;
   /** `inline` (iOS) keeps the calendar in the view; `spinner` is the wheel. */
   display?: "default" | "spinner" | "compact" | "inline";
+  /** Only the control, for the end of a card row whose own text is the label; `label` is then only spoken. */
+  bare?: boolean;
   className?: string;
 };
 
 /**
- * A date or time, using the platform's picker — the iOS wheel and calendar, the Material dialog — with
- * the app's accent colour and the current scheme handed to it, so it does not arrive in the system's
- * default blue on a dark screen.
+ * A date or time, using the platform's picker — the iOS compact pill, wheel and calendar, the Material dialog
+ * — with the app's accent colour and the current scheme handed to it, so it does not arrive in the system's
+ * default blue on a dark screen. On Android, where the picker is a dialog, the value is shown as the same
+ * grey pill iOS draws, and a tap opens it.
  */
 export function DateTimePicker({
   label,
@@ -34,31 +37,31 @@ export function DateTimePicker({
   maximumDate,
   onDismiss,
   display = "inline",
+  bare = false,
   className,
 }: DateTimePickerProps) {
   const colors = useThemeColors();
   const scheme = useThemeScheme();
   const [open, setOpen] = useState(false);
   const android = Platform.OS === "android";
-  const shownValue = mode === "time"
-    ? value.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    : value.toLocaleDateString();
+  const shownValue =
+    mode === "time"
+      ? value.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      : value.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
 
-  return (
-    <View className={["gap-xs", className].filter(Boolean).join(" ")}>
-      <Text tone="muted" variant="caption">
-        {label}
-      </Text>
-
+  const control = (
+    <>
       {android ? (
         <Pressable
           accessibilityLabel={`${label}, ${shownValue}`}
           accessibilityRole="button"
-          className="justify-center rounded-md border border-input bg-card px-sm"
-          style={{ minHeight: 44 }}
+          className="justify-center rounded-sm bg-muted px-sm"
           onPress={() => setOpen(true)}
+          style={({ pressed }) => ({ minHeight: 34, opacity: pressed ? 0.7 : 1 })}
         >
-          <Text numeric>{shownValue}</Text>
+          <Text numeric variant="callout">
+            {shownValue}
+          </Text>
         </Pressable>
       ) : null}
 
@@ -81,6 +84,17 @@ export function DateTimePicker({
           value={value}
         />
       ) : null}
+    </>
+  );
+
+  if (bare) return <View className={["items-end", className].filter(Boolean).join(" ")}>{control}</View>;
+
+  return (
+    <View className={["gap-xs", className].filter(Boolean).join(" ")}>
+      <Text className="px-xs" tone="muted" variant="caption" weight={500}>
+        {label}
+      </Text>
+      {control}
     </View>
   );
 }

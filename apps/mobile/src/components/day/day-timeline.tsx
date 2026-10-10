@@ -46,7 +46,7 @@ import { EmptyState, Button, Skeleton, Text } from "@/components/ui";
 import { useThemeColors, useThemeScheme } from "@/theme/tokens";
 
 import { nowColor } from "./block-colors";
-import { BLOCK_SIDE_INSET, BOTTOM_PADDING, GRID_TOP, GUTTER_WIDTH } from "./constants";
+import { BLOCK_RADIUS, BLOCK_SIDE_INSET, BOTTOM_PADDING, GRID_TOP, GUTTER_WIDTH } from "./constants";
 import { TimeBlock, resizeLabelFor, type DragControls } from "./time-block";
 
 export type DayTimelineProps = {
@@ -67,6 +67,8 @@ export type DayTimelineProps = {
   onMove: (task: ScheduledTask, startMinutes: number, lanes?: Map<string, number>) => void;
   onResize: (task: ScheduledTask, durationMinutes: number) => void;
   onDelete: (task: ScheduledTask) => void;
+  /** How much of the bottom edge the tab bar covers: the timeline scrolls on under it, and stops clear of it. */
+  bottomInset?: number;
 };
 
 /** A block being held: where it would land, and how far across the timeline the finger is. */
@@ -84,7 +86,7 @@ type Guide = { start: number; end: number };
  * aside and the selection haptic. Nothing re-renders on every frame of a drag.
  */
 export function DayTimeline(props: DayTimelineProps) {
-  const { day, tasks, loading, failed, onRetry, colorOf, nowMinute, onCreateAt, onOpen, onToggle, onMove, onResize, onDelete } = props;
+  const { day, tasks, loading, failed, onRetry, colorOf, nowMinute, onCreateAt, onOpen, onToggle, onMove, onResize, onDelete, bottomInset = 0 } = props;
 
   const { width: windowWidth } = useWindowDimensions();
   const areaWidth = windowWidth - GUTTER_WIDTH;
@@ -260,12 +262,13 @@ export function DayTimeline(props: DayTimelineProps) {
   const { drag, refresh } = engine;
 
   // Near the top or bottom edge of the scroll area, a held block scrolls it; the block stays under the finger.
-  const contentHeight = GRID_TOP + GRID_HEIGHT + BOTTOM_PADDING;
+  // The bottom edge that counts is the tab bar's top, not the scroll area's own (it runs on under the bar).
+  const contentHeight = GRID_TOP + GRID_HEIGHT + BOTTOM_PADDING + bottomInset;
   useFrameCallback(() => {
     "worklet";
     if (dragId.get() === "" || !scrollLocked.get()) return;
     const top = viewportTop.get();
-    const speed = edgeScrollSpeed(fingerY.get(), top, top + viewportHeight.get());
+    const speed = edgeScrollSpeed(fingerY.get(), top, top + viewportHeight.get() - bottomInset);
     if (speed === 0) return;
     const next = Math.max(0, Math.min(contentHeight - viewportHeight.get(), scrollCursor.get() + speed));
     if (next === scrollCursor.get()) return;
@@ -346,8 +349,9 @@ export function DayTimeline(props: DayTimelineProps) {
   return (
     <Animated.ScrollView
       animatedProps={scrollProps}
-      contentContainerStyle={{ paddingTop: GRID_TOP, paddingBottom: BOTTOM_PADDING }}
+      contentContainerStyle={{ paddingTop: GRID_TOP, paddingBottom: BOTTOM_PADDING + bottomInset }}
       ref={scrollRef}
+      scrollIndicatorInsets={{ bottom: bottomInset }}
       style={{ flex: 1 }}
     >
       <View style={{ flexDirection: "row", height: GRID_HEIGHT }}>
@@ -355,7 +359,6 @@ export function DayTimeline(props: DayTimelineProps) {
           guide={guide}
           nowMinute={nowMinute}
           nowTone={nowColor(scheme)}
-          borderColor={lineColor}
           mutedColor={theme["muted-foreground"]}
           pillBackground={theme.muted}
           pillBorder={lineColor}
@@ -383,6 +386,7 @@ export function DayTimeline(props: DayTimelineProps) {
           ) : null}
 
           {loading ? <LoadingBlocks /> : null}
+          {!loading && !failed && tasks.length === 0 ? <EmptyHint color={theme["muted-foreground"]} /> : null}
           {failed ? (
             <View style={{ position: "absolute", left: 0, right: 0, top: 640 }}>
               <EmptyState
@@ -436,25 +440,55 @@ type GutterProps = {
   guide: Guide | null;
   nowMinute: number | null;
   nowTone: string;
-  borderColor: string;
   mutedColor: string;
   pillBackground: string;
   pillBorder: string;
   pillText: string;
 };
 
+/** A time in the gutter's pills: one line, never wrapped, centred on its line across the grid. */
+function GutterPill({ minute, background, border, color, z }: { minute: number; background: string; border?: string; color: string; z: number }) {
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        right: 4,
+        top: minutesToPx(minute) - 9,
+        minWidth: GUTTER_WIDTH - 8,
+        alignItems: "center",
+        borderRadius: 9,
+        borderWidth: border ? StyleSheet.hairlineWidth : 0,
+        borderColor: border,
+        backgroundColor: background,
+        paddingHorizontal: 4,
+        paddingVertical: 2,
+        zIndex: z,
+      }}
+    >
+      <Text maxFontSizeMultiplier={1} numberOfLines={1} numeric style={{ color }} variant="nano">
+        {formatTime(minute)}
+      </Text>
+    </View>
+  );
+}
+
 /** The hour labels, and — while a block is moved or resized — its start and end, and the live time. */
 const Gutter = memo(function Gutter(props: GutterProps) {
-  const { guide, nowMinute, nowTone, borderColor, mutedColor, pillBackground, pillBorder, pillText } = props;
+  const { guide, nowMinute, nowTone, mutedColor, pillBackground, pillBorder, pillText } = props;
   return (
-    <View style={{ width: GUTTER_WIDTH, borderRightWidth: StyleSheet.hairlineWidth, borderRightColor: borderColor }}>
+    <View style={{ width: GUTTER_WIDTH }}>
       {HOUR_OPTIONS.map((minute) => {
         const label = gutterLabel(minute);
-        return label ? (
+        // An hour under the live time or a moved block's edge is hidden, so the two never print over each other.
+        const covered = (nowMinute !== null && Math.abs(minute - nowMinute) < 20) || guide?.start === minute || guide?.end === minute;
+        return label && !covered ? (
           <Text
             key={minute}
+            maxFontSizeMultiplier={1.2}
+            numberOfLines={1}
             numeric
-            style={{ position: "absolute", right: 8, top: minutesToPx(minute) - 7, color: mutedColor }}
+            style={{ position: "absolute", right: 10, top: minutesToPx(minute) - 7, color: mutedColor }}
             variant="micro"
           >
             {label}
@@ -464,49 +498,16 @@ const Gutter = memo(function Gutter(props: GutterProps) {
 
       {guide
         ? [guide.start, guide.end].map((minute) => (
-            <View
-              key={`edge-${minute}`}
-              pointerEvents="none"
-              style={{
-                position: "absolute",
-                right: 3,
-                top: minutesToPx(minute) - 9,
-                borderRadius: 6,
-                borderWidth: StyleSheet.hairlineWidth,
-                borderColor: pillBorder,
-                backgroundColor: pillBackground,
-                paddingHorizontal: 4,
-                paddingVertical: 2,
-                zIndex: 20,
-              }}
-            >
-              <Text numeric style={{ color: pillText }} variant="nano">{formatTime(minute)}</Text>
-            </View>
+            <GutterPill background={pillBackground} border={pillBorder} color={pillText} key={`edge-${minute}`} minute={minute} z={20} />
           ))
         : null}
 
-      {nowMinute !== null ? (
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            right: 3,
-            top: minutesToPx(nowMinute) - 9,
-            borderRadius: 6,
-            backgroundColor: nowTone,
-            paddingHorizontal: 4,
-            paddingVertical: 2,
-            zIndex: 30,
-          }}
-        >
-          <Text numeric style={{ color: "#ffffff" }} variant="nano">{formatTime(nowMinute)}</Text>
-        </View>
-      ) : null}
+      {nowMinute !== null ? <GutterPill background={nowTone} color="#ffffff" minute={nowMinute} z={30} /> : null}
     </View>
   );
 });
 
-/** Hairlines every half hour, stronger on the hour, as on the web. */
+/** Hairlines on the hour, fainter on the half hour, as on the web. */
 const GridLines = memo(function GridLines({ color }: { color: string }) {
   return (
     <>
@@ -521,7 +522,7 @@ const GridLines = memo(function GridLines({ color }: { color: string }) {
             top: minutesToPx(minute),
             height: StyleSheet.hairlineWidth,
             backgroundColor: color,
-            opacity: minute % 60 === 0 ? 0.8 : 0.35,
+            opacity: minute % 60 === 0 ? 1 : 0.45,
           }}
         />
       ))}
@@ -566,7 +567,7 @@ function Ghost(props: { start: number; duration: number; left: number; width: nu
         height: blockHeight(duration),
         left,
         width,
-        borderRadius: 10,
+        borderRadius: BLOCK_RADIUS,
         borderWidth: 1,
         borderStyle: "dashed",
         borderColor,
@@ -586,7 +587,18 @@ function NowLine({ minute, color }: { minute: number; color: string }) {
       style={{ position: "absolute", left: -4, right: 0, top: minutesToPx(minute) - 4, height: 8, flexDirection: "row", alignItems: "center", zIndex: 20 }}
     >
       <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-      <View style={{ flex: 1, height: 1.5, backgroundColor: color, opacity: 0.8 }} />
+      <View style={{ flex: 1, height: 1.5, backgroundColor: color }} />
+    </View>
+  );
+}
+
+/** An empty day says how to start, where the day opens, without taking the taps the grid needs. */
+function EmptyHint({ color }: { color: string }) {
+  return (
+    <View pointerEvents="none" style={{ position: "absolute", left: 12, right: 12, top: blockTop(8 * 60) + 6, alignItems: "center" }}>
+      <Text style={{ color, textAlign: "center" }} variant="caption">
+        Nothing planned yet. Tap a time to add a block, or use +.
+      </Text>
     </View>
   );
 }

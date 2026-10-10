@@ -46,6 +46,10 @@ function RootNavigator() {
         <Stack.Screen name="task-editor" options={formSheet([0.8, 1])} />
         <Stack.Screen name="emoji-sheet" options={formSheet([0.7, 1])} />
         <Stack.Screen name="date-sheet" options={formSheet([0.75])} />
+        <Stack.Screen name="month-sheet" options={formSheet([0.7])} />
+        <Stack.Screen name="day-sheet" options={formSheet([0.7, 1])} />
+        <Stack.Screen name="activity-sheet" options={formSheet([0.8, 1])} />
+        <Stack.Screen name="category-sheet" options={formSheet([0.8, 1])} />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
         <Stack.Screen name="(auth)" />

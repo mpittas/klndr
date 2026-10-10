@@ -22,7 +22,7 @@ import { Text } from "@/components/ui";
 import { Check } from "@/icons";
 
 import { blockColors } from "./block-colors";
-import { RESIZE_STRIP, RING_HIT, RING_SIZE, VERY_WIDE_BLOCK, WIDE_BLOCK } from "./constants";
+import { BLOCK_RADIUS, RESIZE_STRIP, RING_HIT, RING_SIZE, VERY_WIDE_BLOCK, WIDE_BLOCK } from "./constants";
 
 /**
  * What a block needs from the timeline to be lifted and dragged. The timeline owns the drag (one block is
@@ -210,11 +210,29 @@ function TimeBlockView(props: TimeBlockProps) {
   const strip = Math.min(RESIZE_STRIP, Math.max(12, blockHeight(duration) / 2));
   const label = `${task.title}, ${formatTime(start)} to ${formatTime(start + duration)}${task.completed ? ", done" : ""}`;
 
+  const ringView = showRing ? (
+    <View
+      style={{
+        marginTop: short ? 0 : 1,
+        width: RING_SIZE,
+        height: RING_SIZE,
+        borderRadius: RING_SIZE / 2,
+        borderWidth: 1.5,
+        borderColor: task.completed ? "transparent" : colors.ring,
+        backgroundColor: task.completed ? colors.accent : "transparent",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {task.completed ? <Check color="#ffffff" size={11} strokeWidth={3.5} /> : null}
+    </View>
+  ) : null;
+
   return (
     <Animated.View
       pointerEvents="box-none"
       style={[
-        { position: "absolute", borderRadius: 10, backgroundColor: colors.background, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowRadius: 12 },
+        { position: "absolute", borderRadius: BLOCK_RADIUS, backgroundColor: colors.background, shadowColor: "#000", shadowOffset: { width: 0, height: 6 }, shadowRadius: 12 },
         animated,
       ]}
     >
@@ -244,42 +262,25 @@ function TimeBlockView(props: TimeBlockProps) {
             alignItems: short ? "center" : "flex-start",
             gap: 8,
             overflow: "hidden",
-            borderRadius: 10,
+            borderRadius: BLOCK_RADIUS,
             borderWidth: 1,
             borderColor: colors.border,
             backgroundColor: colors.background,
             paddingLeft: 10,
-            paddingRight: 8,
-            paddingTop: short ? 0 : 4,
+            paddingRight: 9,
+            paddingTop: short ? 0 : 5,
             opacity: pending ? 0.7 : 1,
           }}
         >
-          {showRing ? (
-            <View
-              style={{
-                marginTop: short ? 0 : 1,
-                width: RING_SIZE,
-                height: RING_SIZE,
-                borderRadius: RING_SIZE / 2,
-                borderWidth: 1.5,
-                borderColor: task.completed ? "transparent" : colors.ring,
-                backgroundColor: task.completed ? colors.accent : "transparent",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {task.completed ? <Check color="#ffffff" size={11} strokeWidth={3.5} /> : null}
-            </View>
-          ) : null}
-
-          <View style={{ flex: 1, minWidth: 0, flexDirection: short ? "row" : "column", alignItems: short ? "baseline" : "stretch", gap: short ? 8 : 0 }}>
+          <View style={{ flex: 1, minWidth: 0, flexDirection: short ? "row" : "column", alignItems: short ? "baseline" : "stretch", gap: short ? 8 : 1 }}>
             <Text
               maxFontSizeMultiplier={1.25}
               numberOfLines={short ? 1 : lines}
-              style={{ color: colors.text, fontSize: 13, lineHeight: 16, flexShrink: short ? 1 : 0 }}
+              style={{ color: colors.text, fontSize: 13, lineHeight: 17, flexShrink: short ? 1 : 0 }}
               variant="caption"
+              weight={600}
             >
-              {task.emoji ? <Text style={{ opacity: task.completed ? 0.5 : 1, fontSize: 13 }}>{`${task.emoji} `}</Text> : null}
+              {task.emoji ? <Text style={{ opacity: task.completed ? 0.5 : 1, fontSize: 13 }}>{`${task.emoji} `}</Text> : null}
               {task.title}
             </Text>
             {showTime ? (
@@ -287,7 +288,7 @@ function TimeBlockView(props: TimeBlockProps) {
                 maxFontSizeMultiplier={1.25}
                 numberOfLines={1}
                 numeric
-                style={{ color: colors.meta, fontSize: 12, lineHeight: 16, marginTop: short ? 0 : 1, flexShrink: 0 }}
+                style={{ color: colors.meta, fontSize: 12, lineHeight: 16, flexShrink: 0 }}
                 variant="caption"
               >
                 {timeLabel}
@@ -296,12 +297,14 @@ function TimeBlockView(props: TimeBlockProps) {
           </View>
 
           {resizeLabel ? (
-            <View style={{ borderRadius: 4, backgroundColor: "#171717", paddingHorizontal: 6 }}>
+            <View style={{ borderRadius: 6, backgroundColor: "#171717", paddingHorizontal: 6 }}>
               <Text numeric style={{ color: "#fafafa", fontSize: 11, lineHeight: 16 }} variant="micro">
                 {resizeLabel}
               </Text>
             </View>
           ) : null}
+
+          {ringView}
         </Animated.View>
       </GestureDetector>
 
@@ -309,7 +312,7 @@ function TimeBlockView(props: TimeBlockProps) {
         // The ring is small, so the square around it counts: a tap there ticks the block off, anywhere else opens it.
         <GestureDetector gesture={ring}>
           <View
-            style={{ position: "absolute", left: 0, top: 0, width: RING_HIT, height: Math.min(RING_HIT, blockHeight(duration)) }}
+            style={{ position: "absolute", right: 0, top: 0, width: RING_HIT, height: Math.min(RING_HIT, blockHeight(duration)) }}
           />
         </GestureDetector>
       ) : null}
@@ -317,7 +320,7 @@ function TimeBlockView(props: TimeBlockProps) {
       <GestureDetector gesture={resize}>
         <View style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: strip, alignItems: "center", justifyContent: "flex-end", paddingBottom: 3 }}>
           {hasResizeGrip(task.durationMinutes) ? (
-            <View style={{ width: 20, height: 2, borderRadius: 1, backgroundColor: colors.text, opacity: 0.2 }} />
+            <View style={{ width: 20, height: 3, borderRadius: 2, backgroundColor: colors.text, opacity: 0.18 }} />
           ) : null}
         </View>
       </GestureDetector>

@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, useWindowDimensions, View } from "react-native";
 
-import { Skeleton, Text, TextField } from "@/components/ui";
+import { SearchField, SheetHeader, Skeleton, Text } from "@/components/ui";
 import { answerEmoji, loadEmojiGroups, recentEmojis, rememberRecentEmoji } from "@/lib/emoji";
 
 const CELL = 48;
@@ -79,18 +79,10 @@ export default function EmojiSheet() {
   }, [groups, query, recent, perRow]);
 
   return (
-    <View className="flex-1 bg-background pt-md">
+    <View className="flex-1 bg-background">
+      <SheetHeader onClose={() => router.back()} title="Choose an emoji" />
       <View className="px-md pb-sm">
-        <TextField
-          autoCapitalize="none"
-          autoCorrect={false}
-          clearButtonMode="while-editing"
-          label="Search emojis"
-          onChangeText={setQuery}
-          placeholder="e.g. coffee, run, book"
-          returnKeyType="search"
-          value={query}
-        />
+        <SearchField label="Search emojis" onChangeText={setQuery} placeholder="Search, e.g. coffee, run, book" surface="muted" value={query} />
       </View>
 
       {groups ? (
@@ -106,7 +98,7 @@ export default function EmojiSheet() {
           }
           renderItem={({ item }) =>
             item.kind === "header" ? (
-              <Text accessibilityRole="header" className="px-md pb-xs pt-md" tone="muted" variant="caption">
+              <Text accessibilityRole="header" className="px-md pb-xs pt-md" tone="muted" variant="caption" weight={600}>
                 {item.title}
               </Text>
             ) : (

@@ -19,7 +19,7 @@ export function AuthScreen({ title, subtitle, children }: PropsWithChildren<{ ti
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} className="flex-1 bg-background">
       <ScrollView
         contentContainerClassName="gap-lg px-md"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 24, paddingTop: insets.top + 32 }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 24, paddingTop: insets.top + 40 }}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
       >
@@ -61,7 +61,7 @@ function PrivacyLink() {
 /** A message under a form, announced when it appears. */
 export function FormMessage({ kind, children }: PropsWithChildren<{ kind: "error" | "info" }>) {
   return (
-    <Text accessibilityLiveRegion="polite" tone={kind === "error" ? "destructive" : "foreground"}>
+    <Text accessibilityLiveRegion="polite" tone={kind === "error" ? "destructive" : "foreground"} variant="callout">
       {children}
     </Text>
   );

@@ -8,7 +8,7 @@ import {
   todayISO,
   withImplicitCategories,
 } from "@klndr/core";
-import { useCategories, useDayTimeline, useLibraryActions, useTemplates } from "@klndr/data";
+import { useCategories, useDayTimeline, useLibraryActions, useProfile, useTemplates } from "@klndr/data";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { View } from "react-native";
 
@@ -34,31 +34,32 @@ export default function TaskEditor() {
   const templates = useTemplates().data ?? [];
   const categories = useCategories().data ?? [];
   const library = useLibraryActions();
+  const profileQuery = useProfile();
 
   const close = () => router.back();
   const task = params.taskId ? timeline.tasks.find((item) => item.id === params.taskId) : undefined;
 
   if (params.taskId && !task) {
     if (timeline.query.isError) return (
-      <View className="flex-1 justify-center bg-background">
+      <View className="flex-1 justify-center bg-canvas">
         <EmptyState
           title="Could not load this block"
           description="Check your connection and try again."
-          action={<Button label="Try again" onPress={() => void timeline.query.refetch()} variant="secondary" />}
+          action={<Button label="Try again" onPress={() => void timeline.query.refetch()} variant="surface" />}
         />
       </View>
     );
     // Still loading, or deleted somewhere else in the meantime.
     return timeline.query.isPending ? (
-      <View className="flex-1 gap-sm bg-background p-md pt-lg">
+      <View className="flex-1 gap-sm bg-canvas p-md pt-lg">
         <Skeleton height={28} width="50%" />
         <Skeleton height={44} />
         <Skeleton height={44} />
       </View>
     ) : (
-      <View className="flex-1 justify-center bg-background">
+      <View className="flex-1 justify-center bg-canvas">
         <EmptyState
-          action={<Button label="Close" onPress={close} variant="secondary" />}
+          action={<Button label="Close" onPress={close} variant="surface" />}
           description="It may have been deleted on another device."
           title="This block is gone"
         />
@@ -72,7 +73,11 @@ export default function TaskEditor() {
     <TaskForm
       categories={categories}
       day={day}
-      defaultDuration={state.status === "signed-in" ? state.profile?.defaultTaskDuration ?? DEFAULT_DURATION : DEFAULT_DURATION}
+      defaultDuration={
+        profileQuery.data?.defaultTaskDuration ??
+        (state.status === "signed-in" ? state.profile?.defaultTaskDuration : undefined) ??
+        DEFAULT_DURATION
+      }
       key={task?.id ?? "new"}
       onClose={close}
       onDelete={

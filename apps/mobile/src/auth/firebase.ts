@@ -1,9 +1,16 @@
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
+  EmailAuthProvider,
   getAuth,
   GoogleAuthProvider,
+  linkWithCredential,
+  linkWithPopup,
   OAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
+  reauthenticateWithPopup,
+  revokeToken,
   sendPasswordResetEmail,
   signInWithCredential,
   signInWithEmailAndPassword,
@@ -13,15 +20,17 @@ import {
   type AuthProvider,
   type User,
 } from "@react-native-firebase/auth";
-import { doc, getDoc, getFirestore, serverTimestamp, setDoc } from "@react-native-firebase/firestore";
+import { doc, getDoc, getFirestore, serverTimestamp, setDoc, updateDoc } from "@react-native-firebase/firestore";
 import * as AppleAuthentication from "expo-apple-authentication";
 import * as Crypto from "expo-crypto";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import { Platform } from "react-native";
 
+import { toProfile } from "@klndr/core";
+
 import { env } from "@/env";
 import { createProfileLoader } from "./profile-loader";
-import type { AuthService, AuthUser, SignInResult } from "./types";
+import type { AuthService, AuthUser, DeleteAccountOptions, LinkableProvider, LinkResult, SignInResult } from "./types";
 
 /**
  * The Firebase adapter for iOS and Android, on React Native Firebase: the native SDKs, which keep the
@@ -77,15 +86,50 @@ const isCancelled = (error: unknown) => {
   );
 };
 
-async function signInWithGoogle(): Promise<SignInResult> {
+/** Google's account chooser, and Firebase's credential for the account picked; `null` when it is backed out of. */
+async function googleCredential() {
   configureGoogle();
+  if (Platform.OS === "android") await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+  const result = await GoogleSignin.signIn();
+  if (result.type === "cancelled") return null;
+  const idToken = result.data.idToken;
+  if (!idToken) throw new Error("Google did not return an ID token. Please try again.");
+  return GoogleAuthProvider.credential(idToken);
+}
+
+/**
+ * Apple's system sheet (iOS): its identity token with the raw nonce Firebase checks it against (the token
+ * carries the SHA-256 of it), as Firebase's credential, plus what Apple handed back for the profile and for
+ * revoking the token when an account is deleted.
+ */
+async function appleCredentialOnIos() {
+  const rawNonce = newNonce();
+  const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, rawNonce);
+  const apple = await AppleAuthentication.signInAsync({
+    requestedScopes: [
+      AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+      AppleAuthentication.AppleAuthenticationScope.EMAIL,
+    ],
+    nonce: hashedNonce,
+  });
+  if (!apple.identityToken) throw new Error("Apple did not return an identity token. Please try again.");
+  const credential = new OAuthProvider("apple.com").credential({ idToken: apple.identityToken, rawNonce });
+  return { apple, credential };
+}
+
+/** Apple's own web flow, which is how Android does it: Firebase opens the page and takes the answer. */
+const appleWebProvider = () =>
+  // The SDK types the class and its own AuthProvider interface apart; it accepts the class.
+  new OAuthProvider("apple.com").addScope("email").addScope("name") as unknown as AuthProvider;
+
+/** Throws the way Firebase's own flows do when a person backs out, so every screen words it the same. */
+const cancelled = () => Object.assign(new Error("The sign-in window closed before it finished."), { code: "auth/popup-closed-by-user" });
+
+async function signInWithGoogle(): Promise<SignInResult> {
   try {
-    if (Platform.OS === "android") await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-    const result = await GoogleSignin.signIn();
-    if (result.type === "cancelled") return "cancelled";
-    const idToken = result.data.idToken;
-    if (!idToken) throw new Error("Google did not return an ID token. Please try again.");
-    await signInWithCredential(getAuth(), GoogleAuthProvider.credential(idToken));
+    const credential = await googleCredential();
+    if (!credential) return "cancelled";
+    await signInWithCredential(getAuth(), credential);
     return "signed-in";
   } catch (error) {
     if (isCancelled(error)) return "cancelled";
@@ -94,44 +138,112 @@ async function signInWithGoogle(): Promise<SignInResult> {
 }
 
 /**
- * Sign in with Apple. iOS uses the system sheet and hands Firebase the identity token with a nonce (the
- * token carries the SHA-256 of it; Firebase checks it against the raw value). Android has no system
- * sheet, so Firebase runs Apple's own web flow.
+ * Sign in with Apple. iOS uses the system sheet and hands Firebase the identity token with a nonce. Android
+ * has no system sheet, so Firebase runs Apple's own web flow.
  */
 async function signInWithApple(): Promise<SignInResult> {
   try {
     if (Platform.OS === "ios") {
-      const rawNonce = newNonce();
-      const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, rawNonce);
-      const apple = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-        nonce: hashedNonce,
-      });
-      if (!apple.identityToken) throw new Error("Apple did not return an identity token. Please try again.");
-
+      const { apple, credential } = await appleCredentialOnIos();
       // Apple shares the name once, on the very first authorisation, and Firebase does not read it from
       // the token: keep it for the profile this sign-in may be about to create.
       const given = apple.fullName?.givenName ?? "";
       const family = apple.fullName?.familyName ?? "";
       profiles.setPendingName(`${given} ${family}`.trim() || null);
       try {
-        const credential = new OAuthProvider("apple.com").credential({ idToken: apple.identityToken, rawNonce });
         await signInWithCredential(getAuth(), credential);
       } finally {
         profiles.setPendingName(null);
       }
     } else {
-      const provider = new OAuthProvider("apple.com").addScope("email").addScope("name");
-      // The SDK types the class and its own AuthProvider interface apart; it accepts the class.
-      await signInWithPopup(getAuth(), provider as unknown as AuthProvider);
+      await signInWithPopup(getAuth(), appleWebProvider());
     }
     return "signed-in";
   } catch (error) {
     if (isCancelled(error)) return "cancelled";
     throw error;
+  }
+}
+
+/** The sign-in methods attached to the account that is signed in. */
+const providerIdsOf = (): readonly string[] => getAuth().currentUser?.providerData.map((entry) => entry.providerId) ?? [];
+
+/**
+ * Attach Google or Apple to the account that is signed in, so each of them opens the same data. Apple's
+ * "Hide My Email" hands the app a relay address Firebase cannot match to the Google account, so signing in
+ * with Apple alone makes a second, empty account: connecting it from inside the real one is how they join.
+ * Throws `auth/credential-already-in-use` when that identity already has an account of its own.
+ */
+async function linkProvider(provider: LinkableProvider): Promise<LinkResult> {
+  const current = getAuth().currentUser;
+  if (!current) throw new Error("You must be signed in to connect another sign-in method.");
+  try {
+    if (provider === "google.com") {
+      const credential = await googleCredential();
+      if (!credential) return "cancelled";
+      await linkWithCredential(current, credential);
+    } else if (Platform.OS === "ios") {
+      await linkWithCredential(current, (await appleCredentialOnIos()).credential);
+    } else {
+      await linkWithPopup(current, appleWebProvider());
+    }
+    return "linked";
+  } catch (error) {
+    if (isCancelled(error)) return "cancelled";
+    throw error;
+  }
+}
+
+/**
+ * Delete the account, in the only order that cannot leave a mess behind: sign in again (Firebase asks for a
+ * recent one), remove every document the person owns while the token is still good, revoke Apple's token when
+ * one is attached (Apple requires it), and then the sign-in itself. A password account passes its password;
+ * Google and Apple go through their own sheet again.
+ */
+async function deleteAccount({ password, deleteData }: DeleteAccountOptions): Promise<void> {
+  const auth = getAuth();
+  const current = auth.currentUser;
+  if (!current) throw new Error("You must be signed in to delete your account.");
+
+  const providers = current.providerData.map((entry) => entry.providerId);
+  let appleCode: string | null = null;
+
+  if (providers.includes("password")) {
+    if (!current.email) throw new Error("You must be signed in to delete your account.");
+    if (!password) throw new Error("Enter your password to confirm.");
+    await reauthenticateWithCredential(current, EmailAuthProvider.credential(current.email, password));
+  } else if (providers.includes("apple.com")) {
+    try {
+      if (Platform.OS === "ios") {
+        const { apple, credential } = await appleCredentialOnIos();
+        await reauthenticateWithCredential(current, credential);
+        appleCode = apple.authorizationCode ?? null;
+      } else {
+        await reauthenticateWithPopup(current, appleWebProvider());
+      }
+    } catch (error) {
+      if (isCancelled(error)) throw cancelled();
+      throw error;
+    }
+  } else if (providers.includes("google.com")) {
+    const credential = await googleCredential().catch((error) => {
+      throw isCancelled(error) ? cancelled() : error;
+    });
+    if (!credential) throw cancelled();
+    await reauthenticateWithCredential(current, credential);
+  }
+
+  await deleteData();
+
+  if (appleCode) {
+    await revokeToken(auth, appleCode).catch((error) => console.warn("Could not revoke the Apple token:", error));
+  }
+
+  await deleteUser(current);
+  // Forget the Google account too, as signing out does.
+  if (env.googleWebClientId) {
+    configureGoogle();
+    await GoogleSignin.signOut().catch(() => {});
   }
 }
 
@@ -180,4 +292,18 @@ export const firebaseAuth: AuthService = {
   },
 
   loadProfile: (user) => profiles.load(user),
+
+  async saveProfile(user, fields) {
+    const reference = doc(getFirestore(), "users", user.uid);
+    // `updatedAt` is the server's time, which `firestore.rules` insists on.
+    await updateDoc(reference, { ...fields, updatedAt: serverTimestamp() });
+    const snapshot = await getDoc(reference);
+    const data = snapshot.exists() ? snapshot.data() : null;
+    if (!data) throw new Error("Couldn't save your profile. Check your connection and try again.");
+    return toProfile(user.uid, data);
+  },
+
+  providerIds: providerIdsOf,
+  linkProvider,
+  deleteAccount,
 };

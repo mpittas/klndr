@@ -53,16 +53,20 @@ export default function SignInScreen() {
 
         {error ? <FormMessage kind="error">{error}</FormMessage> : null}
 
-        <Button label="Sign in" loading={busy} onPress={signIn} />
+        <Button label="Sign in" loading={busy} onPress={signIn} size="large" />
         <Link asChild href="/forgot-password">
           <Button disabled={busy} label="Forgot password?" variant="ghost" />
         </Link>
       </View>
 
       <View className="gap-sm">
-        <Text className="text-center" tone="muted" variant="caption">
-          or
-        </Text>
+        <View className="flex-row items-center gap-sm py-xs">
+          <View className="h-px flex-1 bg-border" />
+          <Text tone="muted" variant="caption">
+            or
+          </Text>
+          <View className="h-px flex-1 bg-border" />
+        </View>
         <AppleButton
           disabled={busy}
           onPress={() => void submit(async () => void (await service.signInWithApple()))}

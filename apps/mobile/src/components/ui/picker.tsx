@@ -12,6 +12,8 @@ export type PickerProps<T extends string | number> = {
   onChange: (value: T) => void;
   /** The picker's label, and its accessible name. */
   label: string;
+  /** Only the control, for the end of a card row whose own text is the label; `label` is then only spoken. */
+  bare?: boolean;
   /** `menu` opens a popup (the default); `wheel` is the always-visible rotor. */
   appearance?: "menu" | "wheel";
   enabled?: boolean;
@@ -30,23 +32,29 @@ export function Picker<T extends string | number>({
   value,
   onChange,
   label,
+  bare = false,
   appearance = "menu",
   enabled = true,
   className,
 }: PickerProps<T>) {
+  const control = (
+    <Host accessibilityLabel={label} matchContents style={{ minHeight: MIN_TOUCH_TARGET }}>
+      <NativePicker appearance={appearance} enabled={enabled} onValueChange={onChange} selectedValue={value}>
+        {options.map((option) => (
+          <NativePicker.Item key={String(option.value)} label={option.label} value={option.value} />
+        ))}
+      </NativePicker>
+    </Host>
+  );
+
+  if (bare) return <View className={className}>{control}</View>;
+
   return (
     <View className={["gap-xs", className].filter(Boolean).join(" ")}>
-      <Text tone="muted" variant="caption">
+      <Text className="px-xs" tone="muted" variant="caption" weight={500}>
         {label}
       </Text>
-
-      <Host accessibilityLabel={label} matchContents style={{ minHeight: MIN_TOUCH_TARGET }}>
-        <NativePicker appearance={appearance} enabled={enabled} onValueChange={onChange} selectedValue={value}>
-          {options.map((option) => (
-            <NativePicker.Item key={String(option.value)} label={option.label} value={option.value} />
-          ))}
-        </NativePicker>
-      </Host>
+      {control}
     </View>
   );
 }

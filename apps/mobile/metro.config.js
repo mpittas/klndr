@@ -19,9 +19,22 @@ config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, "node_modules"),
   path.resolve(workspaceRoot, "node_modules"),
 ];
-// Every dependency resolves from those two directories only, so a copy can never come from
-// somewhere unexpected.
-config.resolver.disableHierarchicalLookup = true;
+
+/**
+ * Hierarchical lookup stays on (Expo's default): packages keep their own nested dependencies, such as
+ * `pretty-format`'s `ansi-styles@5`, and Metro must be able to find them. The one thing that must not
+ * come from the nearest copy is `react`: the web app needs 19.3 (hoisted to the root) while React Native
+ * 0.86 pins 19.2.3 (installed in this app), and two copies in one bundle break every hook. So `react`
+ * and its subpaths always resolve as if imported from this app.
+ */
+const defaultResolveRequest = config.resolver.resolveRequest;
+config.resolver.resolveRequest = (context, moduleName, platform) => {
+  const resolve = defaultResolveRequest ?? context.resolveRequest;
+  if (moduleName === "react" || moduleName.startsWith("react/")) {
+    return resolve({ ...context, originModulePath: path.join(projectRoot, "package.json") }, moduleName, platform);
+  }
+  return resolve(context, moduleName, platform);
+};
 
 /**
  * `withUniwindConfig` compiles the stylesheet and generates the class name types; it has to wrap the
