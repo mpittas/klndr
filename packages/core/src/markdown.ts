@@ -200,3 +200,85 @@ export function toggleTaskLine(source: string, lineIndex: number): string {
   lines[lineIndex] = line.replace(/\[([ xX])\]/, (_, mark: string) => (mark === " " ? "[x]" : "[ ]"));
   return lines.join("\n");
 }
+
+/** A run of inline text with the markup that applies to it; what a native view draws instead of HTML. */
+export type InlineSpan = {
+  text: string;
+  bold?: boolean;
+  italic?: boolean;
+  strike?: boolean;
+  code?: boolean;
+  /** Where tapping it goes: only ever an http(s) or mailto address. */
+  href?: string;
+};
+
+type InlineStyle = Pick<InlineSpan, "bold" | "italic" | "strike" | "href">;
+
+/**
+ * The inline markup of `raw` as styled runs, for views that cannot take HTML. It reads the same markup
+ * `renderInlineHtml` does (code spans, links, bare addresses, bold, italic, strikethrough) and nests the same
+ * way, so a note looks the same on the web and on the phone. Nothing in it can run: a link is kept only when
+ * it is http(s) or mailto.
+ */
+export function parseInline(raw: string): InlineSpan[] {
+  return inlineSpans(raw, {});
+}
+
+const INLINE_RULES: { name: "code" | "link" | "url" | "bold" | "italic" | "strike"; re: RegExp }[] = [
+  { name: "code", re: /`([^`]+)`/g },
+  { name: "link", re: /\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g },
+  { name: "url", re: /https?:\/\/[^\s<)]+/g },
+  { name: "bold", re: /\*\*([^*]+)\*\*|__([^_]+)__/g },
+  // An asterisk pair may wrap bold, as the HTML renderer's passes allow: *a **b** c*.
+  { name: "italic", re: /\*([^*\s](?:[^*]|\*\*[^*]+\*\*)*?)\*(?!\*)|_([^_\s][^_]*?)_(?![_\w])/g },
+  { name: "strike", re: /~~([^~]+)~~/g },
+];
+
+const isWordChar = (char: string | undefined) => char !== undefined && /\w/.test(char);
+
+/** The first rule that matches at or after `from`, honouring the boundary each rule needs before it. */
+function nextInline(text: string, from: number) {
+  let best: { name: (typeof INLINE_RULES)[number]["name"]; match: RegExpExecArray } | null = null;
+  for (const { name, re } of INLINE_RULES) {
+    re.lastIndex = from;
+    let match = re.exec(text);
+    while (match) {
+      const before = text[match.index - 1];
+      const ok =
+        name === "url"
+          ? before === undefined || /[\s(]/.test(before)
+          : name === "italic"
+            ? before === undefined || (before !== "*" && before !== "_" && !isWordChar(before))
+            : true;
+      if (ok) break;
+      match = re.exec(text);
+    }
+    if (match && (!best || match.index < best.match.index)) best = { name, match };
+  }
+  return best;
+}
+
+function inlineSpans(text: string, style: InlineStyle): InlineSpan[] {
+  const spans: InlineSpan[] = [];
+  const plain = (value: string) => {
+    if (value) spans.push({ ...style, text: value });
+  };
+
+  let at = 0;
+  while (at < text.length) {
+    const found = nextInline(text, at);
+    if (!found) break;
+    const { name, match } = found;
+    plain(text.slice(at, match.index));
+    at = match.index + match[0].length;
+
+    if (name === "code") spans.push({ ...style, text: match[1], code: true });
+    else if (name === "link") spans.push(...inlineSpans(match[1], { ...style, href: match[2] }));
+    else if (name === "url") spans.push({ ...style, text: match[0], href: match[0] });
+    else if (name === "bold") spans.push(...inlineSpans(match[1] ?? match[2], { ...style, bold: true }));
+    else if (name === "italic") spans.push(...inlineSpans(match[1] ?? match[2], { ...style, italic: true }));
+    else spans.push(...inlineSpans(match[1], { ...style, strike: true }));
+  }
+  plain(text.slice(at));
+  return spans;
+}

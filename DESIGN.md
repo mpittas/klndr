@@ -90,6 +90,13 @@ DayForge is an intentional, distraction-free daily planner. The interface is cal
   - Fields are 16px on touch (global rule in `main.css`); smaller text makes iOS zoom the page on focus.
   - Dialogs and pickers are bottom sheets below `sm` (`Modal.tsx`, `CategorySelect.tsx`, `EmojiPicker.tsx`): `dvh` heights, safe-area padding, swipe-down to dismiss, and the primary action pinned in the `footer`.
   - Don't auto-focus fields on touch; it raises the keyboard over the sheet.
+- **Native app** (`apps/mobile`): the phone's own grouped look, from the same tokens.
+  - Calendar, Library, Settings and every sheet sit on `canvas` with `card` surfaces (`Card`, `Section`): no border and no shadow, the step from canvas to card is the elevation. The Day tab stays on `background`, so the timeline reads as one sheet of paper.
+  - Screens open with a large title (`Text variant="largeTitle"`); lists and forms use the phone steps `headline` (17) and `callout` (15) on top of the shared scale, because 14px rows are hard to read at arm's length.
+  - Rows (`ListRow`, `FieldRow`): 50pt, a grey `IconTile` for settings, a category-tinted tile for an activity's emoji, hairlines inset to where the text starts.
+  - Header actions are round (`CircleButton`); the one primary action is the filled ink colour. Toasts drop in at the top as a pill, clear of the tab bar and of open sheets.
+  - The Day tab has a week strip (selected day a filled disc, today in the now-line's red, category dots under each day); the Calendar's month grid uses the same discs and dots, and lists the chosen day under it.
+  - `Text` defaults to the theme's foreground: React Native has nothing to inherit at the top of a text, so a colourless one is black in dark mode.
 
 ## Elevation & Depth
 

@@ -1,4 +1,8 @@
 export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** The weekday names in the order a calendar shows them: Sunday first, or Monday first (the profile's choice). */
+export const weekdayLabels = (weekStartsOnMonday = false): string[] =>
+  weekStartsOnMonday ? [...WEEKDAY_LABELS.slice(1), WEEKDAY_LABELS[0]] : [...WEEKDAY_LABELS];
 export const MONTH_LABELS = [
   "January",
   "February",
@@ -72,12 +76,15 @@ export function setYearMonth(iso: string, year: number, monthIndex: number): str
   return toISODate(new Date(year, monthIndex, safeDay));
 }
 
-/** 6x7 grid of ISO dates covering the month that `iso` belongs to. */
-export function monthMatrix(iso: string): string[] {
+/**
+ * 6x7 grid of ISO dates covering the month that `iso` belongs to. Rows start on Sunday, or on Monday when
+ * `weekStartsOnMonday` is set.
+ */
+export function monthMatrix(iso: string, weekStartsOnMonday = false): string[] {
   const anchor = parseISODate(iso);
   const first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
   const start = new Date(first);
-  start.setDate(1 - first.getDay());
+  start.setDate(1 - (weekStartsOnMonday ? (first.getDay() + 6) % 7 : first.getDay()));
   const cells: string[] = [];
   for (let i = 0; i < 42; i += 1) {
     const cell = new Date(start);
@@ -91,8 +98,8 @@ export function isSameMonth(iso: string, reference: string): boolean {
   return iso.slice(0, 7) === reference.slice(0, 7);
 }
 
-export function monthRange(iso: string): { from: string; to: string } {
-  const cells = monthMatrix(iso);
+export function monthRange(iso: string, weekStartsOnMonday = false): { from: string; to: string } {
+  const cells = monthMatrix(iso, weekStartsOnMonday);
   return { from: cells[0], to: cells[cells.length - 1] };
 }
 

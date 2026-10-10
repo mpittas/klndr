@@ -1,18 +1,25 @@
 import type { ReactNode } from "react";
-import { Pressable, View, type PressableProps } from "react-native";
+import { Pressable, StyleSheet, View, type PressableProps } from "react-native";
 
 import { ChevronRight } from "@/icons";
 import { useThemeColors } from "@/theme/tokens";
-import { MIN_TOUCH_TARGET } from "./targets";
 import { Text } from "./text";
+
+/** A row's height: a little over the 44-point minimum, the phone's own list rhythm. */
+const ROW_HEIGHT = 50;
+const SIDE = 16;
+/** The gap between a row's leading tile and its label. */
+const GAP = 12;
 
 export type ListRowProps = Omit<PressableProps, "children" | "style"> & {
   label: string;
   /** A second, quieter line under the label. */
   description?: string;
-  /** An icon or colour dot at the start of the row. */
+  /** An icon tile or colour dot at the start of the row. */
   leading?: ReactNode;
-  /** Content at the end of the row, e.g. a Switch. */
+  /** How wide `leading` is, so the divider starts under the label as the phone's lists do. */
+  leadingWidth?: number;
+  /** Content at the end of the row, e.g. a Switch, a picker, a button. */
   trailing?: ReactNode;
   /** Right-aligned value text, as Settings uses for the current choice. */
   value?: string;
@@ -20,21 +27,26 @@ export type ListRowProps = Omit<PressableProps, "children" | "style"> & {
   chevron?: boolean;
   /** The hairline under the row; turn it off for the last row of a group. */
   divider?: boolean;
+  /** A row that destroys or leaves: its label in the destructive colour. */
+  destructive?: boolean;
   className?: string;
 };
 
 /**
- * One line in a grouped list, the shape Settings and the Library use: label, optional description,
- * optional value, optional controls, and a chevron when it leads somewhere.
+ * One line in a grouped card, the shape Settings, the Library and the sheets share: an optional tile, the
+ * label (and a description), an optional value or control, and a chevron when it leads somewhere. The hairline
+ * between rows starts where the text starts.
  */
 export function ListRow({
   label,
   description,
   leading,
+  leadingWidth = 32,
   trailing,
   value,
   chevron,
   divider = true,
+  destructive = false,
   disabled,
   className,
   onPress,
@@ -46,8 +58,10 @@ export function ListRow({
   const body = (
     <>
       {leading}
-      <View className="flex-1 gap-xs">
-        <Text tone={disabled ? "muted" : "foreground"}>{label}</Text>
+      <View className="min-w-0 flex-1 py-sm" style={{ gap: 2 }}>
+        <Text tone={destructive ? "destructive" : disabled ? "muted" : "foreground"} variant="callout">
+          {label}
+        </Text>
         {description ? (
           <Text tone="muted" variant="caption">
             {description}
@@ -55,26 +69,34 @@ export function ListRow({
         ) : null}
       </View>
       {value ? (
-        <Text numeric tone="muted" variant="caption">
+        <Text numeric numberOfLines={1} style={{ maxWidth: "45%" }} tone="muted" variant="callout">
           {value}
         </Text>
       ) : null}
       {trailing}
-      {showsChevron ? <ChevronRight color={colors["muted-foreground"]} size={18} /> : null}
+      {showsChevron ? <ChevronRight color={colors["muted-foreground"]} size={18} style={{ marginRight: -4, opacity: 0.6 }} /> : null}
+      {divider ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            left: leading ? SIDE + leadingWidth + GAP : SIDE,
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: colors.border,
+          }}
+        />
+      ) : null}
     </>
   );
 
-  const classes = [
-    "flex-row items-center gap-md bg-card px-md",
-    divider ? "border-b border-border" : "",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const classes = ["flex-row items-center bg-card", className].filter(Boolean).join(" ");
+  const layout = { minHeight: ROW_HEIGHT, paddingHorizontal: SIDE, gap: GAP };
 
   if (!onPress) {
     return (
-      <View className={classes} style={{ minHeight: MIN_TOUCH_TARGET }}>
+      <View className={classes} style={layout}>
         {body}
       </View>
     );
@@ -82,13 +104,13 @@ export function ListRow({
 
   return (
     <Pressable
-      accessibilityLabel={label}
+      accessibilityLabel={description ? `${label}, ${description}` : label}
       accessibilityRole="button"
       accessibilityState={{ disabled: disabled === true }}
       className={classes}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => ({ minHeight: MIN_TOUCH_TARGET, opacity: disabled ? 0.5 : pressed ? 0.7 : 1 })}
+      style={({ pressed }) => ({ ...layout, opacity: disabled ? 0.5 : 1, backgroundColor: pressed ? colors.muted : undefined })}
       {...rest}
     >
       {body}

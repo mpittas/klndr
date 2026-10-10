@@ -8,10 +8,10 @@ import {
   useState,
   type PropsWithChildren,
 } from "react";
-import { AccessibilityInfo, View } from "react-native";
+import { AccessibilityInfo, Pressable, View } from "react-native";
+import Animated, { FadeInUp, FadeOutUp, useReducedMotion } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Button } from "./button";
 import { Text } from "./text";
 
 /**
@@ -39,10 +39,17 @@ type ToastContextValue = {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 const DEFAULT_DURATION = 6000;
+const NOTE_DURATION = 3200;
 
+/**
+ * The toast drops in at the top of the screen, as the phone's own banners do. At the bottom it would sit on
+ * the tab bar, and a sheet (which covers the bottom of the screen) would hide it; the top stays in view above
+ * a sheet.
+ */
 export function ToastProvider({ children }: PropsWithChildren) {
   const [toast, setToast] = useState<Toast | null>(null);
   const insets = useSafeAreaInsets();
+  const reducedMotion = useReducedMotion();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const hide = useCallback(() => {
@@ -51,21 +58,22 @@ export function ToastProvider({ children }: PropsWithChildren) {
     setToast(null);
   }, []);
 
-  const show = useCallback(
-    (options: ToastOptions) => {
+  const show = useCallback((options: ToastOptions) => {
+    if (timer.current) clearTimeout(timer.current);
+    const id = Date.now();
+    setToast({ ...options, id });
+    // A toast can appear without the user doing anything (a failure), so say it out loud.
+    AccessibilityInfo.announceForAccessibility(options.message);
+    // A message alone is read at a glance; one with an undo stays long enough to reach for it.
+    timer.current = setTimeout(() => setToast(null), options.duration ?? (options.onAction ? DEFAULT_DURATION : NOTE_DURATION));
+  }, []);
+
+  useEffect(
+    () => () => {
       if (timer.current) clearTimeout(timer.current);
-      const id = Date.now();
-      setToast({ ...options, id });
-      // A toast can appear without the user doing anything (a failure), so say it out loud.
-      AccessibilityInfo.announceForAccessibility(options.message);
-      timer.current = setTimeout(() => setToast(null), options.duration ?? DEFAULT_DURATION);
     },
     [],
   );
-
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
 
   const value = useMemo<ToastContextValue>(() => ({ hide, show }), [hide, show]);
 
@@ -73,28 +81,47 @@ export function ToastProvider({ children }: PropsWithChildren) {
     <ToastContext.Provider value={value}>
       {children}
       {toast ? (
-        // It appears and disappears without moving: nothing to reduce, and nothing to wait for.
-        <View
-          accessibilityLiveRegion="polite"
-          className="mx-md rounded-lg border border-border bg-popover px-md py-sm"
-          pointerEvents="box-none"
-          style={{ bottom: insets.bottom + 12, left: 0, position: "absolute", right: 0 }}
-        >
-          <View className="flex-row items-center justify-between gap-md">
-            <Text className="flex-1" tone="foreground">
-              {toast.message}
-            </Text>
+        <View pointerEvents="box-none" style={{ position: "absolute", left: 0, right: 0, top: insets.top + 6, alignItems: "center" }}>
+          <Animated.View
+            accessibilityLiveRegion="polite"
+            className="flex-row items-center gap-sm rounded-full bg-primary"
+            entering={reducedMotion ? undefined : FadeInUp.duration(220)}
+            exiting={reducedMotion ? undefined : FadeOutUp.duration(160)}
+            key={toast.id}
+            style={{
+              maxWidth: "92%",
+              minHeight: 44,
+              paddingLeft: 18,
+              paddingRight: toast.onAction ? 6 : 18,
+              shadowColor: "#000",
+              shadowOpacity: 0.18,
+              shadowRadius: 16,
+              shadowOffset: { width: 0, height: 6 },
+              elevation: 8,
+            }}
+          >
+            <Pressable accessibilityHint="Dismisses the message" className="shrink py-sm" onPress={hide}>
+              <Text tone="primary-foreground" variant="callout" weight={500}>
+                {toast.message}
+              </Text>
+            </Pressable>
             {toast.onAction ? (
-              <Button
-                label={toast.actionLabel ?? "Undo"}
+              <Pressable
+                accessibilityLabel={toast.actionLabel ?? "Undo"}
+                accessibilityRole="button"
+                className="items-center justify-center rounded-full px-md"
                 onPress={() => {
                   toast.onAction?.();
                   hide();
                 }}
-                variant="ghost"
-              />
+                style={({ pressed }) => ({ minHeight: 34, backgroundColor: "rgba(127,127,127,0.28)", opacity: pressed ? 0.7 : 1 })}
+              >
+                <Text tone="primary-foreground" variant="caption" weight={700}>
+                  {toast.actionLabel ?? "Undo"}
+                </Text>
+              </Pressable>
             ) : null}
-          </View>
+          </Animated.View>
         </View>
       ) : null}
     </ToastContext.Provider>

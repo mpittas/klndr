@@ -28,6 +28,7 @@ import {
   timeInputValue,
   toISODate,
   todayISO,
+  weekdayLabels,
 } from "../src/index";
 
 describe("ISO dates", () => {
@@ -78,6 +79,19 @@ describe("month grid", () => {
     expect(cells.at(-1)).toBe("2026-11-07");
     expect(cells).toContain("2026-10-01");
     expect(parseISODate(cells[0]).getDay()).toBe(0);
+  });
+
+  it("starts on Monday when asked", () => {
+    const cells = monthMatrix("2026-10-03", true);
+    expect(cells).toHaveLength(42);
+    expect(cells[0]).toBe("2026-09-28"); // the Monday on or before the 1st
+    expect(parseISODate(cells[0]).getDay()).toBe(1);
+    expect(cells).toContain("2026-10-31");
+    expect(monthRange("2026-10-03", true)).toEqual({ from: "2026-09-28", to: "2026-11-08" });
+    // A month that starts on a Sunday still fits: the Monday before it is six days back.
+    expect(monthMatrix("2026-02-10", true)[0]).toBe("2026-01-26");
+    expect(weekdayLabels(true)).toEqual(["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]);
+    expect(weekdayLabels()).toEqual(WEEKDAY_LABELS);
   });
 
   it("reports the months range", () => {

@@ -6,7 +6,8 @@ import {
   MAX_NOTES,
   clampStart,
   formatDuration,
-  formatTime,
+  formatTimeRange,
+  mediumDate,
   parseISODate,
   toISODate,
   withImplicitCategories,
@@ -15,13 +16,25 @@ import {
   type ScheduledTask,
   type TaskDraft,
 } from "@klndr/core";
-import { useRouter } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
-import { Button, DateTimePicker, IconButton, Picker, Switch, Text, TextField } from "@/components/ui";
-import { Trash } from "@/icons";
-import { askForEmoji } from "@/lib/emoji";
+import {
+  Button,
+  Card,
+  DateTimePicker,
+  EmojiButton,
+  FieldRow,
+  IconTile,
+  ListRow,
+  Picker,
+  SheetFooter,
+  SheetHeader,
+  Switch,
+  Text,
+  TextField,
+} from "@/components/ui";
+import { CalendarDays, CircleCheck, Clock, Hourglass, Tag, Trash } from "@/icons";
 import { useThemeColors } from "@/theme/tokens";
 
 const NEW_CATEGORY = "\u0000new";
@@ -56,7 +69,6 @@ const dateAsMinutes = (date: Date) => date.getHours() * 60 + date.getMinutes();
  */
 export function TaskForm(props: TaskFormProps) {
   const { task, day, startMinutes, templates, categories, defaultDuration, onSave, onDelete, onClose } = props;
-  const router = useRouter();
   const colors = useThemeColors();
 
   const [title, setTitle] = useState(task?.title ?? "");
@@ -107,11 +119,6 @@ export function TaskForm(props: TaskFormProps) {
     if (!notes) setNotes(template.notes ?? "");
   };
 
-  const chooseEmoji = () => {
-    askForEmoji(setEmoji);
-    router.push("/emoji-sheet");
-  };
-
   const submit = async () => {
     if (submitting.current) return;
     if (!title.trim()) {
@@ -143,63 +150,47 @@ export function TaskForm(props: TaskFormProps) {
     }
   };
 
+  const timeRange = formatTimeRange(start, start + duration);
+
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-canvas">
+      <SheetHeader onClose={onClose} subtitle={`${mediumDate(date)} · ${timeRange}`} title={editing ? "Edit block" : "New block"} />
+
       <ScrollView
         automaticallyAdjustKeyboardInsets
-        contentContainerStyle={{ gap: 16, padding: 16, paddingTop: 20 }}
+        contentContainerStyle={{ gap: 20, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 24 }}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         style={{ flex: 1 }}
       >
-        <View className="gap-xs">
-          <Text accessibilityRole="header" variant="title">
-            {editing ? "Edit block" : "New block"}
-          </Text>
-          <Text numeric tone="muted" variant="caption">
-            {formatTime(start)} · {formatDuration(duration)}
-          </Text>
-        </View>
-
-        <View className="flex-row items-end gap-sm">
-          <Pressable
-            accessibilityHint="Opens the emoji picker"
-            accessibilityLabel={`Emoji, ${emoji || "none"}`}
-            accessibilityRole="button"
-            onPress={chooseEmoji}
-            style={({ pressed }) => ({
-              width: 56,
-              height: 44,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: colors.input,
-              backgroundColor: colors.card,
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            <Text style={{ fontSize: 24, lineHeight: 30 }}>{emoji || "＋"}</Text>
-          </Pressable>
+        <Card className="flex-row items-center gap-md p-sm">
+          <EmojiButton emoji={emoji} label="Block emoji" onChange={setEmoji} size="large" />
           <TextField
+            appearance="bare"
             autoCapitalize="sentences"
             className="flex-1"
             label="Name"
             maxLength={MAX_TITLE}
             onChangeText={setTitle}
             onSubmitEditing={() => void submit()}
-            placeholder="e.g. Deep focus, Workout"
+            placeholder="What’s the plan?"
+            prominent
             returnKeyType="done"
             value={title}
           />
-        </View>
+        </Card>
 
         {!editing && templates.length > 0 ? (
-          <View className="gap-xs">
-            <Text tone="muted" variant="caption">
+          <View className="gap-sm">
+            <Text className="px-md" tone="muted" variant="caption" weight={600}>
               Start from an activity
             </Text>
-            <ScrollView contentContainerStyle={{ gap: 6, paddingRight: 16 }} horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView
+              contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginHorizontal: -16 }}
+            >
               {[null, ...templates].map((choice) => {
                 const selected = (templateId ?? null) === (choice?.id ?? null);
                 return (
@@ -207,23 +198,19 @@ export function TaskForm(props: TaskFormProps) {
                     accessibilityLabel={choice ? choice.name : "Custom"}
                     accessibilityRole="radio"
                     accessibilityState={{ selected }}
+                    className={["flex-row items-center rounded-full", selected ? "bg-primary" : "bg-card"].join(" ")}
                     key={choice?.id ?? "custom"}
                     onPress={() => applyTemplate(choice)}
-                    style={({ pressed }) => ({
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 6,
-                      minHeight: 40,
-                      borderRadius: 9999,
-                      borderWidth: 1,
-                      borderColor: selected ? colors.primary : colors.input,
-                      backgroundColor: selected ? colors.primary : colors.background,
-                      opacity: pressed ? 0.7 : 1,
-                      paddingHorizontal: 14,
-                    })}
+                    style={({ pressed }) => ({ gap: 6, minHeight: 38, paddingHorizontal: 14, opacity: pressed ? 0.6 : 1 })}
                   >
-                    {choice ? <Text variant="caption">{choice.emoji}</Text> : null}
-                    <Text numberOfLines={1} style={{ maxWidth: 180 }} tone={selected ? "primary-foreground" : "foreground"} variant="caption">
+                    {choice ? <Text style={{ fontSize: 15, lineHeight: 19 }}>{choice.emoji}</Text> : null}
+                    <Text
+                      numberOfLines={1}
+                      style={{ maxWidth: 180 }}
+                      tone={selected ? "primary-foreground" : "foreground"}
+                      variant="caption"
+                      weight={600}
+                    >
                       {choice ? choice.name : "Custom"}
                     </Text>
                   </Pressable>
@@ -233,91 +220,126 @@ export function TaskForm(props: TaskFormProps) {
           </View>
         ) : null}
 
-        <View className="flex-row gap-md">
-          <DateTimePicker
-            className="flex-1"
-            display="compact"
-            label="Date"
-            mode="date"
-            onChange={(next) => setDate(toISODate(next))}
-            value={parseISODate(date)}
-          />
-          <DateTimePicker
-            className="flex-1"
-            display="compact"
-            label="Start time"
-            mode="time"
-            onChange={(next) => {
-              const minute = clampStart(dateAsMinutes(next));
-              setStart(minute);
-              setDuration((current) => durationAt(minute, current));
-            }}
-            value={timeAsDate(start)}
-          />
-        </View>
-
-        <View className="flex-row gap-md">
-          <Picker className="flex-1" label="Duration" onChange={setDuration} options={durationOptions} value={duration} />
-          <Picker
-            className="flex-1"
+        <Card>
+          <FieldRow label="Date" leading={tile(<CalendarDays color={colors.foreground} size={15} strokeWidth={2.2} />)}>
+            <DateTimePicker
+              bare
+              display="compact"
+              label="Date"
+              mode="date"
+              onChange={(next) => setDate(toISODate(next))}
+              value={parseISODate(date)}
+            />
+          </FieldRow>
+          <FieldRow label="Starts" leading={tile(<Clock color={colors.foreground} size={15} strokeWidth={2.2} />)}>
+            <DateTimePicker
+              bare
+              display="compact"
+              label="Start time"
+              mode="time"
+              onChange={(next) => {
+                const minute = clampStart(dateAsMinutes(next));
+                setStart(minute);
+                setDuration((current) => durationAt(minute, current));
+              }}
+              value={timeAsDate(start)}
+            />
+          </FieldRow>
+          <FieldRow label="Duration" leading={tile(<Hourglass color={colors.foreground} size={15} strokeWidth={2.2} />)}>
+            <Picker bare label="Duration" onChange={setDuration} options={durationOptions} value={duration} />
+          </FieldRow>
+          <FieldRow
+            divider={creating}
             label="Category"
-            onChange={(next) => {
-              if (next === NEW_CATEGORY) return setCreating(true);
-              setCreating(false);
-              setCategory(next);
-            }}
-            options={categoryOptions}
-            value={creating ? NEW_CATEGORY : category}
-          />
-        </View>
-
+            leading={tile(<Tag color={colors.foreground} size={15} strokeWidth={2.2} />)}
+          >
+            <Picker
+              bare
+              label="Category"
+              onChange={(next) => {
+                if (next === NEW_CATEGORY) return setCreating(true);
+                setCreating(false);
+                setCategory(next);
+              }}
+              options={categoryOptions}
+              value={creating ? NEW_CATEGORY : category}
+            />
+          </FieldRow>
+          {creating ? (
+            <View className="px-md pb-xs">
+              <TextField
+                appearance="bare"
+                autoCapitalize="words"
+                autoFocus
+                label="New category name"
+                maxLength={MAX_CATEGORY}
+                onChangeText={setNewName}
+                placeholder="New category name"
+                returnKeyType="done"
+                value={newName}
+              />
+            </View>
+          ) : null}
+        </Card>
         {creating ? (
-          <TextField
-            autoCapitalize="words"
-            helper="A new category is created when you save."
-            label="New category name"
-            maxLength={MAX_CATEGORY}
-            onChangeText={setNewName}
-            returnKeyType="done"
-            value={newName}
-          />
+          <Text className="-mt-sm px-md" tone="muted" variant="caption">
+            A new category is created when you save.
+          </Text>
         ) : null}
 
-        <TextField
-          autoCapitalize="sentences"
-          label="Notes"
-          maxLength={MAX_NOTES}
-          multiline
-          onChangeText={setNotes}
-          placeholder="Any details, reminders, or goals…"
-          value={notes}
-        />
+        <Card className="px-md">
+          <TextField
+            appearance="bare"
+            autoCapitalize="sentences"
+            label="Notes"
+            maxLength={MAX_NOTES}
+            multiline
+            onChangeText={setNotes}
+            placeholder="Notes, links, a reminder for yourself…"
+            value={notes}
+          />
+        </Card>
 
-        <Switch label="Mark as completed" onValueChange={setCompleted} value={completed} />
+        <Card>
+          <FieldRow
+            divider={false}
+            label="Done"
+            leading={tile(<CircleCheck color={colors.foreground} size={15} strokeWidth={2.2} />)}
+          >
+            <Switch bare label="Mark as completed" onValueChange={setCompleted} value={completed} />
+          </FieldRow>
+        </Card>
+
+        {editing && onDelete ? (
+          <Card>
+            <ListRow
+              chevron={false}
+              destructive
+              disabled={busy}
+              divider={false}
+              label="Delete block"
+              leading={tile(<Trash color={colors.destructive} size={15} strokeWidth={2.2} />)}
+              leadingWidth={28}
+              onPress={onDelete}
+            />
+          </Card>
+        ) : null}
       </ScrollView>
 
       {/* Pinned under the form, so the action and any problem are always in view. */}
-      <View className="gap-sm border-t border-border bg-background px-md pb-lg pt-sm">
-        {error ? (
-          <Text accessibilityLiveRegion="polite" tone="destructive" variant="caption">
-            {error}
-          </Text>
-        ) : null}
-        <View className="flex-row items-center gap-sm">
-          {editing && onDelete ? (
-            <IconButton disabled={busy} label="Delete block" onPress={onDelete} variant="destructive">
-              <Trash color={colors.destructive} size={20} />
-            </IconButton>
-          ) : null}
-          <Button disabled={busy} className="flex-1" label="Cancel" onPress={onClose} variant="secondary" />
-          <Button
-            className="flex-[1.6]"
-            label={editing ? "Save changes" : "Add block"}
-            loading={busy}
-            onPress={() => void submit()}
-          />
-        </View>
-      </View>
+      <SheetFooter error={error}>
+        <Button className="flex-1" disabled={busy} label="Cancel" onPress={onClose} size="large" variant="surface" />
+        <Button
+          className="flex-[1.6]"
+          label={editing ? "Save changes" : "Add block"}
+          loading={busy}
+          onPress={() => void submit()}
+          size="large"
+        />
+      </SheetFooter>
     </View>
   );
 }
+
+/** A form row's small grey icon tile. */
+const tile = (icon: ReactNode) => <IconTile size={28}>{icon}</IconTile>;

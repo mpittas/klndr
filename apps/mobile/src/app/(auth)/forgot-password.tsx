@@ -44,7 +44,7 @@ export default function ForgotPasswordScreen() {
         {error ? <FormMessage kind="error">{error}</FormMessage> : null}
         {sent ? <FormMessage kind="info">Password reset email sent. Check your inbox.</FormMessage> : null}
 
-        <Button label="Send reset link" loading={busy} onPress={send} />
+        <Button label="Send reset link" loading={busy} onPress={send} size="large" />
         <Link asChild dismissTo href="/sign-in">
           <Button disabled={busy} label="Back to sign in" variant="ghost" />
         </Link>

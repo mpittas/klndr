@@ -1,8 +1,8 @@
-import { isValidISODate, parseISODate, toISODate, todayISO } from "@klndr/core";
+import { isValidISODate, longDate, parseISODate, toISODate, todayISO } from "@klndr/core";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { View } from "react-native";
 
-import { Button, DateTimePicker, Text } from "@/components/ui";
+import { Button, Card, DateTimePicker, SheetHeader } from "@/components/ui";
 
 /** Choose a day to open: the Day tab shows whatever is picked. */
 export default function DateSheet() {
@@ -13,18 +13,21 @@ export default function DateSheet() {
   const open = (day: string) => router.dismissTo({ pathname: "/", params: { day } });
 
   return (
-    <View className="flex-1 gap-md bg-background px-md pt-lg">
-      <Text accessibilityRole="header" variant="title">
-        Go to a day
-      </Text>
-      <DateTimePicker
-        display="inline"
-        label="Date"
-        mode="date"
-        onChange={(date) => open(toISODate(date))}
-        value={parseISODate(current)}
-      />
-      <Button label="Today" onPress={() => open(todayISO())} variant="secondary" />
+    <View className="flex-1 bg-canvas">
+      <SheetHeader onClose={() => router.back()} subtitle={longDate(current)} title="Go to a day" />
+      <View className="gap-md px-md pt-xs">
+        <Card className="px-sm py-xs">
+          <DateTimePicker
+            display="inline"
+            bare
+            label="Date"
+            mode="date"
+            onChange={(date) => open(toISODate(date))}
+            value={parseISODate(current)}
+          />
+        </Card>
+        <Button label="Today" onPress={() => open(todayISO())} size="large" variant="surface" />
+      </View>
     </View>
   );
 }
