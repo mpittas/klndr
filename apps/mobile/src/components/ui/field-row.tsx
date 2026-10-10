@@ -6,6 +6,8 @@ import { Text } from "./text";
 
 const SIDE = 16;
 const GAP = 12;
+/** The phone's form rows are taller than a list's: room for a 17-point label and a pill. */
+const ROW_HEIGHT = 56;
 
 export type FieldRowProps = {
   label: string;
@@ -26,14 +28,14 @@ export type FieldRowProps = {
 export function FieldRow({ label, children, leading, leadingWidth = 28, labelWidth, divider = true }: FieldRowProps) {
   const colors = useThemeColors();
   return (
-    <View className="flex-row items-center bg-card" style={{ minHeight: 50, paddingHorizontal: SIDE, gap: GAP }}>
+    <View className="flex-row items-center bg-card" style={{ minHeight: ROW_HEIGHT, paddingHorizontal: SIDE, gap: GAP }}>
       {leading}
       <Text
         accessibilityElementsHidden
         importantForAccessibility="no"
         numberOfLines={1}
         style={labelWidth ? { width: labelWidth } : undefined}
-        variant="callout"
+        variant="row"
       >
         {label}
       </Text>

@@ -60,9 +60,9 @@ export function TextField({
       // 16 points at least: DESIGN.md keeps fields at 16 on touch, and a smaller field is genuinely harder to
       // read while typing. Multiline fields get room to breathe.
       style={{
-        fontSize: prominent ? 20 : 16,
+        fontSize: prominent ? 20 : 17,
         fontFamily: FONT_FOR_WEIGHT[prominent ? 600 : 400],
-        letterSpacing: prominent ? -0.3 : 0,
+        letterSpacing: prominent ? -0.3 : -0.4,
         minHeight: multiline ? 96 : MIN_TOUCH_TARGET,
         paddingVertical: multiline ? 12 : 0,
         textAlignVertical: multiline ? "top" : "center",

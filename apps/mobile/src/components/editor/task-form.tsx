@@ -1,10 +1,9 @@
 import {
-  DURATION_CHOICES,
   DAY_MINUTES,
   MAX_TITLE,
   MAX_NOTES,
+  SNAP_MINUTES,
   clampStart,
-  formatDuration,
   formatTimeRange,
   mediumDate,
   parseISODate,
@@ -14,7 +13,7 @@ import {
   type ScheduledTask,
   type TaskDraft,
 } from "@klndr/core";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
 import {
@@ -22,17 +21,13 @@ import {
   DateTimeRow,
   DeleteCard,
   FieldRow,
-  FormFooter,
-  NameCard,
   NotesCard,
-  Picker,
-  RowIcon,
   SheetScreen,
   SHEET_SIDE,
   Switch,
   Text,
+  TitleCard,
 } from "@/components/ui";
-import { CalendarDays, CircleCheck, Clock, Hourglass } from "@/icons";
 import { CategoryRows, useCategoryChoice } from "./category-rows";
 
 const DEFAULT_EMOJI = "📌";
@@ -77,21 +72,19 @@ export function TaskForm(props: TaskFormProps) {
   const [completed, setCompleted] = useState(task?.completed ?? false);
   const [templateId, setTemplateId] = useState<string | null>(task?.templateId ?? null);
   // Which picker is unfolded under its row: a form keeps one open at a time.
-  const [unfolded, setUnfolded] = useState<"date" | "start" | null>(null);
+  const [unfolded, setUnfolded] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
   const [error, setError] = useState<string | null>(null);
 
   const editing = Boolean(task);
 
-  const durationOptions = useMemo(
-    () =>
-      [...new Set([...DURATION_CHOICES, duration])]
-        .filter((minutes) => minutes <= DAY_MINUTES - start)
-        .sort((a, b) => a - b)
-        .map((minutes) => ({ label: formatDuration(minutes), value: minutes })),
-    [duration, start],
-  );
+  const end = start + duration;
+  /** Moving the end changes the length; the end never goes before the start, nor past midnight. */
+  const moveEnd = (next: Date) => {
+    const minute = dateAsMinutes(next) || DAY_MINUTES;
+    setDuration(Math.min(DAY_MINUTES - start, Math.max(SNAP_MINUTES, minute - start)));
+  };
 
   /** Start from an activity: its name, emoji, category and length; notes only if there are none yet. */
   const applyTemplate = (template: ActivityTemplate | null) => {
@@ -137,27 +130,23 @@ export function TaskForm(props: TaskFormProps) {
 
   return (
     <SheetScreen
-      footer={
-        <FormFooter
-          busy={busy}
-          error={error}
-          onCancel={onClose}
-          onSubmit={() => void submit()}
-          submitLabel={editing ? "Save changes" : "Add block"}
-        />
-      }
+      confirmDisabled={busy || !title.trim()}
+      confirmLabel={editing ? "Save changes" : "Add block"}
+      confirmLoading={busy}
+      error={error}
       onClose={onClose}
-      subtitle={`${mediumDate(date)} · ${formatTimeRange(start, start + duration)}`}
+      onConfirm={() => void submit()}
+      subtitle={`${mediumDate(date)} · ${formatTimeRange(start, end)}`}
       title={editing ? "Edit block" : "New block"}
     >
-      <NameCard
+      <TitleCard
         emoji={emoji}
         emojiLabel="Block emoji"
         maxLength={MAX_TITLE}
         onChangeText={setTitle}
         onEmojiChange={setEmoji}
         onSubmitEditing={() => void submit()}
-        placeholder="What’s the plan?"
+        placeholder="Title"
         value={title}
       />
 
@@ -201,33 +190,37 @@ export function TaskForm(props: TaskFormProps) {
         </View>
       ) : null}
 
+      <Card>
+        <DateTimeRow
+          fields={[
+            { id: "startDate", label: "Start date", mode: "date", value: parseISODate(date), onChange: (next) => setDate(toISODate(next)) },
+            {
+              id: "startTime",
+              label: "Start time",
+              mode: "time",
+              value: timeAsDate(start),
+              onChange: (next) => {
+                const minute = clampStart(dateAsMinutes(next));
+                setStart(minute);
+                setDuration((current) => durationAt(minute, current));
+              },
+            },
+          ]}
+          label="Starts"
+          onOpenChange={setUnfolded}
+          open={unfolded}
+        />
+        <DateTimeRow
+          divider={false}
+          fields={[{ id: "endTime", label: "End time", mode: "time", value: timeAsDate(end), onChange: moveEnd }]}
+          label="Ends"
+          onOpenChange={setUnfolded}
+          open={unfolded}
+        />
+      </Card>
+
       <View className="gap-sm">
         <Card>
-          <DateTimeRow
-            label="Date"
-            leading={<RowIcon icon={CalendarDays} />}
-            mode="date"
-            onChange={(next) => setDate(toISODate(next))}
-            onToggle={() => setUnfolded((current) => (current === "date" ? null : "date"))}
-            open={unfolded === "date"}
-            value={parseISODate(date)}
-          />
-          <DateTimeRow
-            label="Starts"
-            leading={<RowIcon icon={Clock} />}
-            mode="time"
-            onChange={(next) => {
-              const minute = clampStart(dateAsMinutes(next));
-              setStart(minute);
-              setDuration((current) => durationAt(minute, current));
-            }}
-            onToggle={() => setUnfolded((current) => (current === "start" ? null : "start"))}
-            open={unfolded === "start"}
-            value={timeAsDate(start)}
-          />
-          <FieldRow label="Duration" leading={<RowIcon icon={Hourglass} />}>
-            <Picker bare label="Duration" onChange={setDuration} options={durationOptions} value={duration} />
-          </FieldRow>
           <CategoryRows choice={category} />
         </Card>
         {category.creating ? (
@@ -245,7 +238,7 @@ export function TaskForm(props: TaskFormProps) {
       />
 
       <Card>
-        <FieldRow divider={false} label="Done" leading={<RowIcon icon={CircleCheck} />}>
+        <FieldRow divider={false} label="Done">
           <Switch bare label="Mark as completed" onValueChange={setCompleted} value={completed} />
         </FieldRow>
       </Card>

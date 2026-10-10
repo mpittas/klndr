@@ -2,16 +2,18 @@ import type { ReactNode } from "react";
 import { ScrollView, View } from "react-native";
 
 import { Button } from "./button";
+import { Card } from "./card";
 import { EmptyState } from "./empty-state";
 import { SheetHeader, type SheetHeaderProps } from "./sheet-header";
 import { Skeleton } from "./skeleton";
+import { Text } from "./text";
 
 /** The one inset every sheet keeps from its edges, so the gap above a card is the gap beside it. */
 export const SHEET_SIDE = 16;
 
 export type SheetScreenProps = SheetHeaderProps & {
-  /** Pinned under the content: a `FormFooter`, or nothing for a sheet that acts as you touch it. */
-  footer?: ReactNode;
+  /** What went wrong with the last attempt, announced and shown above the content, where the header's action is. */
+  error?: string | null;
   /** Fixed between the header and the scrolling content: a segmented control, a search field. */
   top?: ReactNode;
   /** `false` for a sheet that lays itself out and scrolls on its own (a long list). */
@@ -22,11 +24,11 @@ export type SheetScreenProps = SheetHeaderProps & {
 };
 
 /**
- * The frame every sheet shares: a header with the title and a close button, content that scrolls above the
- * keyboard on the canvas with the same inset on all four sides, and an optional footer pinned below. Sheets
- * differ in what they hold, not in how it is laid out, so the spacing is decided here once.
+ * The frame every sheet shares: a header with the close disc, the title and the sheet's one action, and content
+ * that scrolls above the keyboard on the canvas with the same inset on all four sides. Sheets differ in what
+ * they hold, not in how it is laid out, so the spacing is decided here once.
  */
-export function SheetScreen({ footer, top, scroll = true, gap = 20, children, ...header }: SheetScreenProps) {
+export function SheetScreen({ error, top, scroll = true, gap = 20, children, ...header }: SheetScreenProps) {
   return (
     <View className="flex-1 bg-canvas">
       <SheetHeader {...header} />
@@ -39,12 +41,18 @@ export function SheetScreen({ footer, top, scroll = true, gap = 20, children, ..
           keyboardShouldPersistTaps="handled"
           style={{ flex: 1 }}
         >
+          {error ? (
+            <Card className="px-md py-sm">
+              <Text accessibilityLiveRegion="polite" tone="destructive" variant="callout">
+                {error}
+              </Text>
+            </Card>
+          ) : null}
           {children}
         </ScrollView>
       ) : (
         children
       )}
-      {footer}
     </View>
   );
 }

@@ -2,8 +2,7 @@ import { MAX_CATEGORY, withImplicitCategories, type ActivityTemplate, type Categ
 import { useMemo, useState } from "react";
 import { View } from "react-native";
 
-import { FieldRow, Picker, RowIcon, TextField } from "@/components/ui";
-import { Tag } from "@/icons";
+import { FieldRow, Picker, TextField } from "@/components/ui";
 
 const NEW_CATEGORY = "\u0000new";
 
@@ -56,7 +55,7 @@ export type CategoryChoice = ReturnType<typeof useCategoryChoice>;
 export function CategoryRows({ choice, last = true }: { choice: CategoryChoice; last?: boolean }) {
   return (
     <>
-      <FieldRow divider={choice.creating || !last} label="Category" leading={<RowIcon icon={Tag} />}>
+      <FieldRow divider={choice.creating || !last} label="Category">
         <Picker bare label="Category" onChange={choice.choose} options={choice.options} value={choice.value} />
       </FieldRow>
       {choice.creating ? (

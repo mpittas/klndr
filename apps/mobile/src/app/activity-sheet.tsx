@@ -27,17 +27,14 @@ import {
   Card,
   DeleteCard,
   FieldRow,
-  FormFooter,
-  NameCard,
   NotesCard,
   Picker,
-  RowIcon,
   SheetLoading,
   SheetMessage,
   SheetScreen,
   Text,
+  TitleCard,
 } from "@/components/ui";
-import { Hourglass } from "@/icons";
 
 const DEFAULT_CATEGORY = "General";
 const NO_CATEGORIES: Category[] = [];
@@ -183,21 +180,17 @@ function ActivityForm({
 
   return (
     <SheetScreen
-      footer={
-        <FormFooter
-          busy={busy}
-          error={error}
-          onCancel={onClose}
-          onSubmit={() => void submit()}
-          submitLabel={editing ? "Save changes" : "Add activity"}
-        />
-      }
+      confirmDisabled={busy || !name.trim()}
+      confirmLabel={editing ? "Save changes" : "Add activity"}
+      confirmLoading={busy}
+      error={error}
       onClose={onClose}
+      onConfirm={() => void submit()}
       subtitle={editing ? template?.category : undefined}
       title={editing ? "Edit activity" : "New activity"}
     >
       <View className="gap-sm">
-        <NameCard
+        <TitleCard
           emoji={emoji}
           emojiLabel="Activity emoji"
           maxLength={MAX_TITLE}
@@ -206,7 +199,7 @@ function ActivityForm({
             setEmoji(picked);
             setByHand(true);
           }}
-          placeholder="e.g. Deep focus, Workout"
+          placeholder="Name, e.g. Deep focus"
           value={name}
         />
         {byHand || (editing && name.trim() === template?.name) ? null : (
@@ -219,7 +212,7 @@ function ActivityForm({
       <View className="gap-sm">
         <Card>
           <CategoryRows choice={category} last={false} />
-          <FieldRow divider={false} label="Default length" leading={<RowIcon icon={Hourglass} />}>
+          <FieldRow divider={false} label="Default length">
             <Picker bare label="Default length" onChange={setDuration} options={durationOptions} value={duration} />
           </FieldRow>
         </Card>

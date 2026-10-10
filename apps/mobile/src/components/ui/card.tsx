@@ -3,6 +3,9 @@ import { View, type ViewProps } from "react-native";
 
 import { Text } from "./text";
 
+/** The corner of every grouped card, a step softer than the 14-point panel radius: the phone's own forms. */
+export const CARD_RADIUS = 20;
+
 export type CardProps = ViewProps & { className?: string };
 
 /**
@@ -10,8 +13,14 @@ export type CardProps = ViewProps & { className?: string };
  * step from the canvas to the card, so it carries neither a border nor a shadow (DESIGN.md: one or the other,
  * and here neither is needed).
  */
-export function Card({ className, ...rest }: CardProps) {
-  return <View className={["overflow-hidden rounded-lg bg-card", className].filter(Boolean).join(" ")} {...rest} />;
+export function Card({ className, style, ...rest }: CardProps) {
+  return (
+    <View
+      className={["overflow-hidden bg-card", className].filter(Boolean).join(" ")}
+      style={[{ borderRadius: CARD_RADIUS, borderCurve: "continuous" }, style]}
+      {...rest}
+    />
+  );
 }
 
 export type SectionProps = {

@@ -25,8 +25,6 @@ import {
   Button,
   ColorSwatch,
   DeleteCard,
-  FormFooter,
-  NameCard,
   Picker,
   Section,
   SegmentedControl,
@@ -34,6 +32,7 @@ import {
   SheetMessage,
   SheetScreen,
   Text,
+  TitleCard,
 } from "@/components/ui";
 
 const GENERAL = "General";
@@ -207,22 +206,17 @@ function CategoryForm({
 
   return (
     <SheetScreen
-      footer={
-        <FormFooter
-          busy={busy}
-          error={error}
-          onCancel={onClose}
-          onSubmit={() => void submit()}
-          submitLabel={editing ? "Save changes" : unsaved ? "Save category" : "Add category"}
-          submitting={busy && !deleting}
-        />
-      }
+      confirmDisabled={busy || !name.trim()}
+      confirmLabel={editing ? "Save changes" : unsaved ? "Save category" : "Add category"}
+      confirmLoading={busy && !deleting}
+      error={error}
       onClose={onClose}
+      onConfirm={() => void submit()}
       subtitle={category ? (own.length === 1 ? "1 activity" : `${own.length} activities`) : undefined}
       title={editing ? "Edit category" : unsaved ? "Save category" : "New category"}
     >
       <View className="gap-sm">
-        <NameCard
+        <TitleCard
           autoCapitalize="words"
           editable={!unsaved}
           emoji={emoji}
@@ -233,7 +227,7 @@ function CategoryForm({
             setEmoji(picked);
             setByHand(true);
           }}
-          placeholder="e.g. Health, Work"
+          placeholder="Name, e.g. Health"
           value={name}
         />
         {unsaved ? (
