@@ -196,3 +196,34 @@ The local simulator dev build includes expo-network; an older phone build needs 
 - [ ] iOS/Android: keyboard does not hide the focused field/footer; sheets dismiss and reopen cleanly.
 - [ ] Dark theme, largest text size, Reduce Motion and VoiceOver/TalkBack: edit/toggle/move/resize
       actions work and labels include the task's title and time range.
+
+## Tasks 2.3–2.6 — checklist, notes, calendar, library, settings on a device
+
+- [ ] Day: add a routine (every day, this day only), tick it, edit it, skip it for the day and restore it, delete it.
+- [ ] Day: write notes, switch to Preview, tick a `- [ ]` task there; close and reopen: still there. Edit notes on
+      the web: the phone shows them without a reload.
+- [ ] Calendar: swipe between months, jump to a month, Monday/Sunday start follows Settings, tap a day, hold a day
+      to add a block, tick a block in the agenda, filter by category.
+- [ ] Library: search, add / edit / delete an activity, add a category, rename and recolour it (its blocks follow),
+      delete one both ways (move its activities, delete them too).
+- [ ] Settings: save the profile, change theme, connect Google / Apple, reset password, open the policy pages,
+      sign out, and delete a throwaway account (typed phrase, password if it has one).
+
+## Task 2.7 — the redesign on a device (2026-10-06)
+
+Built and checked in a browser preview of the screens (react-native-web), never on a phone. On a dev build:
+- [ ] iOS: the Calendar, Library and Settings tabs start just under the status bar and scroll on under the tab bar,
+      with no extra gap at the top or bottom (the tabs now turn the automatic insets off on iOS and every screen
+      places itself). The Day tab's add button sits just above the tab bar.
+- [ ] Android: nothing is hidden behind the navigation bar (Android keeps the automatic inset), and the add button
+      is not floating too high.
+- [ ] Tab bar: the icons are the ink colour, not system blue; the Day, Library and Settings icons fill when chosen.
+- [ ] Day: tap days in the week strip (the new day glides in), swipe the strip for the next or previous week, swipe
+      the timeline; the dots under each day match the blocks. Tick a block's ring (now on its right edge).
+- [ ] Calendar: tap a day to choose it (its blocks list below), tap it again to open it, hold a day to add a block,
+      tick a block in the day card and in "Coming up", tap a block to edit it.
+- [ ] Sheets (block, activity, category): the native date, time and menu pickers sit neatly at the end of their rows
+      in both themes; the keyboard does not cover the name field; the Save button stays reachable.
+- [ ] Toasts drop in at the top and the Undo in them works (delete a block, then Undo).
+- [ ] Dark mode on every screen: no black text (the default text colour was black before, now the theme's).
+- [ ] Settings: the Apple row shows the Apple logo on iOS (an "A" on Android).

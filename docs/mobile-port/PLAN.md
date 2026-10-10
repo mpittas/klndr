@@ -207,31 +207,37 @@ Implemented and bundled for both platforms; native form/picker acceptance is pen
 - [x] Save; delete with an undo toast.
 
 ### 2.3 Checklist and notes sheets
-- [ ] Checklist: toggle, quick add (every day / only today), skip + restore, edit, delete.
-- [ ] Notes: monospace editor, preview as native views from the core markdown parser,
+- [x] Checklist: toggle, quick add (every day / only today), skip + restore, edit, delete.
+- [x] Notes: monospace editor, preview as native views from the core markdown parser,
       tappable task checkboxes (toggleTaskLine), same saving/error behavior as web.
 
 ### 2.4 Calendar tab
-- [ ] Month grid with each day's first blocks and a "+N" overflow.
-- [ ] Week start from the profile; swipe between months; jump-to-month picker.
-- [ ] Tap a day → open it in the Day tab.
+- [x] Month grid with each day's first blocks and a "+N" overflow.
+- [x] Week start from the profile; swipe between months; jump-to-month picker.
+- [x] Tap a day → open it in the Day tab.
 
 ### 2.5 Library tab
-- [ ] Categories with their activities, and search.
-- [ ] Create/edit/delete activities.
-- [ ] Create/rename/recolor categories.
-- [ ] Delete a category with "move its activities to…" or "delete them too".
+- [x] Categories with their activities, and search.
+- [x] Create/edit/delete activities.
+- [x] Create/rename/recolor categories.
+- [x] Delete a category with "move its activities to…" or "delete them too".
 
 ### 2.6 Settings tab
-- [ ] Display name, timezone, week starts on Monday, default block duration.
-- [ ] Theme, and reminder lead time (used in 4.1).
-- [ ] Privacy policy link, sign out, and delete account (the 0.4 flow).
+- [x] Display name, timezone, week starts on Monday, default block duration.
+- [x] Theme.
+- [ ] Reminder lead time (used in 4.1; waits for the notifications task).
+- [x] Privacy policy link, sign out, and delete account (the 0.4 flow).
 
 ### 2.7 Polish
-- [ ] Empty, loading (skeleton) and error states everywhere.
+- [x] Visual redesign (2026-10-06, references from Mobbin): grouped canvas-and-card look, large titles, week strip
+      on the Day tab, month grid with category dots and the chosen day listed under it, inset-grouped Library and
+      Settings, sheets with a header and grouped rows. See DESIGN.md (Layout → Native app) and PROGRESS.md.
+- [~] Empty, loading (skeleton) and error states everywhere. (Empty day hint, empty library/search/checklist states;
+      not yet audited screen by screen.)
 - [ ] Haptics only on meaningful actions.
 - [ ] Keyboard avoidance in every sheet; no layout jumps.
-- [ ] Correct in dark mode and at the largest text size.
+- [~] Correct in dark mode and at the largest text size. (Dark mode: every text now themed, checked in a browser
+      preview; the largest text size is unchecked.)
 
 
 ## Phase 3 — offline-first data mode

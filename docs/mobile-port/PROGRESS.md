@@ -789,3 +789,71 @@ Next step:
   the API is up, the live site keeps serving the last Nuxt release, which can no longer be rebuilt from this repo.
 - A browser parity pass over `apps/web-react`, page by page: the one validation this port has never had.
 
+## 2026-10-06 — tasks 2.3 to 2.6: checklist, notes, calendar, library and settings on the phone
+
+Done:
+- Day tab: the routines shelf is always there ("Add a routine" when empty) with a notes button; both open
+  `day-sheet` — the checklist (tick, add every day / this day only, edit, skip + restore, delete) and the notes
+  (Write / Preview, saved while typing by `useNotesEditor`, task checkboxes tick in the preview).
+- Notes preview is native views from `parseMarkdown` plus a new `parseInline` in core (same markup rules as the
+  HTML renderer; tested against it).
+- Calendar tab: month grid (chips and "+N"), week start from the profile, swipe / arrows between months, month
+  picker sheet, today card, 14-day agenda with tick-off, category totals that filter the grid and agenda. Tap a
+  day to open it, hold to add a block. `monthMatrix` / `monthRange` take `weekStartsOnMonday`; the month totals
+  moved from the web app into core (`month-stats.ts`) and the web re-exports them.
+- Library tab: categories with their activities, search, activity and category sheets (create, edit, delete,
+  recolour, rename; deleting a category moves its activities or deletes them too). Emoji is picked for the name
+  after saving, as on the web.
+- Settings tab: profile form (name, phone, location, bio, time zone, default length, week start), theme,
+  sign-in methods (connect Google / Apple), reset password, privacy and account-deletion links, sign out and
+  delete account (re-sign-in, data, Apple token, sign-in).
+- Live sync: the phone now sends a client id and listens to `users/{uid}/meta/sync`, so edits made on the web
+  appear on the phone as they happen.
+- Metro: `disableHierarchicalLookup` removed (it hid nested dependencies such as `pretty-format`'s
+  `ansi-styles`); `react` is pinned to the app's copy by a resolver instead.
+
+Verification: typecheck of every workspace, 336 core + 158 data + 115 api + 41 tokens tests, web build and lint,
+iOS and Android development bundles. Not yet tried on a device: see HUMAN_TODO.md.
+
+## 2026-10-06 — task 2.7: a polished design for the phone app
+
+Asked for: use Mobbin to update the mobile design into a polished app, and make sure it works. References pulled
+from Mobbin (iOS): Structured, Amie, Todoist and Toggl for the day view and week strip; Todoist, Teams and
+Structured for the month grid with a day list; Tiimo, Grok and Structured for the block editor; Grok, Todoist, Luma
+and Monzo for grouped settings; Jomo and Bevel for activity lists.
+
+Done:
+- Design system (`components/ui`): `Card` and `Section` (grouped look on `canvas`), `CircleButton`, `IconTile`,
+  `FieldRow`, `SheetHeader`, `ProgressRing` (react-native-svg); phone type steps `largeTitle`, `headline`,
+  `callout`; buttons gain `size="large"` and a `surface` variant for the canvas; `ListRow` with inset hairlines;
+  filled and bare text fields; `bare` pickers, date pickers and switches for the ends of rows; pill chips; a top pill
+  toast (short for a plain message, 6 s with an Undo).
+- Day: month title, undo/redo and Today as round buttons, a week strip (tap a day, swipe for the week, category dots),
+  a day summary line, routines as pills with a progress ring, blocks with the ring on the right (as DESIGN.md says),
+  softer grid lines, a one-line now pill, an empty-day hint, and an add button that starts at nine on other days.
+- Calendar: large title with round arrows, a clean month grid with discs and category dots; a tap chooses a day and
+  lists its blocks (tick, or tap to edit), a second tap opens it; "Coming up" from tomorrow; "This month" with three
+  figures, the category bar and the filter rows. `TodayCard` was replaced by `DayCard`.
+- Library: large title, round add buttons, a filled search, each category as a titled card with emoji tiles on the
+  category's tint and duration pills.
+- Settings: profile card, inline Profile and Planner fields (Save and Discard appear on a change), Appearance,
+  sign-in methods and Account rows with icon tiles, account deletion folded behind a "Danger zone" row.
+- Sheets (block editor, activity, category, routines and notes, date, month, emoji): a header with a close button,
+  a large emoji-and-name card, grouped rows with the native controls at their ends, a delete row, a pinned footer.
+- Sign-in screens: mark and large title, larger primary buttons, a hairline "or" divider.
+
+Fixed along the way:
+- Every `Text` with no tone was black in dark mode (React Native has no colour to inherit): the default tone is the
+  theme's foreground now.
+- `EmptyState` grouped its action button into one accessibility element, so a screen reader could not reach it.
+- iOS tab screens: native tabs give the first scroll view automatic insets on top of the screens' own safe-area
+  padding, which would double the space at the top and bottom. Turned off per tab on iOS (Android keeps it: there it
+  is what stops the screen above the tab bar); `lib/insets.ts` says how much of the screen the tab bar covers.
+- A day tapped in the week strip (or Today) waited for the old page's slide-out to finish before changing, so a tap
+  during an interrupted animation was lost; the day now changes at once and the new page glides in.
+
+Verification: `npm run typecheck` (all workspaces), `npm test` (336 core + 158 data + 115 api + 41 tokens), and
+`npx expo export` for Android and iOS (both bundle). The screens were rendered with react-native-web in a scratch
+Vite harness (not in the repo) against the API in memory, at 375×812 in light and dark: adding a block from the
+editor, undo, the week strip, ticking and unticking a routine, ticking and editing a block from the Calendar,
+deleting with undo, and saving the profile all worked. Not tried on a phone: see HUMAN_TODO.md (Task 2.7).
