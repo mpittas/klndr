@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { CONTACT_EMAIL } from "@/lib/legal";
 
 export const Route = createFileRoute("/account-deletion")({
   component: AccountDeletionPage,
@@ -69,9 +70,9 @@ function AccountDeletionPage() {
           Email{" "}
           <a
             className="font-medium text-foreground underline underline-offset-4"
-            href="mailto:[CONTACT EMAIL]?subject=Delete%20my%20klndr.%20account"
+            href={`mailto:${CONTACT_EMAIL}?subject=Delete%20my%20klndr.%20account`}
           >
-            [CONTACT EMAIL]
+            {CONTACT_EMAIL}
           </a>{" "}
           from the address on the account and ask us to delete it. We delete the account and its data within 30 days
           of confirming that the request comes from the account's owner, and we reply when it is done.

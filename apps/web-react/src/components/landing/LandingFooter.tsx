@@ -34,6 +34,9 @@ export function LandingFooter({ start, signedIn }: { start: LandingStart; signed
           <Link to="/privacy" className="rounded-md px-2 py-2 text-muted-foreground transition hover:text-foreground">
             Privacy
           </Link>
+          <Link to="/terms" className="rounded-md px-2 py-2 text-muted-foreground transition hover:text-foreground">
+            Terms
+          </Link>
           <Link
             to="/account-deletion"
             className="rounded-md px-2 py-2 text-muted-foreground transition hover:text-foreground"

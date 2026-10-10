@@ -32,6 +32,12 @@ export function AuthCard({
           <span aria-hidden="true" className="px-1.5">
             ·
           </span>
+          <Link to="/terms" className="underline underline-offset-4 transition hover:text-foreground">
+            Terms
+          </Link>
+          <span aria-hidden="true" className="px-1.5">
+            ·
+          </span>
           <Link to="/account-deletion" className="underline underline-offset-4 transition hover:text-foreground">
             Delete account
           </Link>
