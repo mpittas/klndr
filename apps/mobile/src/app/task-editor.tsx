@@ -10,11 +10,10 @@ import {
 } from "@klndr/core";
 import { useCategories, useDayTimeline, useLibraryActions, useProfile, useTemplates } from "@klndr/data";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View } from "react-native";
 
 import { useAuth } from "@/auth";
 import { TaskForm } from "@/components/editor/task-form";
-import { Button, EmptyState, Skeleton, useToast } from "@/components/ui";
+import { SheetLoading, SheetMessage, useToast } from "@/components/ui";
 
 /** What a block made with no other say starts as: half an hour, until the profile's default length is read. */
 const DEFAULT_DURATION = 30;
@@ -40,30 +39,26 @@ export default function TaskEditor() {
   const task = params.taskId ? timeline.tasks.find((item) => item.id === params.taskId) : undefined;
 
   if (params.taskId && !task) {
-    if (timeline.query.isError) return (
-      <View className="flex-1 justify-center bg-canvas">
-        <EmptyState
-          title="Could not load this block"
+    if (timeline.query.isError) {
+      return (
+        <SheetMessage
+          actionLabel="Try again"
           description="Check your connection and try again."
-          action={<Button label="Try again" onPress={() => void timeline.query.refetch()} variant="surface" />}
+          onAction={() => void timeline.query.refetch()}
+          title="Could not load this block"
         />
-      </View>
-    );
+      );
+    }
     // Still loading, or deleted somewhere else in the meantime.
     return timeline.query.isPending ? (
-      <View className="flex-1 gap-sm bg-canvas p-md pt-lg">
-        <Skeleton height={28} width="50%" />
-        <Skeleton height={44} />
-        <Skeleton height={44} />
-      </View>
+      <SheetLoading />
     ) : (
-      <View className="flex-1 justify-center bg-canvas">
-        <EmptyState
-          action={<Button label="Close" onPress={close} variant="surface" />}
-          description="It may have been deleted on another device."
-          title="This block is gone"
-        />
-      </View>
+      <SheetMessage
+        actionLabel="Close"
+        description="It may have been deleted on another device."
+        onAction={close}
+        title="This block is gone"
+      />
     );
   }
 

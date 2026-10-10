@@ -52,10 +52,20 @@ export type { SegmentedControlOption, SegmentedControlProps } from "./segmented-
 export { SearchField } from "./search-field";
 export type { SearchFieldProps } from "./search-field";
 
+export { DateTimeRow } from "./date-time-row";
+export type { DateTimeRowProps } from "./date-time-row";
+
+export { DeleteCard, FormFooter, NotesCard, RowIcon } from "./form-parts";
+
+export { NameCard } from "./name-card";
+export type { NameCardProps } from "./name-card";
+
 export { formSheet } from "./sheet";
 export { SheetFooter } from "./sheet-footer";
 export { SheetHeader } from "./sheet-header";
 export type { SheetHeaderProps } from "./sheet-header";
+export { SHEET_SIDE, SheetLoading, SheetMessage, SheetScreen } from "./sheet-screen";
+export type { SheetScreenProps } from "./sheet-screen";
 
 export { Skeleton } from "./skeleton";
 export type { SkeletonProps } from "./skeleton";

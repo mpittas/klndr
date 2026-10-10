@@ -2,11 +2,11 @@ import { isValidISODate, longDate, todayISO } from "@klndr/core";
 import { useChecklist, useNotesEditor } from "@klndr/data";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 
 import { ChecklistPanel } from "@/components/checklist/checklist-panel";
 import { NotesPanel } from "@/components/notes/notes-panel";
-import { Button, EmptyState, SegmentedControl, SheetHeader, Skeleton } from "@/components/ui";
+import { Button, EmptyState, SegmentedControl, SheetScreen, Skeleton } from "@/components/ui";
 
 type Tab = "checklist" | "notes";
 
@@ -24,45 +24,41 @@ export default function DaySheet() {
   const notes = useNotesEditor(day);
 
   return (
-    <View className="flex-1 bg-canvas">
-      <SheetHeader onClose={() => router.back()} subtitle={longDate(day)} title={tab === "notes" ? "Notes" : "Routines"} />
-      <View className="px-md pb-sm">
-        <SegmentedControl
-          label="What to show"
-          onChange={setTab}
-          options={[
-            { label: "Routines", value: "checklist" },
-            { label: "Notes", value: "notes" },
-          ]}
-          value={tab}
-        />
-      </View>
-
-      <ScrollView
-        automaticallyAdjustKeyboardInsets
-        contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: 40 }}
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        style={{ flex: 1 }}
-      >
-        {tab === "notes" ? (
-          <NotesPanel notes={notes} />
-        ) : checklist.isLoading ? (
-          <View className="gap-sm">
-            <Skeleton height={52} />
-            <Skeleton height={52} />
-            <Skeleton height={52} />
-          </View>
-        ) : checklist.isError && !checklist.hasChecklist ? (
-          <EmptyState
-            action={<Button label="Try again" onPress={() => void checklist.refetch()} variant="surface" />}
-            description="Check your connection and try again."
-            title="Could not load the routines"
+    <SheetScreen
+      onClose={() => router.back()}
+      subtitle={longDate(day)}
+      title={tab === "notes" ? "Notes" : "Routines"}
+      top={
+        <View className="px-md pb-sm">
+          <SegmentedControl
+            label="What to show"
+            onChange={setTab}
+            options={[
+              { label: "Routines", value: "checklist" },
+              { label: "Notes", value: "notes" },
+            ]}
+            value={tab}
           />
-        ) : (
-          <ChecklistPanel checklist={checklist} />
-        )}
-      </ScrollView>
-    </View>
+        </View>
+      }
+    >
+      {tab === "notes" ? (
+        <NotesPanel notes={notes} />
+      ) : checklist.isLoading ? (
+        <View className="gap-sm">
+          <Skeleton height={52} />
+          <Skeleton height={52} />
+          <Skeleton height={52} />
+        </View>
+      ) : checklist.isError && !checklist.hasChecklist ? (
+        <EmptyState
+          action={<Button label="Try again" onPress={() => void checklist.refetch()} variant="surface" />}
+          description="Check your connection and try again."
+          title="Could not load the routines"
+        />
+      ) : (
+        <ChecklistPanel checklist={checklist} />
+      )}
+    </SheetScreen>
   );
 }

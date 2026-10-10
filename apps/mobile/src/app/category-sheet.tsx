@@ -19,27 +19,22 @@ import {
 } from "@klndr/data";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { Alert, View } from "react-native";
 
 import {
   Button,
-  Card,
   ColorSwatch,
-  EmojiButton,
-  EmptyState,
-  IconTile,
-  ListRow,
+  DeleteCard,
+  FormFooter,
+  NameCard,
   Picker,
   Section,
   SegmentedControl,
-  SheetFooter,
-  SheetHeader,
-  Skeleton,
+  SheetLoading,
+  SheetMessage,
+  SheetScreen,
   Text,
-  TextField,
 } from "@/components/ui";
-import { Trash } from "@/icons";
-import { useThemeColors } from "@/theme/tokens";
 
 const GENERAL = "General";
 const NO_CATEGORIES: Category[] = [];
@@ -63,18 +58,14 @@ export default function CategorySheet() {
   const saved = params.id ? categories.find((category) => category.id === params.id) : undefined;
   if (params.id && !saved) {
     return categoriesQuery.isPending ? (
-      <View className="flex-1 gap-sm bg-canvas p-md pt-lg">
-        <Skeleton height={28} width="50%" />
-        <Skeleton height={44} />
-      </View>
+      <SheetLoading />
     ) : (
-      <View className="flex-1 justify-center bg-canvas">
-        <EmptyState
-          action={<Button label="Close" onPress={close} variant="surface" />}
-          description="It may have been deleted on another device."
-          title="This category is gone"
-        />
-      </View>
+      <SheetMessage
+        actionLabel="Close"
+        description="It may have been deleted on another device."
+        onAction={close}
+        title="This category is gone"
+      />
     );
   }
 
@@ -110,7 +101,6 @@ function CategoryForm({
   onClose: () => void;
 }) {
   const { api } = useData();
-  const colors = useThemeColors();
   const library = useLibraryActions();
   const suggest = useEmojiSuggester();
   const remembered = useRememberedEmoji();
@@ -216,137 +206,101 @@ function CategoryForm({
   };
 
   return (
-    <View className="flex-1 bg-canvas">
-      <SheetHeader
-        onClose={onClose}
-        subtitle={category ? (own.length === 1 ? "1 activity" : `${own.length} activities`) : undefined}
-        title={editing ? "Edit category" : unsaved ? "Save category" : "New category"}
-      />
-
-      <ScrollView
-        automaticallyAdjustKeyboardInsets
-        contentContainerStyle={{ gap: 20, paddingHorizontal: 16, paddingTop: 4, paddingBottom: 24 }}
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        style={{ flex: 1 }}
-      >
-        <View className="gap-sm">
-          <Card className="flex-row items-center gap-md p-sm">
-            <EmojiButton
-              emoji={emoji}
-              label="Category emoji"
-              onChange={(picked) => {
-                setEmoji(picked);
-                setByHand(true);
-              }}
-              size="large"
-            />
-            <TextField
-              appearance="bare"
-              autoCapitalize="words"
-              className="flex-1"
-              editable={!unsaved}
-              label="Name"
-              maxLength={MAX_CATEGORY}
-              onChangeText={setName}
-              placeholder="e.g. Health, Work"
-              prominent
-              returnKeyType="done"
-              value={name}
-            />
-          </Card>
-          {unsaved ? (
-            <Text className="px-md" tone="muted" variant="caption">
-              Its activities already use this name. Save it to recolour it or rename it later.
-            </Text>
-          ) : null}
-        </View>
-
-        <Section title="Colour">
-          <View accessibilityRole="radiogroup" className="flex-row flex-wrap justify-between px-sm py-xs">
-            {COLOR_KEYS.map((key) => (
-              <ColorSwatch color={key} key={key} onPress={() => setColor(key)} selected={color === key} />
-            ))}
-          </View>
-        </Section>
-
-        {category ? (
-          deleting ? (
-            <Section destructive title="Delete this category">
-              <View className="gap-md p-md">
-                {own.length > 0 ? (
-                  <>
-                    <Text tone="muted" variant="callout">
-                      {own.length === 1 ? "1 activity belongs" : `${own.length} activities belong`} to “{category.name}”. What should
-                      happen to {own.length === 1 ? "it" : "them"}?
-                    </Text>
-                    {targets.length > 0 ? (
-                      <SegmentedControl
-                        label="What happens to its activities"
-                        onChange={setMode}
-                        options={[
-                          { label: "Move them", value: "move" },
-                          { label: "Delete them too", value: "delete" },
-                        ]}
-                        value={deleteMode}
-                      />
-                    ) : null}
-                    {deleteMode === "move" ? (
-                      <View className="flex-row items-center justify-between gap-md">
-                        <Text variant="callout">Move them to</Text>
-                        <Picker bare label="Move them to" onChange={setMoveTo} options={targets} value={moveTo} />
-                      </View>
-                    ) : null}
-                  </>
-                ) : (
-                  <Text tone="muted" variant="callout">
-                    It has no activities, so nothing else changes.
-                  </Text>
-                )}
-                <View className="flex-row gap-sm">
-                  <Button className="flex-1" disabled={busy} label="Keep it" onPress={() => setDeleting(false)} variant="secondary" />
-                  <Button
-                    className="flex-1"
-                    disabled={deleteMode === "move" && own.length > 0 && !moveTo}
-                    label="Delete"
-                    loading={busy}
-                    onPress={askRemove}
-                    variant="destructive"
-                  />
-                </View>
-              </View>
-            </Section>
-          ) : (
-            <Card>
-              <ListRow
-                chevron={false}
-                destructive
-                disabled={busy}
-                divider={false}
-                label="Delete category…"
-                leading={
-                  <IconTile size={28}>
-                    <Trash color={colors.destructive} size={15} strokeWidth={2.2} />
-                  </IconTile>
-                }
-                leadingWidth={28}
-                onPress={() => setDeleting(true)}
-              />
-            </Card>
-          )
-        ) : null}
-      </ScrollView>
-
-      <SheetFooter error={error}>
-        <Button className="flex-1" disabled={busy} label="Cancel" onPress={onClose} size="large" variant="surface" />
-        <Button
-          className="flex-[1.6]"
-          label={editing ? "Save changes" : unsaved ? "Save category" : "Add category"}
-          loading={busy && !deleting}
-          onPress={() => void submit()}
-          size="large"
+    <SheetScreen
+      footer={
+        <FormFooter
+          busy={busy}
+          error={error}
+          onCancel={onClose}
+          onSubmit={() => void submit()}
+          submitLabel={editing ? "Save changes" : unsaved ? "Save category" : "Add category"}
+          submitting={busy && !deleting}
         />
-      </SheetFooter>
-    </View>
+      }
+      onClose={onClose}
+      subtitle={category ? (own.length === 1 ? "1 activity" : `${own.length} activities`) : undefined}
+      title={editing ? "Edit category" : unsaved ? "Save category" : "New category"}
+    >
+      <View className="gap-sm">
+        <NameCard
+          autoCapitalize="words"
+          editable={!unsaved}
+          emoji={emoji}
+          emojiLabel="Category emoji"
+          maxLength={MAX_CATEGORY}
+          onChangeText={setName}
+          onEmojiChange={(picked) => {
+            setEmoji(picked);
+            setByHand(true);
+          }}
+          placeholder="e.g. Health, Work"
+          value={name}
+        />
+        {unsaved ? (
+          <Text className="px-md" tone="muted" variant="caption">
+            Its activities already use this name. Save it to recolour it or rename it later.
+          </Text>
+        ) : null}
+      </View>
+
+      <Section title="Colour">
+        <View accessibilityRole="radiogroup" className="flex-row flex-wrap justify-between px-sm py-xs">
+          {COLOR_KEYS.map((key) => (
+            <ColorSwatch color={key} key={key} onPress={() => setColor(key)} selected={color === key} />
+          ))}
+        </View>
+      </Section>
+
+      {category ? (
+        deleting ? (
+          <Section destructive title="Delete this category">
+            <View className="gap-md p-md">
+              {own.length > 0 ? (
+                <>
+                  <Text tone="muted" variant="callout">
+                    {own.length === 1 ? "1 activity belongs" : `${own.length} activities belong`} to “{category.name}”. What should
+                    happen to {own.length === 1 ? "it" : "them"}?
+                  </Text>
+                  {targets.length > 0 ? (
+                    <SegmentedControl
+                      label="What happens to its activities"
+                      onChange={setMode}
+                      options={[
+                        { label: "Move them", value: "move" },
+                        { label: "Delete them too", value: "delete" },
+                      ]}
+                      value={deleteMode}
+                    />
+                  ) : null}
+                  {deleteMode === "move" ? (
+                    <View className="flex-row items-center justify-between gap-md">
+                      <Text variant="callout">Move them to</Text>
+                      <Picker bare label="Move them to" onChange={setMoveTo} options={targets} value={moveTo} />
+                    </View>
+                  ) : null}
+                </>
+              ) : (
+                <Text tone="muted" variant="callout">
+                  It has no activities, so nothing else changes.
+                </Text>
+              )}
+              <View className="flex-row gap-sm">
+                <Button className="flex-1" disabled={busy} label="Keep it" onPress={() => setDeleting(false)} variant="secondary" />
+                <Button
+                  className="flex-1"
+                  disabled={deleteMode === "move" && own.length > 0 && !moveTo}
+                  label="Delete"
+                  loading={busy}
+                  onPress={askRemove}
+                  variant="destructive"
+                />
+              </View>
+            </View>
+          </Section>
+        ) : (
+          <DeleteCard disabled={busy} label="Delete category…" onPress={() => setDeleting(true)} />
+        )
+      ) : null}
+    </SheetScreen>
   );
 }

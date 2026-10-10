@@ -19,6 +19,11 @@ export type DateTimePickerProps = {
   display?: "default" | "spinner" | "compact" | "inline";
   /** Only the control, for the end of a card row whose own text is the label; `label` is then only spoken. */
   bare?: boolean;
+  /**
+   * The picker takes the whole width it is given, which the calendar and the wheel need. Without it the native
+   * view is as wide as its content, which a compact pill is and a calendar is not.
+   */
+  fill?: boolean;
   className?: string;
 };
 
@@ -38,6 +43,7 @@ export function DateTimePicker({
   onDismiss,
   display = "inline",
   bare = false,
+  fill = false,
   className,
 }: DateTimePickerProps) {
   const colors = useThemeColors();
@@ -72,6 +78,7 @@ export function DateTimePicker({
           maximumDate={maximumDate}
           minimumDate={minimumDate}
           mode={mode}
+          style={fill ? { width: "100%" } : undefined}
           onDismiss={() => {
             setOpen(false);
             onDismiss?.();
@@ -87,7 +94,7 @@ export function DateTimePicker({
     </>
   );
 
-  if (bare) return <View className={["items-end", className].filter(Boolean).join(" ")}>{control}</View>;
+  if (bare) return <View className={[fill ? "" : "items-end", className].filter(Boolean).join(" ")}>{control}</View>;
 
   return (
     <View className={["gap-xs", className].filter(Boolean).join(" ")}>

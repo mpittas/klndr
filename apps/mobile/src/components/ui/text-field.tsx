@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import { TextInput, View, type TextInputProps } from "react-native";
 
 import { FONT_FOR_WEIGHT } from "@/fonts";
@@ -18,6 +19,8 @@ export type TextFieldProps = Omit<TextInputProps, "style"> & {
   appearance?: "filled" | "bare";
   /** Larger type, for the one field a sheet is about (a block's or an activity's name). */
   prominent?: boolean;
+  /** The underlying input, for a control elsewhere that moves focus to it. */
+  inputRef?: Ref<TextInput>;
   className?: string;
 };
 
@@ -31,6 +34,7 @@ export function TextField({
   error,
   appearance = "filled",
   prominent = false,
+  inputRef,
   className,
   editable = true,
   multiline = false,
@@ -41,6 +45,7 @@ export function TextField({
 
   const input = (
     <TextInput
+      ref={inputRef}
       accessibilityHint={helper}
       accessibilityLabel={label}
       accessibilityState={{ disabled: !editable }}
