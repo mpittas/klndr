@@ -27,6 +27,21 @@ const applyTheme = (preference: ThemePreference) => {
   document.documentElement.classList.toggle("dark", dark);
 };
 
+/**
+ * Switches the theme in one step. Each element eases its colours over its own duration, so left alone some
+ * would finish well after others. Transitions are switched off for the moment the new colours are applied,
+ * so every element changes together.
+ */
+const switchTheme = (preference: ThemePreference) => {
+  const style = document.createElement("style");
+  style.textContent = "*,*::before,*::after{transition:none!important}";
+  document.head.append(style);
+  applyTheme(preference);
+  // Reading a layout property makes the browser commit the new colours before the style is removed.
+  void document.documentElement.offsetHeight;
+  requestAnimationFrame(() => style.remove());
+};
+
 const readPreference = (): ThemePreference => {
   try {
     const stored = localStorage.getItem(THEME_STORAGE_KEY);
@@ -56,7 +71,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
     } catch {
       // As above: the theme still applies for this visit.
     }
-    applyTheme(next);
+    switchTheme(next);
   }, []);
 
   const toggle = useCallback(() => {
@@ -67,7 +82,7 @@ export function ThemeProvider({ children }: PropsWithChildren) {
     applyTheme(preference);
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const onSystemChange = () => {
-      if (preference === "system") applyTheme("system");
+      if (preference === "system") switchTheme("system");
     };
     media.addEventListener("change", onSystemChange);
     return () => media.removeEventListener("change", onSystemChange);

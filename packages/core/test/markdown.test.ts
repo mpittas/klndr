@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { listItemDepth, parseMarkdown, renderMarkdown, renderMarkdownHtml, toggleTaskLine } from "../src/index";
+import { listItemDepth, parseInline, parseMarkdown, renderInlineHtml, renderMarkdown, renderMarkdownHtml, toggleTaskLine } from "../src/index";
 import { markdownCases, toggleTaskLineCases } from "./fixtures/markdown-cases";
 
 describe("HTML parity", () => {
@@ -117,5 +117,51 @@ describe("safety", () => {
 
   it("opens links without handing the referrer over", () => {
     expect(renderMarkdown("[x](https://example.com)")).toContain('target="_blank" rel="noopener noreferrer"');
+  });
+});
+
+describe("parseInline", () => {
+  it("leaves plain text alone", () => {
+    expect(parseInline("just words")).toEqual([{ text: "just words" }]);
+    expect(parseInline("")).toEqual([]);
+  });
+
+  it("reads bold, italic and strikethrough, and nests them", () => {
+    expect(parseInline("a **b** c")).toEqual([{ text: "a " }, { text: "b", bold: true }, { text: " c" }]);
+    expect(parseInline("*it* and _it_")).toEqual([{ text: "it", italic: true }, { text: " and " }, { text: "it", italic: true }]);
+    expect(parseInline("~~gone~~")).toEqual([{ text: "gone", strike: true }]);
+    expect(parseInline("*a **b** c*")).toEqual([
+      { text: "a ", italic: true },
+      { text: "b", bold: true, italic: true },
+      { text: " c", italic: true },
+    ]);
+  });
+
+  it("keeps what is inside a code span untouched", () => {
+    expect(parseInline("run `a ** b` now")).toEqual([{ text: "run " }, { text: "a ** b", code: true }, { text: " now" }]);
+  });
+
+  it("reads links and bare addresses, and only safe ones", () => {
+    expect(parseInline("see [docs](https://x.dev/a) and https://y.dev.")).toEqual([
+      { text: "see " },
+      { text: "docs", href: "https://x.dev/a" },
+      { text: " and " },
+      { text: "https://y.dev.", href: "https://y.dev." },
+    ]);
+    expect(parseInline("[bad](javascript:alert(1))").some((span) => span.href)).toBe(false);
+    expect(parseInline("(see https://z.dev)")[1]).toEqual({ text: "https://z.dev", href: "https://z.dev" });
+  });
+
+  it("does not mistake snake_case or arithmetic for emphasis", () => {
+    expect(parseInline("snake_case_name")).toEqual([{ text: "snake_case_name" }]);
+    expect(parseInline("2*3*4")).toEqual([{ text: "2*3*4" }]);
+  });
+
+  it("agrees with the HTML renderer about where the markup is", () => {
+    for (const source of ["a **b** *c* ~~d~~ `e`", "plain", "**x** and **y**"]) {
+      const text = parseInline(source).map((span) => span.text).join("");
+      const html = renderInlineHtml(source).replace(/<[^>]+>/g, "");
+      expect(text).toBe(html);
+    }
   });
 });

@@ -14,6 +14,7 @@ export * from "./profile";
 export * from "./auth";
 export * from "./emojis";
 export * from "./markdown";
+export * from "./month-stats";
 export * from "./api";
 export * from "./store";
 export * from "./history";
