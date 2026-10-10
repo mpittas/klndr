@@ -2,7 +2,7 @@ import { authErrorMessage, type UserProfile } from "@klndr/core";
 import { useProfile } from "@klndr/data";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -11,9 +11,9 @@ import { useAuth } from "@/auth";
 import { DeleteAccount } from "@/components/settings/delete-account";
 import { ProfileForm } from "@/components/settings/profile-form";
 import { SignInMethods } from "@/components/settings/sign-in-methods";
-import { Button, Card, IconTile, ListRow, Section, SegmentedControl, Skeleton, Text, useToast } from "@/components/ui";
+import { Button, Card, ListRow, Section, SegmentedControl, Skeleton, Text, useToast } from "@/components/ui";
 import { demoMode, webBaseUrl } from "@/env";
-import { ExternalLink, KeyRound, LogOut, ShieldCheck, Trash } from "@/icons";
+import { ExternalLink } from "@/icons";
 import { useTabBarInset } from "@/lib/insets";
 import { useThemePreference, type ThemePreference } from "@/theme/preference";
 import { useThemeColors } from "@/theme/tokens";
@@ -69,7 +69,6 @@ export default function SettingsTab() {
 
   const openWebPage = (path: string) => void WebBrowser.openBrowserAsync(`${webBaseUrl}${path}`);
   const linkIcon = <ExternalLink color={colors["muted-foreground"]} size={16} />;
-  const tile = (icon: ReactNode) => <IconTile size={30}>{icon}</IconTile>;
   const canReset = hasPassword && Boolean(user.email);
 
   return (
@@ -147,8 +146,6 @@ export default function SettingsTab() {
             description="We email you a link to choose a new one."
             disabled={resetting}
             label="Reset password"
-            leading={tile(<KeyRound color={colors.foreground} size={16} strokeWidth={2.2} />)}
-            leadingWidth={30}
             onPress={() => void sendReset()}
           />
         ) : null}
@@ -157,8 +154,6 @@ export default function SettingsTab() {
             <ListRow
               chevron={false}
               label="Privacy policy"
-              leading={tile(<ShieldCheck color={colors.foreground} size={16} strokeWidth={2.2} />)}
-              leadingWidth={30}
               onPress={() => openWebPage("/privacy")}
               trailing={linkIcon}
             />
@@ -167,8 +162,6 @@ export default function SettingsTab() {
               divider={!demoMode}
               label="Delete your data"
               description="How to delete your account, in the app or by email."
-              leading={tile(<Trash color={colors.foreground} size={16} strokeWidth={2.2} />)}
-              leadingWidth={30}
               onPress={() => openWebPage("/account-deletion")}
               trailing={linkIcon}
             />
@@ -180,8 +173,6 @@ export default function SettingsTab() {
             destructive
             divider={false}
             label="Sign out"
-            leading={tile(<LogOut color={colors.destructive} size={16} strokeWidth={2.2} />)}
-            leadingWidth={30}
             onPress={() => void signOut().catch(() => toast.show({ message: "Could not sign out. Try again." }))}
           />
         )}

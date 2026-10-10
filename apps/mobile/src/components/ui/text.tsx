@@ -22,11 +22,13 @@ const VARIANT_CLASS: Record<TypeScaleName, string> = {
  * 15-point text lists and forms read best at. The shared scale was drawn for a desktop; at arm's length a
  * 14-point list row is a squint, which is why iOS's own lists sit at 15 to 17.
  */
-type PhoneVariant = "largeTitle" | "headline" | "callout";
+type PhoneVariant = "largeTitle" | "headline" | "row" | "callout";
 
 const PHONE_STYLE: Record<PhoneVariant, TextStyle & { weight: 400 | 500 | 600 | 700 }> = {
   largeTitle: { fontSize: 32, lineHeight: 38, letterSpacing: -0.8, weight: 700 },
   headline: { fontSize: 17, lineHeight: 22, letterSpacing: -0.25, weight: 600 },
+  /** What a row of a grouped list says, label and value alike: the size the phone's own forms use. */
+  row: { fontSize: 17, lineHeight: 22, letterSpacing: -0.4, weight: 400 },
   callout: { fontSize: 15, lineHeight: 20, letterSpacing: -0.1, weight: 400 },
 };
 

@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 
-import { Button, Card, CircleButton, SheetHeader, Text } from "@/components/ui";
+import { Button, Card, CircleButton, SheetScreen, Text } from "@/components/ui";
 import { ChevronLeft, ChevronRight } from "@/icons";
 import { useThemeColors } from "@/theme/tokens";
 
@@ -24,58 +24,54 @@ export default function MonthSheet() {
   const go = (m: string) => router.dismissTo({ pathname: "/calendar", params: { m } });
 
   return (
-    <View className="flex-1 bg-canvas">
-      <SheetHeader onClose={() => router.back()} title="Go to a month" />
-
-      <View className="gap-md px-md pt-xs">
-        <Card className="gap-sm p-sm">
-          <View className="flex-row items-center justify-between px-xs" style={{ minHeight: 44 }}>
-            <CircleButton label="Previous year" onPress={() => setYear((value) => value - 1)} size={34} variant="muted">
-              <ChevronLeft color={colors.foreground} size={19} strokeWidth={2.4} />
-            </CircleButton>
-            <Text accessibilityLiveRegion="polite" numeric variant="headline">
-              {year}
-            </Text>
-            <CircleButton label="Next year" onPress={() => setYear((value) => value + 1)} size={34} variant="muted">
-              <ChevronRight color={colors.foreground} size={19} strokeWidth={2.4} />
-            </CircleButton>
-          </View>
-
-          <View accessibilityRole="radiogroup" className="flex-row flex-wrap" style={{ rowGap: 6 }}>
-            {MONTH_LABELS.map((label, index) => {
-              const selected = year === getYear(shown) && index === getMonthIndex(shown);
-              const current = year === getYear(today) && index === getMonthIndex(today);
-              return (
-                <View key={label} style={{ width: "33.333%", padding: 3 }}>
-                  <Pressable
-                    accessibilityLabel={`${label} ${year}${current ? ", this month" : ""}`}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    className={["items-center justify-center rounded-md", selected ? "bg-primary" : current ? "bg-muted" : ""].join(" ")}
-                    onPress={() => go(`${year}-${pad(index)}`)}
-                    style={({ pressed }) => ({ minHeight: 48, opacity: pressed ? 0.6 : 1 })}
-                  >
-                    <Text tone={selected ? "primary-foreground" : "foreground"} variant="callout" weight={selected || current ? 700 : 500}>
-                      {label.slice(0, 3)}
-                    </Text>
-                  </Pressable>
-                </View>
-              );
-            })}
-          </View>
-        </Card>
-
-        <View className="flex-row gap-sm">
-          <Button className="flex-1" label="This month" onPress={() => go(today.slice(0, 7))} size="large" variant="surface" />
-          <Button
-            className="flex-1"
-            label="Exact date…"
-            onPress={() => router.replace({ pathname: "/date-sheet", params: { day: shown } })}
-            size="large"
-            variant="surface"
-          />
+    <SheetScreen gap={16} onClose={() => router.back()} title="Go to a month">
+      <Card className="gap-sm p-sm">
+        <View className="flex-row items-center justify-between px-xs" style={{ minHeight: 44 }}>
+          <CircleButton label="Previous year" onPress={() => setYear((value) => value - 1)} size={34} variant="muted">
+            <ChevronLeft color={colors.foreground} size={19} strokeWidth={2.4} />
+          </CircleButton>
+          <Text accessibilityLiveRegion="polite" numeric variant="headline">
+            {year}
+          </Text>
+          <CircleButton label="Next year" onPress={() => setYear((value) => value + 1)} size={34} variant="muted">
+            <ChevronRight color={colors.foreground} size={19} strokeWidth={2.4} />
+          </CircleButton>
         </View>
+
+        <View accessibilityRole="radiogroup" className="flex-row flex-wrap" style={{ rowGap: 6 }}>
+          {MONTH_LABELS.map((label, index) => {
+            const selected = year === getYear(shown) && index === getMonthIndex(shown);
+            const current = year === getYear(today) && index === getMonthIndex(today);
+            return (
+              <View key={label} style={{ width: "33.333%", padding: 3 }}>
+                <Pressable
+                  accessibilityLabel={`${label} ${year}${current ? ", this month" : ""}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected }}
+                  className={["items-center justify-center rounded-md", selected ? "bg-primary" : current ? "bg-muted" : ""].join(" ")}
+                  onPress={() => go(`${year}-${pad(index)}`)}
+                  style={({ pressed }) => ({ minHeight: 48, opacity: pressed ? 0.6 : 1 })}
+                >
+                  <Text tone={selected ? "primary-foreground" : "foreground"} variant="callout" weight={selected || current ? 700 : 500}>
+                    {label.slice(0, 3)}
+                  </Text>
+                </Pressable>
+              </View>
+            );
+          })}
+        </View>
+      </Card>
+
+      <View className="flex-row gap-sm">
+        <Button className="flex-1" label="This month" onPress={() => go(today.slice(0, 7))} size="large" variant="surface" />
+        <Button
+          className="flex-1"
+          label="Exact date…"
+          onPress={() => router.replace({ pathname: "/date-sheet", params: { day: shown } })}
+          size="large"
+          variant="surface"
+        />
       </View>
-    </View>
+    </SheetScreen>
   );
 }

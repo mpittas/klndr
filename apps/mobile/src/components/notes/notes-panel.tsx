@@ -3,7 +3,7 @@ import type { useNotesEditor } from "@klndr/data";
 import { useState } from "react";
 import { Platform, Pressable, TextInput, View } from "react-native";
 
-import { Button, Card, SegmentedControl, Skeleton, Text } from "@/components/ui";
+import { Button, CARD_RADIUS, Card, SegmentedControl, Skeleton, Text } from "@/components/ui";
 import { useThemeColors } from "@/theme/tokens";
 import { MarkdownView } from "./markdown-view";
 
@@ -80,7 +80,7 @@ export function NotesPanel({ notes }: { notes: ReturnType<typeof useNotesEditor>
         <TextInput
           accessibilityLabel="Notes for this day"
           autoCapitalize="sentences"
-          className="rounded-lg bg-card px-md py-md text-foreground"
+          className="bg-card px-md py-md text-foreground"
           maxLength={MAX_LENGTH}
           multiline
           onBlur={() => void notes.saveNow()}
@@ -88,7 +88,7 @@ export function NotesPanel({ notes }: { notes: ReturnType<typeof useNotesEditor>
           placeholder={"Jot something down…\n\n# Heading   - list   - [ ] task   **bold**   `code`"}
           placeholderTextColor={colors["muted-foreground"]}
           scrollEnabled={false}
-          style={{ fontFamily: MONO, fontSize: 15, lineHeight: 22, minHeight: 280, textAlignVertical: "top" }}
+          style={{ borderRadius: CARD_RADIUS, borderCurve: "continuous", fontFamily: MONO, fontSize: 15, lineHeight: 22, minHeight: 280, textAlignVertical: "top" }}
           value={notes.text}
         />
       ) : notes.text.trim() ? (

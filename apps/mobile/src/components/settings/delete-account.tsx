@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { Alert, View } from "react-native";
 
-import { Button, IconTile, ListRow, Text, TextField } from "@/components/ui";
-import { Trash } from "@/icons";
-import { useThemeColors } from "@/theme/tokens";
+import { Button, ListRow, Text, TextField } from "@/components/ui";
 
 /** The phrase to type. Long enough that it cannot happen by accident. */
 const CONFIRMATION = "delete my account";
@@ -30,7 +28,6 @@ export function DeleteAccount({
   needsPassword: boolean;
   onDelete: (payload: { password?: string }) => Promise<void>;
 }) {
-  const colors = useThemeColors();
   const [open, setOpen] = useState(false);
   const [typed, setTyped] = useState("");
   const [password, setPassword] = useState("");
@@ -66,12 +63,6 @@ export function DeleteAccount({
         destructive
         divider={open}
         label="Delete account"
-        leading={
-          <IconTile size={30}>
-            <Trash color={colors.destructive} size={16} strokeWidth={2.2} />
-          </IconTile>
-        }
-        leadingWidth={30}
         onPress={() => setOpen((value) => !value)}
         trailing={
           <Text tone="muted" variant="caption" weight={600}>

@@ -6,7 +6,7 @@ import { useThemeColors } from "@/theme/tokens";
 import { Text } from "./text";
 
 /** A row's height: a little over the 44-point minimum, the phone's own list rhythm. */
-const ROW_HEIGHT = 50;
+const ROW_HEIGHT = 56;
 const SIDE = 16;
 /** The gap between a row's leading tile and its label. */
 const GAP = 12;
@@ -59,7 +59,7 @@ export function ListRow({
     <>
       {leading}
       <View className="min-w-0 flex-1 py-sm" style={{ gap: 2 }}>
-        <Text tone={destructive ? "destructive" : disabled ? "muted" : "foreground"} variant="callout">
+        <Text tone={destructive ? "destructive" : disabled ? "muted" : "foreground"} variant="row">
           {label}
         </Text>
         {description ? (
@@ -69,7 +69,7 @@ export function ListRow({
         ) : null}
       </View>
       {value ? (
-        <Text numeric numberOfLines={1} style={{ maxWidth: "45%" }} tone="muted" variant="callout">
+        <Text numeric numberOfLines={1} style={{ maxWidth: "45%" }} tone="muted" variant="row">
           {value}
         </Text>
       ) : null}
