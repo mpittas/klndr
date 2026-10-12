@@ -46,11 +46,12 @@ function adoptScenes(source) {
     "class AppDelegate: ExpoAppDelegate, ExpoReactNativeFactoryProvider {",
   );
 
-  // The scene delegate creates the window and starts React Native now, so the app delegate must not.
-  next = next.replace(
-    /\n#if os\(iOS\) \|\| os\(tvOS\)\n\s*window = UIWindow\(frame: UIScreen\.main\.bounds\)\n\s*factory\.startReactNative\([\s\S]*?\)\n#endif\n/,
-    "\n    // iOS 27 requires the scene life cycle: the scene delegate creates the window and starts React Native.\n",
-  );
+  // The scene delegate creates the window and starts React Native now, so the app delegate must not. Only those
+  // two statements go: other plugins add their own to the same block (React Native Firebase puts
+  // `FirebaseApp.configure()` between them), and that has to stay.
+  next = next
+    .replace(/^[ \t]*window = UIWindow\(frame: UIScreen\.main\.bounds\)\n/m, "")
+    .replace(/^[ \t]*factory\.startReactNative\([^)]*\)\n/m, "    // iOS 27 requires the scene life cycle: the scene delegate creates the window and starts React Native.\n");
 
   next = next.replace(
     /\nclass ReactNativeDelegate:/,
@@ -60,7 +61,8 @@ function adoptScenes(source) {
   const adopted =
     next.includes("ExpoReactNativeFactoryProvider") &&
     next.includes(`class ${SCENE_DELEGATE}`) &&
-    !next.includes("factory.startReactNative");
+    !next.includes("factory.startReactNative(") &&
+    !next.includes("UIWindow(frame:");
   if (!adopted) {
     throw new Error(
       "with-ios-scene-lifecycle: AppDelegate.swift no longer looks like the template this plugin patches. " +
