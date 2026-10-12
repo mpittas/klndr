@@ -30,8 +30,9 @@ a data route without a token returns 401 (fail-closed), and `/privacy`, `/terms`
 - [x] EAS `production` environment has the `GOOGLE_SERVICES_INFO_PLIST` file secret (the Firebase iOS app
       `1:379750636201:ios:161b661b9e698763dca7b8`). Without it the production build fails in prebuild.
 - [x] `EXPO_PUBLIC_DEMO_MODE` is not set for `production` (demo mode skips sign-in; a store build must not).
-- [ ] Deploy the Firestore rules if not done (`firebase deploy --only firestore:rules`): the AI-emoji field needs them.
-- [ ] Optional: `OPENAI_API_KEY` on the Vercel project. Unset, the app falls back to 📌 / 📁.
+- [x] Firestore rules: the live rules match `firestore.rules` (category emoji field and sync stamps present).
+- [x] Decision: the AI-emoji feature stays **on** for v1. The privacy policy already discloses OpenAI. Make sure
+      `OPENAI_API_KEY` is set on the Vercel project (Production), or the app just falls back to 📌 / 📁.
 
 ## 2. Sign-in has to work end to end
 
@@ -53,8 +54,9 @@ a data route without a token returns 401 (fail-closed), and `/privacy`, `/terms`
 - [ ] **Account deletion** is in the app (Settings → delete account) and on the web (`/account-deletion`). Apple
       requires both an in-app path and a working explanation.
 - [ ] **Terms** page exists at `/terms`.
-- [ ] **(you)** App icon: final 1024×1024 artwork, no transparency, no rounded corners
-      (`apps/mobile/assets/`). Currently placeholder (Task 4.3). Splash screen is a placeholder too.
+- [x] App icon: generated from the web calendar mark on the brand navy, 1024×1024, no alpha
+      (`apps/mobile/assets/images/icon.png`, source `icon-source.svg`). Splash uses the same mark. Swap in final
+      artwork any time; keep it opaque. The Android adaptive icons are still placeholders (not needed for iOS).
 - [ ] **Demo account for App Review**: create a real account in the production Firebase project, with a little
       sample data, and keep its email and password for step 6. Reviewers cannot use Apple or Google sign-in
       reliably, so give them email + password.
