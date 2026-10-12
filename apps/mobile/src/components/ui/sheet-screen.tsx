@@ -30,7 +30,7 @@ export type SheetScreenProps = SheetHeaderProps & {
  */
 export function SheetScreen({ error, top, scroll = true, gap = 20, children, ...header }: SheetScreenProps) {
   return (
-    <View className="flex-1 bg-canvas">
+    <View className="flex-1 bg-canvas" collapsable={false}>
       <SheetHeader {...header} />
       {top}
       {scroll ? (

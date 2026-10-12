@@ -227,7 +227,8 @@ function CategoryForm({
             setEmoji(picked);
             setByHand(true);
           }}
-          placeholder="Name, e.g. Health"
+          label="Name"
+          placeholder="e.g. Health"
           value={name}
         />
         {unsaved ? (

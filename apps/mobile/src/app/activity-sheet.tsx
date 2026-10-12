@@ -199,7 +199,8 @@ function ActivityForm({
             setEmoji(picked);
             setByHand(true);
           }}
-          placeholder="Name, e.g. Deep focus"
+          label="Name"
+          placeholder="e.g. Deep focus"
           value={name}
         />
         {byHand || (editing && name.trim() === template?.name) ? null : (

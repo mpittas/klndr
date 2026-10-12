@@ -146,7 +146,7 @@ export function TaskForm(props: TaskFormProps) {
         onChangeText={setTitle}
         onEmojiChange={setEmoji}
         onSubmitEditing={() => void submit()}
-        placeholder="Title"
+        placeholder="Add a title"
         value={title}
       />
 

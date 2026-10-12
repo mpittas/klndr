@@ -27,7 +27,9 @@ export function Switch({ label, helper, bare = false, ...rest }: SwitchProps) {
     />
   );
 
-  if (bare) return control;
+  // Shrunk to the switch's own size and pushed to the end: on its own, the native control fills the width of the
+  // row's control area and draws at its start, which put "Done" and its switch side by side at the left.
+  if (bare) return <View style={{ alignSelf: "flex-end" }}>{control}</View>;
 
   return (
     <View className="flex-row items-center justify-between gap-md">

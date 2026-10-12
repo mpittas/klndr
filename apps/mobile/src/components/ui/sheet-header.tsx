@@ -41,8 +41,9 @@ export function SheetHeader({
   const ready = !confirmDisabled;
 
   return (
-    // Room above for the system's grabber.
-    <View className="flex-row items-center px-md pb-sm" style={{ paddingTop: 16, gap: 12 }}>
+    // Room above for the system's grabber. `collapsable={false}`: a form sheet holding a ScrollView drops a header
+    // whose view React Native has flattened away (react-native-screens warns about it), and the header vanishes.
+    <View className="flex-row items-center px-md pb-sm" collapsable={false} style={{ paddingTop: 16, gap: 12 }}>
       <View style={{ width: DISC }}>
         {onClose ? (
           <CircleButton label="Close" onPress={onClose} size={DISC} variant="card">
