@@ -36,10 +36,10 @@ a data route without a token returns 401 (fail-closed), and `/privacy`, `/terms`
 
 ## 2. Sign-in has to work end to end
 
-- [ ] **(you)** Firebase console → Authentication → enable **Email/Password**, **Google** and **Apple**.
-- [ ] **(you)** Apple: create the Services ID and key for Sign in with Apple and add them in Firebase
-      (`HUMAN_TODO.md`, Task 0.4). Apple's rule 4.8 requires Sign in with Apple whenever another social login
-      (Google) is offered, so this is not optional.
+- [x] Firebase Authentication providers **Email/Password, Google and Apple are enabled** (checked 2026-10-12 with the
+      Identity Platform admin API; Apple uses the web Services ID `com.klndr.app.web`, team `Y6H5QN6TFC`).
+      The native iOS flow signs in with the bundle id, which the registered Firebase iOS app already covers.
+      Apple's rule 4.8 requires Sign in with Apple whenever another social login (Google) is offered.
 - [ ] Google on iOS needs `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (already set on EAS `development`; set it for
       `production` too) and `GoogleService-Info.plist` (already stored as the EAS secret `GOOGLE_SERVICES_INFO_PLIST`;
       check it exists for the production environment: `npx eas-cli env:list production`).
