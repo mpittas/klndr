@@ -71,7 +71,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       bundleIdentifier: BUNDLE_ID,
       // The day planner is a phone app; a tablet layout is out of scope.
       supportsTablet: false,
-      icon: "./assets/expo.icon",
+      // The calendar mark on the brand navy (assets/images/icon-source.svg). A PNG, not an Icon Composer file: the
+      // store needs a 1024-point square with no alpha channel, and this one has none.
+      icon: "./assets/images/icon.png",
       // Task 1.3 uses this; the capability has to be declared for the native build.
       usesAppleSignIn: true,
       // The app only uses the encryption the OS and HTTPS provide, which is exempt: this answers
