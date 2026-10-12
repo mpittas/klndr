@@ -1,6 +1,7 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+
 /**
  * The app identity. iOS cannot change the bundle id after the first store release and Android
  * cannot change the package either, so both come from this one constant — HUMAN_TODO: confirm it
@@ -93,6 +94,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       // modules are linked whether or not they are there, so a build without them (a local simulator build in demo
       // mode) fails in "Install pods" without it, as the first EAS build did (see DECISIONS.md, task 1.3).
       ["expo-build-properties", { ios: { useFrameworks: "dynamic" } }],
+      // iOS 27 kills an app that has not adopted the UIScene life cycle; see the plugin.
+      "./plugins/with-ios-scene-lifecycle",
       ...firebasePlugins,
       [
         "expo-splash-screen",

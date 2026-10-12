@@ -18,6 +18,29 @@ npm run ios     -w apps/mobile       # Metro + an iOS device or simulator
 `npm start` needs a development build (`eas build --profile development`, see `eas.json`): once a
 native module is in play, Expo Go cannot run the app.
 
+## Running on the iOS simulator (a new machine)
+
+`ios/` and `android/` are generated and gitignored: a checkout has only the config, and the native projects are made from it.
+
+```sh
+npm install                                   # at the repository root
+cd apps/mobile
+npx expo prebuild --platform ios --no-install # generates ios/ from app.config.ts and its plugins
+cd ios && LANG=en_US.UTF-8 pod install        # CocoaPods needs a UTF-8 locale
+xcodebuild -workspace klndr.xcworkspace -scheme klndr -configuration Debug \
+  -destination 'id=<simulator UDID>' -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO build
+xcrun simctl install <UDID> build/dd/Build/Products/Debug-iphonesimulator/klndr.app
+npx expo start --dev-client                   # Metro; open the app and pick this server
+```
+
+Find a UDID with `xcrun simctl list devices available`. `expo run:ios` is not used: with the iOS 27 simulator it
+takes the simulator for a physical device and asks for code signing.
+
+Native code is never edited in `ios/`; change it through a config plugin in `plugins/`, or the next `prebuild`
+loses it. `plugins/with-ios-scene-lifecycle.js` is one: iOS 27 kills an app that has not adopted the UIScene life
+cycle (the crash reads "klndr shut down unexpectedly"), and Expo's template does not do it yet. Rebuild the native
+app after changing `app.config.ts`, a plugin, or a native dependency; JavaScript changes reload on their own.
+
 ## Signing in
 
 - **With Firebase:** put `google-services.json` and `GoogleService-Info.plist` in this folder (or point
