@@ -69,6 +69,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     icon: "./assets/images/icon.png",
     ios: {
       bundleIdentifier: BUNDLE_ID,
+      // Raised by hand for every App Store upload (eas.json uses appVersionSource "local", and a dynamic config
+      // cannot be written by `autoIncrement`). A string; Apple needs each upload to be higher than the last.
+      buildNumber: "1",
       // The day planner is a phone app; a tablet layout is out of scope.
       supportsTablet: false,
       // The calendar mark on the brand navy (assets/images/icon-source.svg). A PNG, not an Icon Composer file: the

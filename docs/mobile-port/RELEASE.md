@@ -31,8 +31,8 @@ a data route without a token returns 401 (fail-closed), and `/privacy`, `/terms`
       `1:379750636201:ios:161b661b9e698763dca7b8`). Without it the production build fails in prebuild.
 - [x] `EXPO_PUBLIC_DEMO_MODE` is not set for `production` (demo mode skips sign-in; a store build must not).
 - [x] Firestore rules: the live rules match `firestore.rules` (category emoji field and sync stamps present).
-- [x] Decision: the AI-emoji feature stays **on** for v1. The privacy policy already discloses OpenAI. Make sure
-      `OPENAI_API_KEY` is set on the Vercel project (Production), or the app just falls back to 📌 / 📁.
+- [x] Decision: the AI-emoji feature stays **on** for v1. The privacy policy already discloses OpenAI, and
+      `OPENAI_API_KEY` is set on the Vercel project (Production, checked 2026-10-12).
 
 ## 2. Sign-in has to work end to end
 
@@ -101,7 +101,7 @@ content shared with a service provider, or leave the key unset for the first rel
 ```bash
 cd apps/mobile
 # Raise the build number first: eas.json uses appVersionSource "local".
-#   app.config.ts -> ios.buildNumber (a string: "1", "2", ...). The first upload can be "1".
+#   app.config.ts -> ios.buildNumber (a string; it is "1" for the first upload, then "2", ...).
 npx eas-cli build --profile production --platform ios
 npx eas-cli submit --platform ios --latest
 ```
