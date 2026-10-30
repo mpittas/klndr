@@ -126,7 +126,7 @@ export function LandingFeatures() {
                   {WEEKDAY_INITIALS.map((label) => (
                     <span
                       key={label}
-                      className="py-2 text-center font-mono text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                      className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
                     >
                       {label}
                     </span>
@@ -156,7 +156,7 @@ export function LandingFeatures() {
                             {day.n}
                           </span>
                           {day.total ? (
-                            <span className="font-mono text-[10px] text-muted-foreground tabular-nums">
+                            <span className="text-[10px] text-muted-foreground tabular-nums">
                               {day.total}
                             </span>
                           ) : null}
@@ -167,12 +167,12 @@ export function LandingFeatures() {
                             className={`flex items-center gap-1 truncate rounded-md border px-1.5 py-0.5 text-[11px] font-medium shadow-2xs ${paletteOf(chip.color).chip}`}
                           >
                             <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${paletteOf(chip.color).dot}`} />
-                            <span className="font-mono text-[10px] opacity-75">{chip.time}</span>
+                            <span className="text-[10px] opacity-75">{chip.time}</span>
                             <span className="truncate">{chip.title}</span>
                           </span>
                         ))}
                         {day.more ? (
-                          <span className="self-start rounded-md bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                          <span className="self-start rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
                             +{day.more} more
                           </span>
                         ) : null}
@@ -228,7 +228,7 @@ export function LandingFeatures() {
                       <span
                         key={length}
                         className={[
-                          "rounded-md border px-2 py-0.5 font-mono text-[11px]",
+                          "rounded-md border px-2 py-0.5 text-[11px]",
                           length === "45m"
                             ? "border-primary bg-primary text-primary-foreground"
                             : "border-border text-muted-foreground",
@@ -337,13 +337,13 @@ export function LandingFeatures() {
             <div aria-hidden="true" className="stage m-2 flex h-52 justify-center overflow-hidden rounded-xl">
               <div className="scene mt-5 h-[19rem] w-44 shrink-0 origin-top rounded-[1.9rem] border-[5px] border-zinc-900 bg-background shadow-lg dark:border-zinc-950">
                 <div className="relative h-full overflow-hidden rounded-[1.55rem]">
-                  <div className="flex items-center justify-between px-4 pt-2 font-mono text-[8px] font-semibold text-foreground">
+                  <div className="flex items-center justify-between px-4 pt-2 text-[8px] font-semibold text-foreground">
                     <span>9:41</span>
                     <span className="h-1.5 w-3 rounded-[2px] border border-foreground/70" />
                   </div>
                   <div className="border-b border-border px-3 pb-1.5 pt-1.5">
                     <p className="text-[10px] font-semibold text-foreground">Thu, Oct 1</p>
-                    <p className="font-mono text-[7px] text-muted-foreground">4h planned · 1/4 done</p>
+                    <p className="text-[7px] text-muted-foreground">4h planned · 1/4 done</p>
                   </div>
                   <div className="space-y-1 px-2 pt-2">
                     <div className="h-7 [&_p]:text-[9px] [&>div]:rounded-md">
@@ -370,7 +370,7 @@ export function LandingFeatures() {
                             {item.emoji}
                           </span>
                           <span className="flex-1 truncate text-[9px] font-medium text-foreground">{item.title}</span>
-                          <span className="font-mono text-[8px] text-muted-foreground">{item.length}</span>
+                          <span className="text-[8px] text-muted-foreground">{item.length}</span>
                         </div>
                       ))}
                     </div>

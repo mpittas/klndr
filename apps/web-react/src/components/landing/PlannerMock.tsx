@@ -183,10 +183,10 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
         <aside className="hidden flex-col border-r border-border bg-background md:flex">
           <div className="flex items-center gap-0.5 whitespace-nowrap border-b border-border px-2 py-2 text-[11px] font-medium text-muted-foreground">
             <span className="rounded-md bg-muted px-2 py-1 font-semibold text-foreground">
-              Activities <span className="ml-0.5 font-mono font-medium text-muted-foreground">12</span>
+              Activities <span className="ml-0.5 font-medium text-muted-foreground">12</span>
             </span>
             <span className="px-1.5 py-1">
-              Checklist <span className="font-mono">2/4</span>
+              Checklist <span className="">2/4</span>
             </span>
             <span className="px-1.5 py-1">Notes</span>
           </div>
@@ -205,7 +205,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
                     <span className={`h-2 w-2 rounded-full ${paletteOf(group.color).dot}`} />
                     {group.name}
                   </span>
-                  <span className="rounded-full border border-border bg-background px-1.5 font-mono text-[10px] text-muted-foreground">
+                  <span className="rounded-full border border-border bg-background px-1.5 text-[10px] text-muted-foreground">
                     {group.items.length}
                   </span>
                 </div>
@@ -225,7 +225,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
                         {item.emoji}
                       </span>
                       <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">{item.title}</span>
-                      <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+                      <span className="text-[11px] tabular-nums text-muted-foreground">
                         {formatDuration(item.duration)}
                       </span>
                     </li>
@@ -243,7 +243,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
                   <span className={`h-2 w-2 rounded-full ${paletteOf(group.color).dot}`} />
                   {group.name}
                 </span>
-                <span className="rounded-full border border-border bg-background px-1.5 font-mono text-[10px] text-muted-foreground">
+                <span className="rounded-full border border-border bg-background px-1.5 text-[10px] text-muted-foreground">
                   {group.count}
                 </span>
               </div>
@@ -263,7 +263,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
                 <p className="truncate text-sm font-semibold leading-tight tracking-tight text-foreground">
                   Thursday, October 1
                 </p>
-                <p className="relative font-mono text-[11px] leading-tight tabular-nums text-muted-foreground">
+                <p className="relative text-[11px] leading-tight tabular-nums text-muted-foreground">
                   <span className="mock-stat-before">4h planned · 1/4 done</span>
                   <span className="mock-stat-after absolute inset-0 whitespace-nowrap">
                     4h 30m planned · 1/5 done
@@ -314,14 +314,14 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
               {rows.map((minute) => (
                 <div key={minute} className="relative" style={{ height: `${SLOT}px` }}>
                   {gutterLabel(minute) ? (
-                    <span className="absolute -top-2.5 right-1.5 font-mono text-[11px] font-medium tracking-tight text-muted-foreground sm:right-2 sm:text-xs">
+                    <span className="absolute -top-2.5 right-1.5 text-[11px] font-medium tracking-tight text-muted-foreground sm:right-2 sm:text-xs">
                       {gutterLabel(minute)}
                     </span>
                   ) : null}
                 </div>
               ))}
               <span
-                className="absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-md bg-rose-500 px-1 py-0.5 font-mono text-[10px] font-bold leading-none text-white shadow-xs sm:right-1 sm:px-1.5"
+                className="absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-md bg-rose-500 px-1 py-0.5 text-[10px] font-bold leading-none text-white shadow-xs sm:right-1 sm:px-1.5"
                 style={{ top: `${top(NOW)}px` }}
               >
                 {formatTime(NOW)}
@@ -370,7 +370,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
                 className={`mock-ghost absolute left-[2%] z-30 flex w-[96%] items-center justify-center rounded-lg border border-dashed ${paletteOf(dropped.color).ghost}`}
                 style={{ top: `${top(dropped.start)}px`, height: `${(dropped.duration / 30) * SLOT}px` }}
               >
-                <span className="rounded-full border border-border bg-background px-3 py-1 font-mono text-xs font-semibold text-foreground shadow-2xs">
+                <span className="rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground shadow-2xs">
                   {dropped.title} · {formatTime(dropped.start)}
                 </span>
               </div>
@@ -401,7 +401,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
                 {dropped.emoji}
               </span>
               <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">{dropped.title}</span>
-              <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
+              <span className="text-[11px] tabular-nums text-muted-foreground">
                 {formatDuration(dropped.duration)}
               </span>
             </div>

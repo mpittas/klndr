@@ -56,11 +56,11 @@ export function MonthViewHeader({
 
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
           <span>
-            <span className="font-mono font-semibold text-foreground">{monthStats.blocks}</span>{" "}
+            <span className="font-semibold text-foreground">{monthStats.blocks}</span>{" "}
             {monthStats.blocks === 1 ? "block" : "blocks"}
           </span>
           <span>
-            <span className="font-mono font-semibold text-foreground">{hoursLabel(monthStats.minutes)}</span> planned
+            <span className="font-semibold text-foreground">{hoursLabel(monthStats.minutes)}</span> planned
           </span>
           <span className="flex items-center gap-2">
             <span
@@ -74,7 +74,7 @@ export function MonthViewHeader({
               <span className="block h-full rounded-full bg-emerald-500 transition-[width]" style={{ width: `${percent}%` }} />
             </span>
             <span>
-              <span className="font-mono font-semibold text-foreground">{percent}%</span> done
+              <span className="font-semibold text-foreground">{percent}%</span> done
             </span>
           </span>
           {filtered && (

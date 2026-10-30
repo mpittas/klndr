@@ -557,13 +557,8 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
               justAdded !== null && justAdded === entry.id ? "ring-2 ring-ring/40" : "",
             ].join(" ")}
           >
-            <span
-              className={["absolute inset-y-0 left-0 w-1", paletteOf(entry.color).accent].join(" ")}
-              aria-hidden="true"
-            />
-
             {/* Category header: color, name, count, actions */}
-            <div className="flex items-center gap-1.5 border-b border-border bg-muted/40 py-2 pl-3.5 pr-2">
+            <div className="flex items-center gap-1.5 border-b border-border bg-muted/40 py-2 pl-3 pr-2">
               {entry.id ? (
                 <EmojiPicker
                   value={entry.emoji ?? null}
@@ -627,7 +622,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
               <span className="hidden shrink-0 rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground sm:inline">
                 {countLabel(totalOf(entry))}
               </span>
-              <span className="shrink-0 rounded-full border border-border bg-background px-2 py-0.5 font-mono text-[11px] font-medium tabular-nums text-muted-foreground sm:hidden">
+              <span className="shrink-0 rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground sm:hidden">
                 {totalOf(entry)}
               </span>
 
@@ -819,14 +814,14 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                               template.notes ? "" : "sm:hidden",
                             ].join(" ")}
                           >
-                            <span className="font-mono tabular-nums sm:hidden">
+                            <span className="tabular-nums sm:hidden">
                               {formatDuration(template.defaultDuration)}
                               {template.notes ? " · " : null}
                             </span>
                             {template.notes}
                           </span>
                         </button>
-                        <span className="hidden shrink-0 items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px] tabular-nums text-muted-foreground sm:inline-flex">
+                        <span className="hidden shrink-0 items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground sm:inline-flex">
                           <Clock className="h-3 w-3" aria-hidden="true" />
                           {formatDuration(template.defaultDuration)}
                         </span>

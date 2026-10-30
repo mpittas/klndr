@@ -33,6 +33,14 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
+  /* One typeface everywhere: Tailwind's reset would otherwise set these to a monospace stack. */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-sans);
+  }
+
   ::selection {
     background-color: rgb(99 102 241 / 0.25);
     color: inherit;
@@ -651,3 +659,28 @@ html:has([data-landing]) {
 .notes-prose hr { border-color: var(--color-border); margin: 1em 0; }
 
 
+
+/* --- Notes field of a block (NotesEditor): a small rich-text page --------------------------------- */
+
+.notes-editor > * + * { margin-top: 0.25rem; }
+.notes-editor h1 { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.35; margin-top: 0.5rem; }
+.notes-editor h2 { font-size: 0.95rem; font-weight: 600; line-height: 1.4; margin-top: 0.4rem; }
+.notes-editor > :first-child { margin-top: 0; }
+.notes-editor ul { list-style: disc; padding-left: 1.25rem; }
+.notes-editor ol { list-style: decimal; padding-left: 1.25rem; }
+.notes-editor ul[data-type="taskList"] { list-style: none; padding-left: 0; }
+.notes-editor ul[data-type="taskList"] > li { display: flex; align-items: flex-start; gap: 0.5rem; }
+.notes-editor ul[data-type="taskList"] > li > label { display: flex; align-items: center; height: 1.5rem; flex-shrink: 0; user-select: none; }
+.notes-editor ul[data-type="taskList"] > li > label input { cursor: pointer; accent-color: var(--color-primary); }
+.notes-editor ul[data-type="taskList"] > li > div { flex: 1; min-width: 0; }
+.notes-editor ul[data-type="taskList"] > li[data-checked="true"] > div { color: var(--color-muted-foreground); text-decoration: line-through; }
+.notes-editor li > p { margin: 0; }
+.notes-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--color-muted-foreground);
+}
+.notes-editor hr { border: 0; border-top: 1px solid var(--color-border); margin: 0.75rem 0; }
+.notes-editor hr.ProseMirror-selectednode { border-top-color: var(--color-ring); }

@@ -33,7 +33,7 @@ export function ProfileCard({
                 <span className="inline-flex items-center rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
                   Firebase Connected
                 </span>
-                <span className="font-mono text-[11px] text-muted-foreground">UID: {uid.slice(0, 12)}...</span>
+                <span className="text-[11px] text-muted-foreground">UID: {uid.slice(0, 12)}...</span>
               </div>
             )}
           </div>

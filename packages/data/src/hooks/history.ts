@@ -38,8 +38,25 @@ export function useTimelineHistory(day: string) {
     () => void queryClient.invalidateQueries({ queryKey: queryKeys.tasks.ranges }),
     [queryClient],
   );
-  const undo = useCallback(() => history.undo().then(settle), [history, settle]);
-  const redo = useCallback(() => history.redo().then(settle), [history, settle]);
+  // A change is put on the history once the server has it, so a quick Ctrl+Z straight after one would miss it
+  // (or undo the step before it). Wait for the saves still in flight; they show on screen at once, so this is short.
+  const saved = useCallback(
+    () =>
+      new Promise<void>((resolve) => {
+        const cache = queryClient.getMutationCache();
+        const check = () => {
+          if (queryClient.isMutating({ mutationKey: ["tasks"] }) > 0) return false;
+          unsubscribe();
+          resolve();
+          return true;
+        };
+        const unsubscribe = cache.subscribe(() => void check());
+        check();
+      }),
+    [queryClient],
+  );
+  const undo = useCallback(() => saved().then(() => history.undo()).then(settle), [saved, history, settle]);
+  const redo = useCallback(() => saved().then(() => history.redo()).then(settle), [saved, history, settle]);
 
   return { history, canUndo, canRedo, undo, redo };
 }

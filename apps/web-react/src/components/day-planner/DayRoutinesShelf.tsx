@@ -119,7 +119,7 @@ export function DayRoutinesShelf({
           Routines
           <span
             className={[
-              "font-mono font-medium normal-case tabular-nums",
+              "font-medium normal-case tabular-nums",
               doneCount === items.length ? "text-emerald-600 dark:text-emerald-400" : "",
             ].join(" ")}
           >

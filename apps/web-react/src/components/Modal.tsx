@@ -62,12 +62,18 @@ export type ModalProps = {
   lg?: boolean;
   /** Content runs edge to edge (no padding) and brings its own height, e.g. notes or a list with a pinned footer. */
   flush?: boolean;
+  /** A CSS color that softly tints the top of the dialog, e.g. the category color of what is being edited. */
+  accent?: string;
+  /** Keep `title` as the dialog's accessible name but don't show it (or the subtitle): the content already says what it is. */
+  hideTitle?: boolean;
   onClose: () => void;
+  /** A click on the dimmed area outside the dialog. Defaults to `onClose`; a form can save here instead. */
+  onBackdropClick?: () => void;
   children: ReactNode;
   footer?: ReactNode;
 };
 
-export function Modal({ open, title, subtitle, wide, lg, flush, onClose, children, footer }: ModalProps) {
+export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitle, onClose, onBackdropClick, children, footer }: ModalProps) {
   const [token] = useState(() => Symbol("modal"));
   const titleId = `modal-title-${useId()}`;
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -162,13 +168,24 @@ export function Modal({ open, title, subtitle, wide, lg, flush, onClose, childre
 
   if (!mounted) return null;
 
+  const closeButton = (
+    <button
+      type="button"
+      className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground sm:h-8 sm:w-8"
+      aria-label="Close"
+      onClick={onClose}
+    >
+      <X className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden="true" />
+    </button>
+  );
+
   return createPortal(
     // In <body>, so a modal opened from inside another one is a sibling, not a descendant (focus trap, stacking).
     <div
       data-state={state}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 backdrop-blur-sm sm:items-center sm:p-6"
     >
-      <div aria-hidden="true" className="modal-overlay absolute inset-0" onClick={onClose} />
+      <div aria-hidden="true" className="modal-overlay absolute inset-0" onClick={onBackdropClick ?? onClose} />
       <div
         ref={dialogRef}
         role="dialog"
@@ -177,45 +194,56 @@ export function Modal({ open, title, subtitle, wide, lg, flush, onClose, childre
         tabIndex={-1}
         style={dragY ? { transform: `translateY(${dragY}px)`, transition: "none" } : undefined}
         className={[
-          "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-background shadow-lg focus:outline-none sm:max-h-[88dvh] sm:rounded-xl",
+          "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border/60 bg-background shadow-[0_28px_70px_-18px_rgb(0_0_0/0.45),0_2px_6px_rgb(0_0_0/0.06)] focus:outline-none sm:max-h-[88dvh] sm:rounded-2xl",
           wide ? "sm:max-w-2xl" : lg ? "sm:max-w-xl" : "sm:max-w-md",
           dragY ? "" : "transition-transform duration-200",
         ].join(" ")}
         onKeyDown={trapTab}
       >
+        {accent ? (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 top-0 h-36 transition-[background] duration-300"
+            style={{ background: `linear-gradient(to bottom, color-mix(in oklab, ${accent} 18%, transparent), transparent)` }}
+          />
+        ) : null}
+
         {/* Grab handle + header double as the swipe-to-dismiss area */}
         <div
-          className="shrink-0 touch-none"
+          className="relative shrink-0 touch-none"
           onPointerDown={onSheetPointerDown}
           onPointerMove={onSheetPointerMove}
           onPointerUp={onSheetPointerUp}
           onPointerCancel={onSheetPointerUp}
         >
-          <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-muted-foreground/30 sm:hidden" />
-          <header className="flex items-start justify-between gap-3 border-b border-border bg-background py-3 pl-4 pr-2 sm:px-6 sm:py-4">
-            <div className="min-w-0 self-center">
-              <h2 id={titleId} className="text-base font-semibold leading-tight tracking-tight text-foreground">
-                {title}
-              </h2>
-              {subtitle ? <p className="mt-1 text-xs tabular-nums text-muted-foreground">{subtitle}</p> : null}
-            </div>
-            <button
-              type="button"
-              className="-my-0.5 flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-accent-foreground sm:my-0 sm:-mr-2 sm:h-8 sm:w-8"
-              aria-label="Close"
-              onClick={onClose}
-            >
-              <X className="h-5 w-5 sm:h-4 sm:w-4" aria-hidden="true" />
-            </button>
-          </header>
+          <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-muted-foreground/25 sm:hidden" />
+          {hideTitle ? (
+            // Still the dialog's accessible name, just not shown: the content says what is being edited.
+            <h2 id={titleId} className="sr-only">
+              {title}
+            </h2>
+          ) : (
+            <header className="flex items-start justify-between gap-3 py-3 pl-5 pr-3 sm:px-7 sm:pb-2 sm:pt-5">
+              <div className="min-w-0 self-center">
+                <h2 id={titleId} className="text-lg font-semibold leading-tight tracking-tight text-foreground">
+                  {title}
+                </h2>
+                {subtitle ? <p className="mt-1 text-[13px] tabular-nums text-muted-foreground">{subtitle}</p> : null}
+              </div>
+              {closeButton}
+            </header>
+          )}
         </div>
+        {hideTitle ? <div className="absolute right-3 top-3 z-20 sm:right-4 sm:top-4">{closeButton}</div> : null}
 
         <div
           className={[
-            "min-h-0 flex-1 overscroll-contain",
+            "relative min-h-0 flex-1 overscroll-contain",
             flush
               ? "flex flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]"
-              : "overflow-y-auto px-4 py-4 sm:px-6 sm:py-5",
+              : hideTitle
+                ? "overflow-y-auto px-5 pb-3 pt-5 sm:px-7 sm:pb-4 sm:pt-7"
+                : "overflow-y-auto px-5 py-3 sm:px-7 sm:py-4",
             !flush && !footer ? "pb-[max(1rem,env(safe-area-inset-bottom))]" : "",
           ].join(" ")}
         >
@@ -224,7 +252,7 @@ export function Modal({ open, title, subtitle, wide, lg, flush, onClose, childre
 
         {/* Pinned below the scrolling body so the primary action never scrolls out of reach */}
         {footer ? (
-          <div className="shrink-0 border-t border-border bg-background px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-6 sm:pb-4">
+          <div className="relative shrink-0 border-t border-border/60 bg-muted/40 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-4">
             {footer}
           </div>
         ) : null}

@@ -63,7 +63,7 @@ export function DayPlannerHeader({
               <span className="hidden @2xl:inline">{longDate(day)}</span>
             </button>
           </h1>
-          <p className="whitespace-nowrap font-mono text-[11px] leading-tight tabular-nums text-muted-foreground">
+          <p className="whitespace-nowrap text-[11px] leading-tight tabular-nums text-muted-foreground">
             {formatDuration(stats.scheduled)} planned · {stats.done}/{stats.count} done
           </p>
         </div>

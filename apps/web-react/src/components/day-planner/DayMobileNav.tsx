@@ -40,7 +40,7 @@ export function DayMobileNav({
         {checklistStats.total > 0 && (
           <span
             className={[
-              "absolute right-1/2 top-0 flex h-3.5 min-w-3.5 translate-x-[calc(50%+14px)] items-center justify-center rounded-full px-1 font-mono text-[9px] font-bold tabular-nums shadow-xs short:static short:translate-x-0",
+              "absolute right-1/2 top-0 flex h-3.5 min-w-3.5 translate-x-[calc(50%+14px)] items-center justify-center rounded-full px-1 text-[9px] font-bold tabular-nums shadow-xs short:static short:translate-x-0",
               checklistStats.done === checklistStats.total
                 ? "bg-emerald-600 text-white"
                 : "bg-foreground text-background",

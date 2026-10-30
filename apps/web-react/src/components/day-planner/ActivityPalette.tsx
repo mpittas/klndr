@@ -316,7 +316,7 @@ export function ActivityPalette({
                   <CategoryMark emoji={group.emoji} color={group.color} size="sm" />
                   <span className="truncate font-semibold tracking-tight text-foreground">{group.category}</span>
                 </div>
-                <span className="inline-flex items-center rounded-full border border-border bg-background px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-muted-foreground">
+                <span className="inline-flex items-center rounded-full border border-border bg-background px-2 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
                   {group.items.length}
                 </span>
               </button>
@@ -355,7 +355,7 @@ export function ActivityPalette({
                     <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
                       {template.name}
                     </span>
-                    <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
+                    <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
                       {formatDuration(template.defaultDuration)}
                     </span>
                     <button

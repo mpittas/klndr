@@ -33,6 +33,7 @@ export function useDayTimeline(day: string) {
   const { mutateAsync: move } = useMutation(options.move);
   const { mutateAsync: resize } = useMutation(options.resize);
   const { mutateAsync: toggle } = useMutation(options.toggle);
+  const { mutateAsync: change } = useMutation(options.change);
   const { mutateAsync: remove } = useMutation(options.remove);
   const { mutateAsync: save, isPending: isSaving } = useMutation(options.save);
 
@@ -74,6 +75,13 @@ export function useDayTimeline(day: string) {
     [toggle],
   );
 
+  /** Change some fields of a block (its category, its day) at once, put back if saving fails. Never throws. */
+  const changeTask = useCallback(
+    (task: ScheduledTask, changes: Partial<TaskDraft>, message?: string) =>
+      handled(change({ task, changes, message })),
+    [change],
+  );
+
   /** Delete a block. Never throws: it resolves to whether the block was deleted, and a failure is put back and reported. */
   const deleteTask = useCallback(
     (task: ScheduledTask) => remove({ task }).then(() => true, () => false),
@@ -103,6 +111,7 @@ export function useDayTimeline(day: string) {
     moveTask,
     resizeTask,
     toggleComplete,
+    changeTask,
     deleteTask,
     saveTask,
     isSaving,

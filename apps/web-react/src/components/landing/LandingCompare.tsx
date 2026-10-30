@@ -43,7 +43,7 @@ export function LandingCompare() {
           >
             <div className="flex items-center justify-between">
               <p className="text-sm font-semibold text-foreground">To-do</p>
-              <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[11px] text-muted-foreground">
+              <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
                 {tasks.length}
               </span>
             </div>
@@ -77,7 +77,7 @@ export function LandingCompare() {
             <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_1px_2px_rgb(15_23_42/0.05),0_24px_56px_-28px_rgb(15_23_42/0.35)] sm:p-6 dark:shadow-[0_24px_56px_-28px_rgb(0_0_0/0.7)]">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-foreground">Thursday</p>
-                <span className="flex items-center gap-1.5 font-mono text-[11px] tabular-nums text-muted-foreground">
+                <span className="flex items-center gap-1.5 text-[11px] tabular-nums text-muted-foreground">
                   {formatDuration(planned)} planned
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-300">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -94,7 +94,7 @@ export function LandingCompare() {
                   {rows.map((minute) => (
                     <div key={minute} className="relative" style={{ height: `${SLOT}px` }}>
                       {gutterLabel(minute) ? (
-                        <span className="absolute -top-2 right-0 font-mono text-[10px] text-muted-foreground">
+                        <span className="absolute -top-2 right-0 text-[10px] text-muted-foreground">
                           {gutterLabel(minute)}
                         </span>
                       ) : null}

@@ -129,6 +129,34 @@ export const toggleTaskOptions = (d: TaskMutationDeps): Options<ScheduledTask, T
   },
 });
 
+// ---- Change some fields of a block (its category, its day) without the editor ----
+
+export type ChangeTaskVars = { task: ScheduledTask; changes: Partial<TaskDraft>; message?: string };
+
+export const changeTaskOptions = (
+  d: TaskMutationDeps,
+): Options<ScheduledTask, ChangeTaskVars, { before?: ScheduledTask }> => ({
+  mutationKey: ["tasks", "change"],
+  scope: SCOPE,
+  mutationFn: ({ task, changes }) => d.api.updateTask(task.id, changes),
+  // Shown at once, like a tick or a move: nothing here needs the server's say before the screen moves on.
+  onMutate: async ({ task, changes }) => {
+    await cancelTaskQueries(d);
+    const before = findTask(d.queryClient, task.id);
+    patchTask(d.queryClient, task.id, changes);
+    return { before };
+  },
+  onSuccess: (saved, { task, message }, context) => {
+    upsertTask(d.queryClient, saved);
+    d.history?.record(`Edit ${task.title}`, [[context?.before ?? task, saved]]);
+    if (message) d.notify(message);
+  },
+  onError: (_error, _vars, context) => {
+    if (context?.before) upsertTask(d.queryClient, context.before);
+    d.notify("Could not save that block");
+  },
+});
+
 // ---- Delete a block ----
 
 export type DeleteTaskVars = { task: ScheduledTask };
@@ -178,6 +206,7 @@ export const taskMutationOptions = (d: TaskMutationDeps) => ({
   move: moveTaskOptions(d),
   resize: resizeTaskOptions(d),
   toggle: toggleTaskOptions(d),
+  change: changeTaskOptions(d),
   remove: deleteTaskOptions(d),
   save: saveTaskOptions(d),
 });

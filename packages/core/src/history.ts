@@ -118,19 +118,37 @@ export class TimelineHistory {
     this.options.setTasks(next.sort((a, b) => a.startMinutes - b.startMinutes));
   }
 
+  /** What the screen shows the moment a step is taken, before the server has answered. */
+  private preview(from: ScheduledTask | null, to: ScheduledTask | null): void {
+    if (!to) {
+      this.show(this.resolve(from!.id), null);
+      return;
+    }
+    const id = this.resolve(to.id);
+    if (!from) {
+      this.show(id, { ...to, id });
+      return;
+    }
+    const current = this.options.getTasks().find((item) => item.id === id);
+    if (!current) return;
+    const changed: Record<string, unknown> = {};
+    for (const field of FIELDS) if (from[field] !== to[field]) changed[field] = to[field] ?? null;
+    this.show(id, { ...current, ...changed } as ScheduledTask);
+  }
+
   private async apply(from: ScheduledTask | null, to: ScheduledTask | null): Promise<void> {
     const { api } = this.options;
     if (!to) {
-      const id = this.resolve(from!.id);
-      await api.deleteTask(id);
-      this.show(id, null);
+      await api.deleteTask(this.resolve(from!.id));
       return;
     }
     if (!from) {
       const { id: _id, lane, ...draft } = to;
+      const stale = this.resolve(to.id);
       const created = await api.createTask({ ...draft, ...(typeof lane === "number" ? { lane } : {}) });
-      const gone = this.resolve(to.id);
-      if (gone !== created.id) this.aliases.set(gone, created.id);
+      if (stale !== created.id) this.aliases.set(stale, created.id);
+      // Swap the stand-in shown by `preview` for the saved block.
+      this.options.setTasks(this.options.getTasks().filter((item) => item.id !== stale));
       this.show(created.id, created);
       return;
     }
@@ -160,6 +178,11 @@ export class TimelineHistory {
       this.undoStack = opposite;
     }
     this.publish();
+    // On screen at once; the saving below follows, one step at a time.
+    for (const { before, after } of entry.changes) {
+      if (undoing) this.preview(after, before);
+      else this.preview(before, after);
+    }
     this.queue = this.queue.then(async () => {
       try {
         await Promise.all(

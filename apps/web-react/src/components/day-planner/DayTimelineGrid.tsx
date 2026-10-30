@@ -32,6 +32,7 @@ import { Check, Plus, X } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
+import { BlockContextMenu, type BlockMenuActions, type BlockMenuTarget } from "@/components/day-planner/BlockContextMenu";
 import { TimeBlock } from "@/components/day-planner/TimeBlock";
 import { paletteOf } from "@/lib/colors";
 
@@ -78,6 +79,9 @@ export function DayTimelineGrid({
   onDragLeave,
   onDrop,
   onMoveTask,
+  isToday,
+  nowStart,
+  menuActions,
 }: {
   tasks: ScheduledTask[];
   nowMinute: number | null;
@@ -95,8 +99,14 @@ export function DayTimelineGrid({
   onDrop: (event: React.DragEvent<HTMLDivElement>) => void;
   /** `lanes` is set when the move also changed who sits where beside it. */
   onMoveTask: (task: ScheduledTask, startMinutes: number, lanes?: Map<string, number>) => void;
+  isToday: boolean;
+  /** Where "Start now" would put a block (the clock, snapped), or null when it is not today. */
+  nowStart: number | null;
+  /** What the right-click menu on a block can do. */
+  menuActions: BlockMenuActions;
 }) {
   const colorOf = useCategoryColor();
+  const [menu, setMenu] = useState<BlockMenuTarget | null>(null);
 
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [hoverMinutes, setHoverMinutes] = useState<number | null>(null);
@@ -400,6 +410,25 @@ export function DayTimelineGrid({
     return task ? span(task.startMinutes, task.durationMinutes) : null;
   }, [drag, preview, resizing, tasks]);
 
+  // Right click, the context-menu key or Shift+F10. A touch hold is the drag gesture, so it never opens the menu.
+  const openMenu = (task: ScheduledTask, event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (drag || pending.current || active.current) return;
+    const origin = event.currentTarget;
+    // From the keyboard there is no pointer position (0, 0): open at the block instead.
+    const fromKeyboard = event.clientX === 0 && event.clientY === 0;
+    const rect = origin.getBoundingClientRect();
+    clearHover();
+    setMenu({
+      task,
+      origin,
+      x: fromKeyboard ? rect.left + Math.min(24, rect.width / 2) : event.clientX,
+      y: fromKeyboard ? rect.top + Math.min(16, rect.height / 2) : event.clientY,
+      keyboard: fromKeyboard,
+    });
+  };
+
   const onBlockClick = (task: ScheduledTask) => {
     if (suppressClick.current) return;
     onTaskClick(task);
@@ -418,13 +447,14 @@ export function DayTimelineGrid({
   const toneOf = (task: { category: string; color: string }) => paletteOf(colorOf(task));
 
   return (
+    <>
     <div className="mx-auto flex max-w-4xl pb-8 pt-4 sm:pb-12 sm:pt-6">
       {/* Hour gutter */}
       <div className="relative w-14 shrink-0 select-none border-r border-border bg-background pr-1.5 sm:w-16 sm:pr-2.5">
         {HOUR_OPTIONS.map((minute) => (
           <div key={minute} style={{ height: `${SLOT_HEIGHT}px` }} className="relative">
             {gutterLabel(minute) ? (
-              <span className="absolute -top-2.5 right-1.5 font-mono text-[11px] font-medium tracking-tight text-muted-foreground sm:right-2 sm:text-xs">
+              <span className="absolute -top-2.5 right-1.5 text-[11px] font-medium tracking-tight text-muted-foreground sm:right-2 sm:text-xs">
                 {gutterLabel(minute)}
               </span>
             ) : null}
@@ -436,7 +466,7 @@ export function DayTimelineGrid({
           ? guideMinutes.map((minute) => (
               <div
                 key={`edge-${minute}`}
-                className="pointer-events-none absolute right-0.5 z-20 -translate-y-1/2 whitespace-nowrap rounded-md border border-border bg-muted px-1 py-0.5 font-mono text-[10px] font-medium leading-none text-foreground/70 sm:right-1 sm:px-1.5"
+                className="pointer-events-none absolute right-0.5 z-20 -translate-y-1/2 whitespace-nowrap rounded-md border border-border bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-foreground/70 sm:right-1 sm:px-1.5"
                 style={{ top: `${minutesToPx(minute)}px` }}
               >
                 {formatTime(minute)}
@@ -447,7 +477,7 @@ export function DayTimelineGrid({
         {/* Live time pill in gutter */}
         {nowMinute !== null ? (
           <div
-            className="pointer-events-none absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-md bg-rose-500 px-1 py-0.5 font-mono text-[10px] font-bold leading-none text-white shadow-xs sm:right-1 sm:px-1.5"
+            className="pointer-events-none absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-md bg-rose-500 px-1 py-0.5 text-[10px] font-bold leading-none text-white shadow-xs sm:right-1 sm:px-1.5"
             style={{ top: `${minutesToPx(nowMinute)}px` }}
           >
             {formatTime(nowMinute)}
@@ -583,9 +613,7 @@ export function DayTimelineGrid({
                 onBlockKeydown(task, event);
               }}
               onPointerDown={(event) => onBlockPointerDown(task, event)}
-              onContextMenu={(event) => {
-                if (drag || pending.current) event.preventDefault();
-              }}
+              onContextMenu={(event) => openMenu(task, event)}
               onDragStart={(event) => event.preventDefault()}
               onClick={(event) => {
                 event.stopPropagation();
@@ -665,5 +693,13 @@ export function DayTimelineGrid({
         })}
       </div>
     </div>
+    <BlockContextMenu
+      target={menu}
+      isToday={isToday}
+      nowStart={nowStart}
+      actions={menuActions}
+      onClose={() => setMenu(null)}
+    />
+    </>
   );
 }

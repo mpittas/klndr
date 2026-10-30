@@ -1,5 +1,7 @@
 import {
+  DAY_MINUTES,
   GRID_HEIGHT,
+  addDaysISO,
   boxOf,
   initialScrollOffset,
   layoutDay,
@@ -9,9 +11,13 @@ import {
   snapMinutes,
   todayISO,
   type ActivityTemplate,
+  type Category,
+  type ScheduledTask,
+  type TaskDraft,
 } from "@klndr/core";
 import {
   dayStats,
+  useCategories,
   useCategoryColor,
   useChecklist,
   useDayTimeline,
@@ -24,6 +30,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState, type DragEvent } 
 import { DailyChecklist } from "@/components/DailyChecklist";
 import { DayNotes } from "@/components/DayNotes";
 import { ActivityPalette } from "@/components/day-planner/ActivityPalette";
+import type { BlockMenuActions } from "@/components/day-planner/BlockContextMenu";
 import { DayMobileNav } from "@/components/day-planner/DayMobileNav";
 import { DayPlannerHeader } from "@/components/day-planner/DayPlannerHeader";
 import { DayRoutinesShelf } from "@/components/day-planner/DayRoutinesShelf";
@@ -36,6 +43,23 @@ import { TaskEditor, type EditorRequest } from "@/components/TaskEditor";
 import { useLibrary } from "@/lib/library";
 
 const NO_TEMPLATES: ActivityTemplate[] = [];
+const NO_CATEGORIES: Category[] = [];
+/** A quarter hour, the shortest block: what a split's halves are rounded to. */
+const SPLIT_STEP = 15;
+
+/** A block as a draft, to make a copy of it or save a changed version. */
+const draftOf = (task: ScheduledTask): TaskDraft => ({
+  day: task.day,
+  title: task.title,
+  emoji: task.emoji,
+  color: task.color,
+  category: task.category,
+  startMinutes: task.startMinutes,
+  durationMinutes: task.durationMinutes,
+  notes: task.notes,
+  completed: task.completed,
+  templateId: task.templateId,
+});
 
 type MobileSheet = "checklist" | "notes";
 type Preview = { start: number; duration: number; color: string; label: string; emoji: string };
@@ -56,6 +80,7 @@ export function DayPlanner({ day }: { day: string }) {
   const templatesQuery = useTemplates();
   const library = useLibraryActions();
   const colorOf = useCategoryColor();
+  const categories = useCategories().data ?? NO_CATEGORIES;
   const { open: libraryOpen, show: showLibrary } = useLibrary();
 
   const templates = templatesQuery.data ?? NO_TEMPLATES;
@@ -144,6 +169,46 @@ export function DayPlanner({ day }: { day: string }) {
     startMinutes: snapMinutes(nowMinutes(), 30),
     template: null,
   });
+
+  // ---- The right-click menu on a block ----
+  const nowStart = isToday ? snapMinutes(nowMinutes(), SPLIT_STEP) : null;
+
+  const menuActions: BlockMenuActions = {
+    edit: (task) => setEditor({ mode: "edit", day, startMinutes: task.startMinutes, task }),
+    toggleComplete: (task) => void timeline.toggleComplete(task),
+    duplicate: (task) =>
+      void timeline.addTask({
+        ...draftOf(task),
+        completed: false,
+        // Straight after the block, or as late as the day allows.
+        startMinutes: Math.min(task.startMinutes + task.durationMinutes, DAY_MINUTES - task.durationMinutes),
+      }),
+    copyToDay: (task, days) =>
+      void timeline.addTask({ ...draftOf(task), completed: false, day: addDaysISO(task.day, days) }),
+    moveToDay: (task, days) =>
+      void timeline.changeTask(task, { day: addDaysISO(task.day, days) }, `${task.title} → tomorrow`),
+    startNow: (task) => {
+      if (nowStart !== null) void timeline.moveTask(task, Math.min(nowStart, DAY_MINUTES - task.durationMinutes));
+    },
+    split: (task) => {
+      const first = Math.floor(task.durationMinutes / 2 / SPLIT_STEP) * SPLIT_STEP;
+      if (first < SPLIT_STEP) return;
+      void timeline.resizeTask(task, first);
+      void timeline.addTask({
+        ...draftOf(task),
+        completed: false,
+        startMinutes: task.startMinutes + first,
+        durationMinutes: task.durationMinutes - first,
+      });
+    },
+    resize: (task, minutes) => void timeline.resizeTask(task, minutes),
+    setCategory: (task, category) =>
+      void timeline.changeTask(task, {
+        category,
+        color: categories.find((item) => item.name === category)?.color ?? task.color,
+      }),
+    remove: (task) => void timeline.deleteTask(task),
+  };
 
   // ---- Dragging an activity from the palette onto the timeline ----
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
@@ -259,6 +324,9 @@ export function DayPlanner({ day }: { day: string }) {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onMoveTask={(task, start, lanes) => void timeline.moveTask(task, start, lanes)}
+            isToday={isToday}
+            nowStart={nowStart}
+            menuActions={menuActions}
           />
         </div>
 

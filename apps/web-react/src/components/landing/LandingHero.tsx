@@ -140,7 +140,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
             </svg>
             <div className="min-w-0">
               <p className="text-sm font-semibold tracking-tight text-foreground">Daily routines</p>
-              <p className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
+              <p className="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
                 {ROUTINES_DONE} of {ROUTINES_TOTAL} done today
               </p>
             </div>

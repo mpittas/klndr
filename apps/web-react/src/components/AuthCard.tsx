@@ -54,7 +54,7 @@ export function FirebaseNotice({ purpose }: { purpose: string }) {
       <p className="font-medium">Firebase credentials required for cloud {purpose}</p>
       <p className="mt-0.5 text-amber-800 dark:text-amber-300">
         Set credentials in{" "}
-        <code className="rounded bg-amber-100/70 px-1 py-0.5 font-mono text-[11px] dark:bg-amber-400/20">.env</code> to
+        <code className="rounded bg-amber-100/70 px-1 py-0.5 text-[11px] dark:bg-amber-400/20">.env</code> to
         activate cloud auth.
       </p>
     </div>

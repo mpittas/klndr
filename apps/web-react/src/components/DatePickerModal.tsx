@@ -148,7 +148,7 @@ export function DatePickerModal({
                 {WEEKDAY_LABELS.map((label) => (
                   <div
                     key={label}
-                    className="py-1.5 text-center font-mono text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                    className="py-1.5 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
                   >
                     {label}
                   </div>

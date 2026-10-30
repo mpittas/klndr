@@ -190,7 +190,7 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
             <button
               type="button"
               onClick={() => setEditing(null)}
-              className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-3.5 text-sm font-medium text-foreground shadow-xs hover:bg-accent hover:text-accent-foreground sm:h-9 sm:flex-none sm:text-xs"
+              className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-foreground/5 px-5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 sm:h-10"
             >
               Cancel
             </button>
@@ -198,9 +198,9 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
               type="submit"
               form="checklist-edit-form"
               disabled={!editTitle.trim() || saving}
-              className="inline-flex h-11 flex-[1.6] cursor-pointer items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs hover:bg-primary/90 disabled:opacity-40 sm:h-9 sm:flex-none sm:text-xs"
+              className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-40 sm:h-10"
             >
-              {saving ? "Saving…" : "Save changes"}
+              {saving ? "Saving…" : "Save"}
             </button>
           </div>
         }

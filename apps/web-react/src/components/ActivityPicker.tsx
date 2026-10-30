@@ -127,7 +127,7 @@ export function ActivityPicker({
 
   return (
     <div>
-      <span id="task-activity-label" className="text-xs font-medium text-foreground">
+      <span id="task-activity-label" className="text-xs font-medium text-muted-foreground">
         Start from an activity
       </span>
       <button
@@ -136,7 +136,7 @@ export function ActivityPicker({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-labelledby="task-activity-label task-activity-value"
-        className="mt-1.5 flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-md border border-input bg-background px-2.5 text-left text-sm shadow-xs transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9"
+        className="mt-1.5 flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent bg-muted/60 px-2.5 text-left text-sm transition-colors hover:bg-muted focus-visible:border-ring focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 sm:h-10"
         onClick={() => (open ? hide() : show())}
       >
         <span className="flex w-5 shrink-0 items-center justify-center text-base leading-none" aria-hidden="true">

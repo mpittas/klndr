@@ -180,7 +180,7 @@ export function CategorySelect({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex h-11 w-full cursor-pointer items-center gap-2 rounded-md border border-input bg-background px-2.5 text-left text-sm shadow-xs transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9 sm:px-2"
+        className="flex h-11 w-full cursor-pointer items-center gap-2 rounded-xl border border-transparent bg-muted/60 px-2.5 text-left text-sm transition-colors hover:bg-muted focus-visible:border-ring focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 sm:h-10 sm:px-2"
         onClick={() => (open ? hide() : show())}
       >
         <span className="flex w-5 shrink-0 items-center justify-center" aria-hidden="true">

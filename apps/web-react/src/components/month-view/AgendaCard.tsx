@@ -152,7 +152,7 @@ export function AgendaCard({
                         >
                           {task.emoji} {task.title}
                         </span>
-                        <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
+                        <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
                           {formatTime(task.startMinutes)}
                         </span>
                       </Link>

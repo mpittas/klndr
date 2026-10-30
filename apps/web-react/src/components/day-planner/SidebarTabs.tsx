@@ -51,14 +51,14 @@ export function SidebarTabs({
       >
         <TabButton selected={active === "activities"} onClick={() => onChange("activities")}>
           <span>Activities</span>
-          <span className="rounded-full bg-muted-foreground/15 px-1.5 py-0.2 font-mono text-[10px]">{activityCount}</span>
+          <span className="rounded-full bg-muted-foreground/15 px-1.5 py-0.2 text-[10px]">{activityCount}</span>
         </TabButton>
 
         <TabButton selected={active === "checklist"} onClick={() => onChange("checklist")}>
           <span>Checklist</span>
           <span
             className={[
-              "rounded-full px-1.5 py-0.2 font-mono text-[10px] font-bold",
+              "rounded-full px-1.5 py-0.2 text-[10px] font-bold",
               checklistComplete
                 ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
                 : "bg-muted-foreground/15 text-foreground",

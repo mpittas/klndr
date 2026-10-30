@@ -86,7 +86,7 @@ export function DayNotes({ notes }: { notes: ReturnType<typeof useNotesEditor> }
             aria-label="Notes for this day"
             placeholder={"Jot something down…\n\n# Heading   - list   - [ ] task   **bold**   `code`"}
             className={[
-              "min-h-0 w-full flex-1 resize-none bg-transparent px-4 py-3 pb-8 font-mono text-[13px] leading-relaxed text-foreground placeholder:text-muted-foreground focus-visible:outline-none",
+              "min-h-0 w-full flex-1 resize-none bg-transparent px-4 py-3 pb-8 text-[13px] leading-relaxed text-foreground placeholder:text-muted-foreground focus-visible:outline-none",
               isEditing ? "" : "hidden",
             ].join(" ")}
             onChange={(event) => notes.edit(event.target.value)}

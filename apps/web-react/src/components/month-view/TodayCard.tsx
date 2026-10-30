@@ -65,7 +65,7 @@ export function TodayCard({
             >
               <div className="h-full rounded-full bg-emerald-500 transition-[width]" style={{ width: `${percent}%` }} />
             </div>
-            <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
               <span className="font-semibold text-foreground">{done}</span>/{tasks.length} done
             </span>
           </div>
@@ -85,7 +85,7 @@ export function TodayCard({
                 >
                   {next.emoji} {next.title}
                 </Link>{" "}
-                <span className="font-mono tabular-nums">{formatTime(next.startMinutes)}</span>
+                <span className="tabular-nums">{formatTime(next.startMinutes)}</span>
               </>
             ) : (
               <>

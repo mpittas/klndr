@@ -136,7 +136,7 @@ export function AppHeader() {
             <span className="sm:hidden">Local database · no cloud sync</span>
             <span className="hidden sm:inline">
               Local database active · Set Firebase credentials in{" "}
-              <code className="rounded bg-amber-100/70 px-1 font-mono text-[11px] dark:bg-amber-400/20">.env</code> for
+              <code className="rounded bg-amber-100/70 px-1 text-[11px] dark:bg-amber-400/20">.env</code> for
               cloud sync
             </span>
           </span>

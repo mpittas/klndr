@@ -17,7 +17,7 @@ export function ShortcutsCard() {
           {keys.map((key) => (
             <kbd
               key={key}
-              className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted/60 px-1 font-mono text-[11px] font-semibold text-foreground"
+              className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted/60 px-1 text-[11px] font-semibold text-foreground"
             >
               {key}
             </kbd>

@@ -36,7 +36,7 @@ export function DeleteAccountCard({
       <div className="mt-4 space-y-3">
         <label className="block space-y-1.5">
           <span className="block text-xs font-medium text-foreground">
-            Type <span className="font-mono font-semibold">{CONFIRMATION}</span> to confirm
+            Type <span className="font-semibold">{CONFIRMATION}</span> to confirm
           </span>
           <input
             type="text"

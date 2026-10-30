@@ -56,7 +56,7 @@ export function LandingMarquee() {
                 {item.emoji}
               </span>
               <span className="text-sm font-medium text-foreground">{item.title}</span>
-              <span className="font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-xs tabular-nums text-muted-foreground">
                 {formatDuration(item.duration)}
               </span>
             </span>

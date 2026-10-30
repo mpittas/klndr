@@ -78,10 +78,10 @@ export function CategoryCard({
                   >
                     <span className={["h-2 w-2 shrink-0 rounded-full", tone.dot].join(" ")} aria-hidden="true" />
                     <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">{share.category}</span>
-                    <span className="shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground">
+                    <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
                       {share.done}/{share.count}
                     </span>
-                    <span className="w-9 shrink-0 text-right font-mono text-xs font-semibold tabular-nums text-foreground">
+                    <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-foreground">
                       {hoursLabel(share.minutes)}
                     </span>
                   </button>

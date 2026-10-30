@@ -9,13 +9,14 @@ import {
   type TaskDraft,
 } from "@klndr/core";
 import { useCategoryColor } from "@klndr/data";
-import { Trash2 } from "lucide-react";
-import { useId, useState } from "react";
+import { ArrowRight, CalendarDays, CheckCircle2, Clock, Folder, StickyNote, Timer, Trash2, type LucideIcon } from "lucide-react";
+import { useId, useState, type CSSProperties, type ReactNode } from "react";
 
 import { ActivityPicker } from "@/components/ActivityPicker";
 import { CategorySelect } from "@/components/category/CategorySelect";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { Modal } from "@/components/Modal";
+import { NotesEditor } from "@/components/NotesEditor";
 import { TimePicker } from "@/components/TimePicker";
 import { useEmojiField } from "@/hooks/useEmojiField";
 
@@ -42,7 +43,17 @@ type TaskEditorProps = {
 const GENERAL = "General";
 
 const CONTROL_CLASS =
-  "mt-1.5 flex h-11 w-full min-w-0 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9";
+  "mt-1.5 flex h-11 w-full min-w-0 rounded-xl border border-transparent bg-muted/60 px-3 py-1 text-sm transition-colors hover:bg-muted focus-visible:border-ring focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 sm:h-10";
+
+/** A small label with its icon, shared by every field so the form reads as one list. */
+function FieldLabel({ icon: Icon, children, id }: { icon: LucideIcon; children: ReactNode; id?: string }) {
+  return (
+    <span id={id} className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      {children}
+    </span>
+  );
+}
 
 type Draft = {
   title: string;
@@ -116,8 +127,10 @@ function TaskEditorDialog({
 }: Omit<TaskEditorProps, "request"> & { open: boolean; request: EditorRequest }) {
   const colorOf = useCategoryColor();
   const startLabelId = useId();
+  const durationLabelId = useId();
 
-  const [draft, setDraft] = useState(() => draftFrom(request));
+  const [initial] = useState(() => draftFrom(request));
+  const [draft, setDraft] = useState(initial);
   // A new block gets its emoji as its title is typed. One started from an activity has that activity's, and an
   // edited one keeps its own unless its title changes (see `useEmojiField`).
   const start = request.mode === "edit" ? request.task : null;
@@ -144,7 +157,9 @@ function TaskEditorDialog({
   const color = colorOf({ category });
 
   const durationOptions = [...new Set([...DURATION_CHOICES, draft.duration])].sort((a, b) => a - b);
-  const subtitle = `${formatTime(fromTimeInput(draft.start))} · ${formatDuration(draft.duration)}`;
+  const startMinutes = fromTimeInput(draft.start);
+  const endLabel = formatTime(startMinutes + draft.duration);
+  const startLabel = formatTime(startMinutes);
 
   const applyTemplate = (id: string | null) => {
     const template = templates.find((item) => item.id === id);
@@ -205,6 +220,15 @@ function TaskEditorDialog({
     }, "Something went wrong");
   };
 
+  // Clicking off the dialog keeps what was typed: it saves a changed form (and says so if the name is missing),
+  // and closes an untouched one. Escape and the close button still discard.
+  const dismiss = () => {
+    if (busy) return;
+    const changed = (Object.keys(draft) as (keyof Draft)[]).some((key) => draft[key] !== initial[key]);
+    if (changed) submit();
+    else onClose();
+  };
+
   const removeBlock = () => {
     const { task } = request;
     if (task) void attempt(() => onDelete(task), "Could not delete");
@@ -218,8 +242,10 @@ function TaskEditorDialog({
     <Modal
       open={open}
       title={isEdit ? "Edit block" : "New block"}
-      subtitle={subtitle}
+      hideTitle
+      accent={color}
       onClose={onClose}
+      onBackdropClick={dismiss}
       footer={
         <div className="space-y-3">
           {error ? (
@@ -233,10 +259,10 @@ function TaskEditorDialog({
               <p className="text-xs text-foreground">
                 Delete the activity “{sourceTemplate.name}”? Blocks already on your calendar stay.
               </p>
-              <div className="flex w-full gap-2 sm:w-auto">
+              <div className="flex w-full justify-end gap-2 sm:w-auto">
                 <button
                   type="button"
-                  className="h-10 flex-1 cursor-pointer rounded-md border border-input bg-background px-3 text-xs font-medium text-foreground shadow-xs transition hover:bg-accent sm:h-8 sm:flex-none"
+                  className="h-10 cursor-pointer rounded-lg bg-foreground/5 px-4 text-xs font-medium text-foreground transition hover:bg-foreground/10 sm:h-8"
                   onClick={() => setConfirmingTemplateDelete(false)}
                 >
                   Keep it
@@ -244,7 +270,7 @@ function TaskEditorDialog({
                 <button
                   type="button"
                   disabled={busy}
-                  className="h-10 flex-1 cursor-pointer rounded-md bg-destructive px-3 text-xs font-medium text-destructive-foreground shadow-xs transition hover:bg-destructive/90 disabled:opacity-50 sm:h-8 sm:flex-none"
+                  className="h-10 cursor-pointer rounded-lg bg-destructive px-4 text-xs font-medium text-destructive-foreground transition hover:bg-destructive/90 disabled:opacity-50 sm:h-8"
                   onClick={removeTemplate}
                 >
                   {busy ? "Deleting…" : "Delete activity"}
@@ -253,23 +279,23 @@ function TaskEditorDialog({
             </div>
           ) : null}
 
-          <div className="flex items-center gap-2">
-            {/* Icon-only on phones to leave room for the two main actions */}
+          {/* One button style: same height and side padding, as wide as its label. Delete sits apart on the left. */}
+          <div className="flex items-center justify-end gap-2">
             {sourceTemplate || isEdit ? (
               <button
                 type="button"
                 disabled={busy}
                 aria-label={sourceTemplate ? "Delete activity" : "Delete block"}
-                className="mr-auto inline-flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-destructive/30 bg-destructive/10 text-xs font-medium text-destructive shadow-xs transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50 sm:h-9 sm:w-auto sm:px-3"
+                className="mr-auto inline-flex h-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-destructive/10 px-4 text-sm font-medium text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50 sm:h-10"
                 onClick={() => (sourceTemplate ? setConfirmingTemplateDelete((value) => !value) : removeBlock())}
               >
-                <Trash2 className="h-5 w-5 sm:hidden" aria-hidden="true" />
-                <span className="hidden sm:inline">{sourceTemplate ? "Delete activity" : "Delete block"}</span>
+                <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <span className="truncate">Delete</span>
               </button>
             ) : null}
             <button
               type="button"
-              className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-3.5 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground sm:h-9 sm:flex-none sm:text-xs"
+              className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-foreground/5 px-5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 sm:h-10"
               onClick={onClose}
             >
               Cancel
@@ -278,9 +304,9 @@ function TaskEditorDialog({
               type="submit"
               form="task-editor-form"
               disabled={busy}
-              className="inline-flex h-11 flex-[1.6] cursor-pointer items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary/90 disabled:opacity-50 sm:h-9 sm:flex-none sm:text-xs"
+              className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50 sm:h-10"
             >
-              {busy ? "Saving…" : isEdit ? "Save changes" : "Add block"}
+              {busy ? "Saving…" : isEdit ? "Save" : "Add block"}
             </button>
           </div>
         </div>
@@ -288,35 +314,37 @@ function TaskEditorDialog({
     >
       <form
         id="task-editor-form"
-        className="space-y-4"
+        className="space-y-5 pb-1"
+        style={{ "--cat": color } as CSSProperties}
         onSubmit={(event) => {
           event.preventDefault();
           submit();
         }}
       >
-        <div>
-          <label htmlFor="task-title" className="text-xs font-medium text-foreground">
-            Name
-          </label>
-          <div className="mt-1.5 flex h-11 w-full items-center rounded-md border border-input bg-background shadow-xs transition-colors focus-within:ring-1 focus-within:ring-ring sm:h-10">
-            <EmojiPicker
-              value={emoji.emoji}
-              busy={emoji.picking}
-              automatic={emoji.automatic}
-              autoDisabled={!draft.title.trim()}
-              hint={emoji.hint}
-              onChange={emoji.choose}
-              onAuto={emoji.auto}
-            />
-            <span className="h-5 w-px shrink-0 bg-border" />
+        {/* The block's identity: a big emoji tile in its category color, and the name as a headline */}
+        <div className="flex items-center gap-3.5 pr-9">
+          <EmojiPicker
+            value={emoji.emoji}
+            busy={emoji.picking}
+            automatic={emoji.automatic}
+            autoDisabled={!draft.title.trim()}
+            hint={emoji.hint}
+            onChange={emoji.choose}
+            onAuto={emoji.auto}
+            className="flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-[color-mix(in_oklab,var(--cat)_22%,var(--background))] text-3xl ring-1 ring-inset ring-[color-mix(in_oklab,var(--cat)_35%,transparent)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+          />
+          <div className="min-w-0 flex-1 border-b-2 border-transparent transition-colors focus-within:border-[color-mix(in_oklab,var(--cat)_70%,transparent)]">
+            <label htmlFor="task-title" className="sr-only">
+              Name
+            </label>
             <input
               id="task-title"
               value={draft.title}
               data-autofocus
               autoComplete="off"
               enterKeyHint="done"
-              placeholder="e.g. Deep focus, Workout"
-              className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none"
+              placeholder="Name this block"
+              className="h-12 w-full min-w-0 bg-transparent text-xl font-semibold tracking-tight placeholder:font-medium placeholder:text-muted-foreground/60 focus-visible:outline-none"
               onChange={(event) => patch({ title: event.target.value })}
               onBlur={emoji.settle}
             />
@@ -328,73 +356,113 @@ function TaskEditorDialog({
           <ActivityPicker value={draft.templateId} templates={templates} onChange={applyTemplate} />
         ) : null}
 
-        <div className="grid grid-cols-2 gap-3">
-          <label className="block min-w-0">
-            <span className="text-xs font-medium text-foreground">Date</span>
-            <input
-              value={draft.day}
-              type="date"
-              className={CONTROL_CLASS}
-              onChange={(event) => patch({ day: event.target.value })}
-            />
-          </label>
-          <div className="block min-w-0">
-            <span id={startLabelId} className="text-xs font-medium text-foreground">
-              Start Time
+        {/* When: the span it covers up front, then the date and start, then the length as one-tap chips */}
+        <section className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
+          <div className="flex items-center justify-between gap-3 bg-[color-mix(in_oklab,var(--cat)_10%,transparent)] px-4 py-3.5">
+            <div className="flex min-w-0 items-center gap-2 text-xl font-semibold tabular-nums tracking-tight text-foreground">
+              <span>{startLabel}</span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <span className="text-muted-foreground">{endLabel}</span>
+            </div>
+            <span className="shrink-0 rounded-full bg-background/80 px-2.5 py-1 text-xs font-semibold tabular-nums text-foreground ring-1 ring-inset ring-border/70">
+              {formatDuration(draft.duration)}
             </span>
-            <div className="mt-1.5">
-              <TimePicker
-                value={draft.start}
-                labelledBy={startLabelId}
-                className={CONTROL_CLASS.replace("mt-1.5 ", "").replace("px-3", "px-1.5 sm:px-2")}
-                onChange={(start) => patch({ start })}
-              />
+          </div>
+
+          <div className="space-y-4 p-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+              <label className="block min-w-0">
+                <FieldLabel icon={CalendarDays}>Date</FieldLabel>
+                <input
+                  value={draft.day}
+                  type="date"
+                  className={CONTROL_CLASS}
+                  onChange={(event) => patch({ day: event.target.value })}
+                />
+              </label>
+              <div className="block min-w-0">
+                <FieldLabel icon={Clock} id={startLabelId}>
+                  Starts
+                </FieldLabel>
+                <div className="mt-1.5">
+                  <TimePicker
+                    value={draft.start}
+                    labelledBy={startLabelId}
+                    className={CONTROL_CLASS.replace("mt-1.5 ", "").replace("px-3", "px-1.5 sm:px-2")}
+                    onChange={(start) => patch({ start })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <FieldLabel icon={Timer} id={durationLabelId}>
+                Duration
+              </FieldLabel>
+              <div role="radiogroup" aria-labelledby={durationLabelId} className="mt-2 grid grid-cols-4 gap-1.5">
+                {durationOptions.map((value) => {
+                  const selected = value === draft.duration;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      className={`h-9 min-w-0 cursor-pointer rounded-full px-2 text-xs font-semibold tabular-nums transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch:h-11 ${
+                        selected
+                          ? "bg-foreground text-background shadow-sm"
+                          : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
+                      }`}
+                      onClick={() => patch({ duration: value })}
+                    >
+                      {formatDuration(value)}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-          <label className="block min-w-0">
-            <span className="text-xs font-medium text-foreground">Duration</span>
-            <select
-              value={draft.duration}
-              className={CONTROL_CLASS}
-              onChange={(event) => patch({ duration: Number(event.target.value) })}
-            >
-              {durationOptions.map((value) => (
-                <option key={value} value={value}>
-                  {formatDuration(value)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block min-w-0">
-            <span className="text-xs font-medium text-foreground">Category</span>
-            <CategorySelect
-              value={draft.category}
-              templates={templates}
-              className="mt-1.5 w-full"
-              onChange={(next) => patch({ category: next })}
-            />
-          </label>
+        </section>
+
+        <div className="block">
+          <FieldLabel icon={Folder}>Category</FieldLabel>
+          <CategorySelect
+            value={draft.category}
+            templates={templates}
+            className="mt-1.5 w-full"
+            onChange={(next) => patch({ category: next })}
+          />
         </div>
 
-        <label className="block">
-          <span className="text-xs font-medium text-foreground">Notes</span>
-          <textarea
+        <div className="block">
+          <FieldLabel icon={StickyNote}>Notes</FieldLabel>
+          <NotesEditor
             value={draft.notes}
-            rows={2}
-            placeholder="Any details, reminders, or goals…"
-            className="mt-1.5 flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            onChange={(event) => patch({ notes: event.target.value })}
+            placeholder="Details, or type / for a list…"
+            onChange={(notes) => patch({ notes })}
           />
-        </label>
+        </div>
 
-        <label className="-my-1 flex min-h-11 cursor-pointer items-center gap-3 text-xs font-medium text-foreground sm:min-h-0 sm:gap-2">
+        {/* A switch rather than a checkbox: it reads as a state of the block, not a form option */}
+        <label className="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-4 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-muted/40">
+          <span className="flex items-center gap-2.5">
+            <CheckCircle2
+              className={`h-4.5 w-4.5 transition-colors ${draft.completed ? "text-emerald-500" : "text-muted-foreground"}`}
+              aria-hidden="true"
+            />
+            Mark as completed
+          </span>
           <input
             type="checkbox"
+            role="switch"
             checked={draft.completed}
-            className="h-5 w-5 rounded-xs border-input accent-primary sm:h-4 sm:w-4"
+            className="peer sr-only"
             onChange={(event) => patch({ completed: event.target.checked })}
           />
-          <span className="text-sm sm:text-xs">Mark as completed</span>
+          <span
+            aria-hidden="true"
+            className="relative h-6 w-10 shrink-0 rounded-full bg-border transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-background after:shadow-xs after:transition-transform peer-checked:bg-primary peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
+          />
         </label>
       </form>
     </Modal>

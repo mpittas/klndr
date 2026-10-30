@@ -56,7 +56,7 @@ function MonthScene() {
           <ChevronRight className="h-3.5 w-3.5" />
         </span>
       </div>
-      <div className="mt-2 grid grid-cols-7 text-center font-mono text-[9px] font-semibold uppercase text-muted-foreground">
+      <div className="mt-2 grid grid-cols-7 text-center text-[9px] font-semibold uppercase text-muted-foreground">
         {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
           <span key={i}>{d}</span>
         ))}
@@ -101,7 +101,7 @@ function DragScene() {
   return (
     <div className="scene relative w-[15.5rem] rounded-xl border border-border bg-card py-3 pr-3 shadow-xs">
       <div className="flex">
-        <div className="w-11 shrink-0 border-r border-border pr-1.5 text-right font-mono text-[10px] text-muted-foreground">
+        <div className="w-11 shrink-0 border-r border-border pr-1.5 text-right text-[10px] text-muted-foreground">
           {labels.map((label, i) => (
             <div key={i} className="relative h-7">
               {label ? <span className="absolute -top-2 right-1.5">{label}</span> : null}
@@ -120,7 +120,7 @@ function DragScene() {
           <div className="absolute inset-x-1 top-[2px] h-[80px]">
             <MockBlock emoji="🛠️" title="Deep work" color="indigo" meta="9:00 – 10:30 AM" />
             <span className="absolute inset-x-0 bottom-1 mx-auto h-0.5 w-6 rounded-full bg-foreground/25" />
-            <span className="absolute -right-1 bottom-0 translate-y-1/2 rounded-md bg-primary px-1.5 py-0.5 font-mono text-[10px] font-semibold text-primary-foreground shadow-xs">
+            <span className="absolute -right-1 bottom-0 translate-y-1/2 rounded-md bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground shadow-xs">
               1h 30m
             </span>
           </div>
@@ -136,7 +136,7 @@ function DragScene() {
           🏋️
         </span>
         <span className="flex-1 truncate text-[11px] font-medium text-foreground">Workout</span>
-        <span className="font-mono text-[10px] text-muted-foreground">1h</span>
+        <span className="text-[10px] text-muted-foreground">1h</span>
         <PointerArrow className="absolute -bottom-3 right-5 h-5 w-5 drop-shadow" />
       </div>
     </div>
@@ -149,7 +149,7 @@ function TickScene() {
     <div className="scene w-[15.5rem] rounded-xl border border-border bg-card p-3 shadow-xs">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold tracking-tight text-foreground">Today</span>
-        <span className="font-mono text-[10px] tabular-nums text-muted-foreground">3/4 done</span>
+        <span className="text-[10px] tabular-nums text-muted-foreground">3/4 done</span>
       </div>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
         <div className="h-full w-3/4 rounded-full bg-emerald-500" />
@@ -225,7 +225,7 @@ export function LandingSteps() {
 
               <div className="px-4 pb-5 pt-5 sm:px-5">
                 <h3 className="flex items-center gap-2.5 text-lg font-semibold tracking-tight text-foreground">
-                  <span className="step-badge flex h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-xs font-semibold text-foreground">
+                  <span className="step-badge flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-xs font-semibold text-foreground">
                     {index + 1}
                   </span>
                   {step.title}

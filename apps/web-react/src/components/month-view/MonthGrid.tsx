@@ -23,7 +23,7 @@ export function MonthGrid({ days, onAddBlock }: { days: DayCell[]; onAddBlock: (
           <div
             key={label}
             className={[
-              "py-2.5 text-center font-mono text-[11px] font-semibold uppercase tracking-wider sm:text-xs",
+              "py-2.5 text-center text-[11px] font-semibold uppercase tracking-wider sm:text-xs",
               index === 0 || index === 6 ? "text-muted-foreground/70" : "text-muted-foreground",
             ].join(" ")}
           >
@@ -74,7 +74,7 @@ export function MonthGrid({ days, onAddBlock }: { days: DayCell[]; onAddBlock: (
               </span>
               <span className="flex items-center gap-1">
                 {day.total ? (
-                  <span className="hidden font-mono text-[11px] font-medium tabular-nums text-muted-foreground @[7rem]:inline">
+                  <span className="hidden text-[11px] font-medium tabular-nums text-muted-foreground @[7rem]:inline">
                     {day.total}
                   </span>
                 ) : null}
@@ -99,7 +99,7 @@ export function MonthGrid({ days, onAddBlock }: { days: DayCell[]; onAddBlock: (
                 />
               ))}
               {day.hidden ? (
-                <span className="font-mono text-[10px] font-semibold leading-none text-muted-foreground">+{day.hidden}</span>
+                <span className="text-[10px] font-semibold leading-none text-muted-foreground">+{day.hidden}</span>
               ) : null}
             </div>
 
@@ -121,13 +121,13 @@ export function MonthGrid({ days, onAddBlock }: { days: DayCell[]; onAddBlock: (
                     {task.emoji}
                   </span>
                   <span className="min-w-0 flex-1 truncate">{task.title}</span>
-                  <span className="hidden shrink-0 font-mono text-[10px] tabular-nums opacity-60 @[9.5rem]:inline">
+                  <span className="hidden shrink-0 text-[10px] tabular-nums opacity-60 @[9.5rem]:inline">
                     {shortTime(task.startMinutes)}
                   </span>
                 </span>
               ))}
               {day.hidden ? (
-                <span className="self-start rounded-md bg-muted px-1.5 py-0.5 font-mono text-[11px] font-medium tabular-nums text-muted-foreground">
+                <span className="self-start rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground">
                   +{day.hidden} more
                 </span>
               ) : null}
