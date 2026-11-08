@@ -14,7 +14,8 @@ import { createPortal } from "react-dom";
 import { lockScroll, unlockScroll } from "@/hooks/useScrollLock";
 
 /**
- * A bottom sheet on phones and a centred dialog from `sm`, with a focus trap, a shared Escape stack, a
+ * A bottom sheet on phones and a centred dialog from `sm` (or, with `side`, a drawer that slides in from the
+ * right edge and leaves the page in view, like Notion's side peek), with a focus trap, a shared Escape stack, a
  * scroll lock and swipe-to-dismiss.
  *
  * Put `data-autofocus` on the field that should take focus when the dialog opens. It is honoured on
@@ -62,8 +63,13 @@ export type ModalProps = {
   lg?: boolean;
   /** Content runs edge to edge (no padding) and brings its own height, e.g. notes or a list with a pinned footer. */
   flush?: boolean;
-  /** A CSS color that softly tints the top of the dialog, e.g. the category color of what is being edited. */
-  accent?: string;
+  /**
+   * From `sm`, open as a full-height drawer on the right instead of a centred dialog. It can change while the
+   * dialog is open: the panel moves over and nothing inside it is lost. Phones always get the bottom sheet.
+   */
+  side?: boolean;
+  /** Small controls shown beside the close button (e.g. a switch between the dialog and the drawer). */
+  actions?: ReactNode;
   /** Keep `title` as the dialog's accessible name but don't show it (or the subtitle): the content already says what it is. */
   hideTitle?: boolean;
   onClose: () => void;
@@ -73,13 +79,51 @@ export type ModalProps = {
   footer?: ReactNode;
 };
 
-export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitle, onClose, onBackdropClick, children, footer }: ModalProps) {
+export function Modal({
+  open,
+  title,
+  subtitle,
+  wide,
+  lg,
+  flush,
+  side = false,
+  actions,
+  hideTitle,
+  onClose,
+  onBackdropClick,
+  children,
+  footer,
+}: ModalProps) {
   const [token] = useState(() => Symbol("modal"));
   const titleId = `modal-title-${useId()}`;
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const returnFocusTo = useRef<HTMLElement | null>(null);
 
   const { mounted, state } = usePresence(open);
+
+  // Switching between the dialog and the drawer while open: the panel arrives in its new place with a short
+  // settle, instead of jumping there.
+  const previousSide = useRef(side);
+  useEffect(() => {
+    if (previousSide.current === side) return;
+    previousSide.current = side;
+    const panel = dialogRef.current;
+    if (!open || !panel) return;
+    if (!window.matchMedia("(min-width: 640px)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    panel.animate(
+      side
+        ? [
+            { opacity: 0, transform: "translateX(28px)" },
+            { opacity: 1, transform: "none" },
+          ]
+        : [
+            { opacity: 0, transform: "scale(0.97)" },
+            { opacity: 1, transform: "none" },
+          ],
+      { duration: 240, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+    );
+  }, [side, open]);
 
   // Callers pass inline handlers. Reading the latest one through an Effect Event keeps the effect below
   // from re-running (and handing focus back and forth) every time the parent renders.
@@ -183,7 +227,13 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
     // In <body>, so a modal opened from inside another one is a sibling, not a descendant (focus trap, stacking).
     <div
       data-state={state}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--scrim)] backdrop-blur-[3px] transition-opacity duration-200 sm:items-center sm:p-6"
+      className={[
+        "fixed inset-0 z-50 flex items-end justify-center bg-[var(--scrim)] backdrop-blur-[3px] transition-[opacity,background-color] duration-200",
+        // The drawer leaves the page readable: a lighter veil, no blur.
+        side
+          ? "modal-side sm:items-stretch sm:justify-end sm:bg-[rgb(28_20_12/0.14)] sm:p-2 sm:backdrop-blur-none sm:dark:bg-black/40"
+          : "sm:items-center sm:p-6",
+      ].join(" ")}
     >
       <div aria-hidden="true" className="modal-overlay absolute inset-0" onClick={onBackdropClick ?? onClose} />
       <div
@@ -194,20 +244,14 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
         tabIndex={-1}
         style={dragY ? { transform: `translateY(${dragY}px)`, transition: "none" } : undefined}
         className={[
-          "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border/70 bg-background shadow-xl focus:outline-none dark:shadow-[0_28px_70px_-18px_rgb(0_0_0/0.75)] sm:max-h-[88dvh] sm:rounded-2xl",
-          wide ? "sm:max-w-2xl" : lg ? "sm:max-w-xl" : "sm:max-w-md",
+          "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border/70 bg-background shadow-xl focus:outline-none dark:shadow-[0_28px_70px_-18px_rgb(0_0_0/0.75)] sm:rounded-2xl",
+          side
+            ? "sm:h-full sm:max-h-full sm:max-w-[30rem] sm:shadow-[0_0_0_1px_rgb(60_40_20/0.03),-24px_0_60px_-24px_rgb(60_40_20/0.35)]"
+            : ["sm:max-h-[88dvh]", wide ? "sm:max-w-2xl" : lg ? "sm:max-w-xl" : "sm:max-w-md"].join(" "),
           dragY ? "" : "transition-transform duration-200",
         ].join(" ")}
         onKeyDown={trapTab}
       >
-        {accent ? (
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-0 h-36 transition-[background] duration-300"
-            style={{ background: `linear-gradient(to bottom, color-mix(in oklab, ${accent} 18%, transparent), transparent)` }}
-          />
-        ) : null}
-
         {/* Grab handle + header double as the swipe-to-dismiss area */}
         <div
           className="relative shrink-0 touch-none"
@@ -230,11 +274,19 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
                 </h2>
                 {subtitle ? <p className="mt-1 text-[13px] leading-snug tabular-nums text-muted-foreground">{subtitle}</p> : null}
               </div>
-              {closeButton}
+              <div className="flex shrink-0 items-center gap-1.5">
+                {actions}
+                {closeButton}
+              </div>
             </header>
           )}
         </div>
-        {hideTitle ? <div className="absolute right-3 top-3 z-20 sm:right-4 sm:top-4">{closeButton}</div> : null}
+        {hideTitle ? (
+          <div className="absolute right-3 top-3 z-20 flex items-center gap-1.5 sm:right-4 sm:top-4">
+            {actions}
+            {closeButton}
+          </div>
+        ) : null}
 
         <div
           className={[

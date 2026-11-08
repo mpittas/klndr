@@ -117,6 +117,7 @@ Build screens from the classes in `styles.css` (`@layer components`, so a utilit
 - **Fields**: `field` for every input, select and textarea (filled paper, hairline border, terracotta focus ring); `field-label` above it.
 - **Small things**: `segmented`/`segmented-item` (header nav, sidebar tabs, scope toggles: the chosen item is a raised sheet), `count`, `kbd`, `progress`/`progress-bar`, `tick` (round done-control), `avatar`.
 - **Wordmark**: `<Wordmark />` everywhere the logo appears.
+- **Dialogs**: `Modal` is a bottom sheet on phones and a centred dialog from `sm`; with `side` it is a full-height drawer on the right with a lighter veil (Notion's side peek). The block editor opens in the default chosen under Profile & settings > Appearance (`useDefaultEditorLayout`, kept per browser); the Center / Side switch beside its close button changes only the editor that is open.
 - **Times**: `TimeSelect` (a list of quarter-hour slots: popover on desktop, sheet on phones) instead of native time inputs; dates through `DatePickerModal` with `onPick`.
 
 ## Components

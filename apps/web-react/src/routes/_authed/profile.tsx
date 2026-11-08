@@ -8,6 +8,7 @@ import { currentProviderIds, isSignedIn, useAuth, type AuthUser, type LinkablePr
 import { ErrorAlert, SuccessAlert } from "@/components/AuthCard";
 import { TextField } from "@/components/TextField";
 import { AccountActionsCard } from "@/components/profile/AccountActionsCard";
+import { AppearanceCard } from "@/components/profile/AppearanceCard";
 import { DeleteAccountCard } from "@/components/profile/DeleteAccountCard";
 import { ProfileCard } from "@/components/profile/ProfileCard";
 import { SignInMethodsCard } from "@/components/profile/SignInMethodsCard";
@@ -371,6 +372,8 @@ function ProfilePage() {
               </div>
             </form>
           </div>
+
+          <AppearanceCard />
 
           {guest ? (
             <div className="card p-5 sm:p-7">

@@ -359,6 +359,9 @@
   .segmented-item {
     @apply inline-flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-[13px] font-medium text-muted-foreground transition-[color,background-color,box-shadow] duration-150 hover:text-foreground;
   }
+  .segmented-item :where(svg) {
+    @apply shrink-0;
+  }
   .segmented-item:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"], [data-active="true"]) {
     @apply bg-card text-foreground shadow-[0_1px_2px_rgb(60_40_20/0.1),0_0_0_0.5px_rgb(60_40_20/0.08)] dark:bg-accent dark:shadow-[0_1px_2px_rgb(0_0_0/0.4)];
   }
@@ -561,6 +564,16 @@ textarea,
   [data-state="closed"] .modal-panel {
     transform: translateY(8px) scale(0.98);
     opacity: 0;
+  }
+  /* The side drawer slides in from the right edge instead. */
+  .modal-side .modal-panel {
+    transition:
+      transform 0.32s cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 0.2s ease;
+  }
+  .modal-side[data-state="closed"] .modal-panel {
+    transform: translateX(calc(100% + 1rem));
+    opacity: 1;
   }
 }
 

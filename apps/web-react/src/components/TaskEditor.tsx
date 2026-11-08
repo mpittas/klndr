@@ -15,7 +15,19 @@ import {
   type TaskDraft,
 } from "@klndr/core";
 import { useCategoryColor } from "@klndr/data";
-import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Folder, StickyNote, Timer, Trash2, type LucideIcon } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  ChevronDown,
+  Folder,
+  PanelRight,
+  SquareSquare,
+  StickyNote,
+  Timer,
+  Trash2,
+  type LucideIcon,
+} from "lucide-react";
 import { useId, useMemo, useState, type ReactNode } from "react";
 
 import { ActivityPicker } from "@/components/ActivityPicker";
@@ -25,6 +37,7 @@ import { EmojiPicker } from "@/components/EmojiPicker";
 import { Modal } from "@/components/Modal";
 import { NotesEditor } from "@/components/NotesEditor";
 import { TimeSelect, type TimeOption } from "@/components/TimeSelect";
+import { useDefaultEditorLayout } from "@/hooks/useEditorLayout";
 import { useEmojiField } from "@/hooks/useEmojiField";
 import { toneClassOf } from "@/lib/colors";
 
@@ -135,6 +148,9 @@ function TaskEditorDialog({
   const colorOf = useCategoryColor();
   const durationLabelId = useId();
   const [pickingDate, setPickingDate] = useState(false);
+  // Opens in the default chosen under Profile & settings; the switch in the corner changes this editor only.
+  const [defaultLayout] = useDefaultEditorLayout();
+  const [layout, setLayout] = useState(defaultLayout);
 
   const [initial] = useState(() => draftFrom(request));
   const [draft, setDraft] = useState(initial);
@@ -288,6 +304,33 @@ function TaskEditorDialog({
       open={open}
       title={isEdit ? "Edit block" : "New block"}
       hideTitle
+      side={layout === "side"}
+      actions={
+        <div role="radiogroup" aria-label="Open the editor as" className="segmented hidden h-8 sm:inline-flex">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={layout === "center"}
+            aria-label="Dialog"
+            title="Show as a dialog · change the default in Profile & settings"
+            className="segmented-item w-8 flex-none px-0"
+            onClick={() => setLayout("center")}
+          >
+            <SquareSquare className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={layout === "side"}
+            aria-label="Side panel"
+            title="Show as a side panel · change the default in Profile & settings"
+            className="segmented-item w-8 flex-none px-0"
+            onClick={() => setLayout("side")}
+          >
+            <PanelRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </button>
+        </div>
+      }
       onClose={onClose}
       onBackdropClick={dismiss}
       footer={
@@ -365,7 +408,7 @@ function TaskEditorDialog({
         }}
       >
         {/* The block's identity: a big emoji tile in its category color, and the name as a headline */}
-        <div className="flex items-center gap-3.5 pr-9">
+        <div className="flex items-center gap-3.5 pr-9 sm:pr-28">
           <EmojiPicker
             value={emoji.emoji}
             busy={emoji.picking}
