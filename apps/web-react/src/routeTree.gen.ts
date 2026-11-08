@@ -19,6 +19,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthedCalendarRouteImport } from './routes/_authed/calendar'
 import { Route as AuthedProfileRouteImport } from './routes/_authed/profile'
 import { Route as AuthedDayDateRouteImport } from './routes/_authed/day/$date'
+import { Route as AuthedWeekDateRouteImport } from './routes/_authed/week/$date'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -69,6 +70,11 @@ const AuthedDayDateRoute = AuthedDayDateRouteImport.update({
   path: '/day/$date',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedWeekDateRoute = AuthedWeekDateRouteImport.update({
+  id: '/week/$date',
+  path: '/week/$date',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AuthedCalendarRoute
   '/profile': typeof AuthedProfileRoute
   '/day/$date': typeof AuthedDayDateRoute
+  '/week/$date': typeof AuthedWeekDateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthedCalendarRoute
   '/profile': typeof AuthedProfileRoute
   '/day/$date': typeof AuthedDayDateRoute
+  '/week/$date': typeof AuthedWeekDateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/_authed/calendar': typeof AuthedCalendarRoute
   '/_authed/profile': typeof AuthedProfileRoute
   '/_authed/day/$date': typeof AuthedDayDateRoute
+  '/_authed/week/$date': typeof AuthedWeekDateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/profile'
     | '/day/$date'
+    | '/week/$date'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/profile'
     | '/day/$date'
+    | '/week/$date'
   id:
     | '__root__'
     | '/'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/_authed/calendar'
     | '/_authed/profile'
     | '/_authed/day/$date'
+    | '/_authed/week/$date'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -224,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDayDateRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/week/$date': {
+      id: '/_authed/week/$date'
+      path: '/week/$date'
+      fullPath: '/week/$date'
+      preLoaderRoute: typeof AuthedWeekDateRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
@@ -231,12 +250,14 @@ interface AuthedRouteChildren {
   AuthedCalendarRoute: typeof AuthedCalendarRoute
   AuthedProfileRoute: typeof AuthedProfileRoute
   AuthedDayDateRoute: typeof AuthedDayDateRoute
+  AuthedWeekDateRoute: typeof AuthedWeekDateRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedCalendarRoute: AuthedCalendarRoute,
   AuthedProfileRoute: AuthedProfileRoute,
   AuthedDayDateRoute: AuthedDayDateRoute,
+  AuthedWeekDateRoute: AuthedWeekDateRoute,
 }
 
 const AuthedRouteWithChildren =

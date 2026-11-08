@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { MonthView } from "@/components/MonthView";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useWeekStartsOnMonday } from "@/hooks/useWeekStart";
 
 const NO_TASKS: ScheduledTask[] = [];
 
@@ -26,7 +27,7 @@ function CalendarPage() {
   const today = todayISO();
 
   const month = !m ? today : isValidISODate(m) ? m : /^\d{4}-\d{2}$/.test(m) ? `${m}-01` : today;
-  const range = monthRange(month);
+  const range = monthRange(month, useWeekStartsOnMonday());
 
   const { data } = useRangeTasks(range.from, range.to);
 

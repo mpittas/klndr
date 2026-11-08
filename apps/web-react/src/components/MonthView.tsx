@@ -1,4 +1,5 @@
 import {
+  addMonths,
   formatDuration,
   isSameMonth,
   longDate,
@@ -7,62 +8,66 @@ import {
   parseISODate,
   snapMinutes,
   todayISO,
-  addMonths,
+  weekdayLabels,
   type ScheduledTask,
 } from "@klndr/core";
 import { useLibraryActions, useTaskActions, useTemplates } from "@klndr/data";
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { DatePickerModal } from "@/components/DatePickerModal";
 import { LibraryModal } from "@/components/LibraryModal";
 import type { DayCell } from "@/components/month-view/DayCell";
 import { MonthGrid } from "@/components/month-view/MonthGrid";
-import { MonthSidebar } from "@/components/month-view/MonthSidebar";
-import { MonthViewHeader } from "@/components/month-view/MonthViewHeader";
+import { CategoryFilter } from "@/components/planner/CategoryFilter";
+import { PlannerLayout } from "@/components/planner/PlannerLayout";
+import { PlannerSidebar } from "@/components/planner/PlannerSidebar";
+import { PlannerToolbar } from "@/components/planner/PlannerToolbar";
+import { nextFreeStart } from "@/components/planner/planning";
+import { useActivityPlanning } from "@/components/planner/useActivityPlanning";
+import { usePlannerShortcuts } from "@/components/planner/usePlannerShortcuts";
 import { TaskEditor, type EditorRequest } from "@/components/TaskEditor";
+import { useHiddenCategories } from "@/hooks/useHiddenCategories";
+import { useSidebarOpen } from "@/hooks/useSidebarOpen";
+import { useMediaQuery } from "@/hooks/useViewport";
+import { useWeekStartsOnMonday } from "@/hooks/useWeekStart";
 import { useLibrary } from "@/lib/library";
 
-const MAX_VISIBLE = 3;
 const NO_TEMPLATES: never[] = [];
 
-const isTyping = (target: EventTarget | null) =>
-  target instanceof HTMLElement &&
-  (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
-
 /**
- * The calendar page: the month as a grid, with the header's controls and a sidebar (today, the agenda, the
- * categories, shortcuts). It owns what they share: the category filter, the block editor (opened from the
- * header, a cell's "+" or the sidebar) and the keys the page answers to.
+ * The month page, in the planner's frame (`PlannerLayout`, `PlannerToolbar` and `PlannerSidebar`, as the week and
+ * the day): the month as a grid filling the screen, the mini calendar and the activities in the sidebar (drop
+ * one on a day to plan it), and the Categories control in the toolbar.
+ *
+ * It owns the block editor (opened from the toolbar, a cell's "+" or an activity), the date picker and the keys
+ * (`usePlannerShortcuts`).
  */
 export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTask[] }) {
   const navigate = useNavigate();
   const today = todayISO();
   const isCurrentMonth = isSameMonth(month, today);
+  const weekStartsOnMonday = useWeekStartsOnMonday();
+  const isDesktop = useMediaQuery("(min-width: 64rem)");
+  const sidebar = useSidebarOpen();
+  const categoryFilter = useHiddenCategories();
+  const hidden = categoryFilter.hidden;
 
   const templates = useTemplates().data ?? NO_TEMPLATES;
   const { saveTask, deleteTask } = useTaskActions();
   const library = useLibraryActions();
-  const { open: libraryOpen } = useLibrary();
+  const { open: libraryOpen, show: showLibrary } = useLibrary();
+  const planning = useActivityPlanning(tasks, today);
 
-  const [isDateSelectorOpen, setDateSelectorOpen] = useState(false);
+  const [picking, setPicking] = useState(false);
   const [editor, setEditor] = useState<EditorRequest | null>(null);
-  /** The categories being shown; none picked means all of them. */
-  const [categories, setCategories] = useState<string[]>([]);
 
-  const toggleCategory = useCallback(
-    (category: string) =>
-      setCategories((current) =>
-        current.includes(category) ? current.filter((name) => name !== category) : [...current, category],
-      ),
-    [],
-  );
-  const clearCategories = useCallback(() => setCategories([]), []);
+  const firstOfMonth = `${month.slice(0, 7)}-01`;
 
   // A new block starts today, or on the first of the month when another month is on screen.
   const addBlock = useCallback(
     (day?: string) => {
-      const target = day ?? (isCurrentMonth ? today : `${month.slice(0, 7)}-01`);
+      const target = day ?? (isCurrentMonth ? today : firstOfMonth);
       setEditor({
         mode: "create",
         day: target,
@@ -70,55 +75,38 @@ export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTas
         template: null,
       });
     },
-    [isCurrentMonth, month, today],
+    [isCurrentMonth, firstOfMonth, today],
   );
 
-  const goToMonth = (offset: number) =>
-    void navigate({ to: "/calendar", search: { m: addMonths(month, offset).slice(0, 7) } });
+  const goToMonth = (value: string) => void navigate({ to: "/calendar", search: { m: value } });
 
-  // ← and → page the months, T returns to today, N adds a block, G opens the date picker. Left alone while
-  // typing or while a dialog is open.
-  const onShortcut = useEffectEvent((event: KeyboardEvent) => {
-    if (event.ctrlKey || event.metaKey || event.altKey || isTyping(event.target)) return;
-    if (editor || isDateSelectorOpen || libraryOpen) return;
-    switch (event.key) {
-      case "ArrowLeft":
-        goToMonth(-1);
-        break;
-      case "ArrowRight":
-        goToMonth(1);
-        break;
-      case "t":
-      case "T":
-        void navigate({ to: "/calendar", search: { m: today.slice(0, 7) } });
-        break;
-      case "n":
-      case "N":
-        addBlock();
-        break;
-      case "g":
-      case "G":
-        setDateSelectorOpen(true);
-        break;
-      default:
-        return;
-    }
-    event.preventDefault();
-  });
-  useEffect(() => {
-    const listener = (event: KeyboardEvent) => onShortcut(event);
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, []);
-
-  // What the grid and the header show: the category filter applied.
-  const shown = useMemo(
-    () => (categories.length ? tasks.filter((task) => categories.includes(task.category)) : tasks),
-    [tasks, categories],
+  usePlannerShortcuts(
+    {
+      previous: () => goToMonth(addMonths(month, -1).slice(0, 7)),
+      next: () => goToMonth(addMonths(month, 1).slice(0, 7)),
+      today: () => goToMonth(today.slice(0, 7)),
+      create: () => addBlock(),
+      goTo: () => setPicking(true),
+      toggleSidebar: sidebar.toggle,
+    },
+    Boolean(editor || picking || libraryOpen),
   );
 
-  // The category breakdown is of the month on screen, before the filter, so every category stays pickable.
+  // The month on screen's blocks, before the filter (the Categories control's hours) and after it (the grid and
+  // the toolbar's totals).
   const monthTasks = useMemo(() => tasks.filter((task) => isSameMonth(task.day, month)), [tasks, month]);
+  const shown = useMemo(
+    () => (hidden.length ? tasks.filter((task) => !hidden.includes(task.category)) : tasks),
+    [tasks, hidden],
+  );
+  const stats = useMemo(() => {
+    const inMonth = shown.filter((task) => isSameMonth(task.day, month));
+    return {
+      minutes: inMonth.reduce((sum, task) => sum + task.durationMinutes, 0),
+      done: inMonth.filter((task) => task.completed).length,
+      count: inMonth.length,
+    };
+  }, [shown, month]);
 
   // The grid reads the blocks by day, each day's list in start order.
   const byDay = useMemo(() => {
@@ -134,7 +122,7 @@ export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTas
 
   const days: DayCell[] = useMemo(
     () =>
-      monthMatrix(month).map((iso) => {
+      monthMatrix(month, weekStartsOnMonday).map((iso) => {
         const date = parseISODate(iso);
         const dayTasks = byDay.get(iso) ?? [];
         return {
@@ -144,60 +132,109 @@ export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTas
           isToday: iso === today,
           isPast: iso < today,
           isWeekend: date.getDay() === 0 || date.getDay() === 6,
-          visible: dayTasks.slice(0, MAX_VISIBLE),
-          hidden: Math.max(0, dayTasks.length - MAX_VISIBLE),
+          tasks: dayTasks,
           total: dayTasks.length ? formatDuration(dayTasks.reduce((sum, task) => sum + task.durationMinutes, 0)) : "",
           done: dayTasks.filter((task) => task.completed).length,
           count: dayTasks.length,
           label: `${longDate(iso)}, ${dayTasks.length} ${dayTasks.length === 1 ? "block" : "blocks"}`,
         };
       }),
-    [month, byDay, today],
+    [month, byDay, today, weekStartsOnMonday],
   );
 
-  return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <MonthViewHeader
-        month={month}
-        today={today}
-        isCurrentMonth={isCurrentMonth}
-        isDateSelectorOpen={isDateSelectorOpen}
-        filtered={categories.length > 0}
-        onOpenSelector={() => setDateSelectorOpen(true)}
-        onNewBlock={() => addBlock()}
-      />
+  const todayColumn = isCurrentMonth ? days.findIndex((day) => day.isToday) % 7 : null;
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19.5rem] xl:gap-6">
-        <MonthGrid days={days} onAddBlock={addBlock} />
-        <MonthSidebar
+  return (
+    <PlannerLayout
+      sidebarLabel="Calendar and activities"
+      sidebarOpen={sidebar.open}
+      sidebar={
+        isDesktop ? (
+          <PlannerSidebar
+            view="month"
+            anchor={month}
+            today={today}
+            weekStartsOnMonday={weekStartsOnMonday}
+            onPickDate={(date) => goToMonth(date.slice(0, 7))}
+            templates={templates}
+            // Clicked, an activity opens in the editor on today (or the 1st), after that day's last block.
+            onPickActivity={(template) => {
+              const target = isCurrentMonth ? today : firstOfMonth;
+              const dayTasks = tasks.filter((task) => task.day === target);
+              setEditor({
+                mode: "create",
+                day: target,
+                startMinutes: nextFreeStart(dayTasks, target, today, template.defaultDuration),
+                template,
+              });
+            }}
+            onDragActivity={planning.startDrag}
+            onDropActivityEnd={planning.endDrag}
+            onMoveActivity={(template, category) => void library.moveTemplate(template, category)}
+            onManage={() => showLibrary()}
+          />
+        ) : undefined
+      }
+      toolbar={
+        <PlannerToolbar
+          view="month"
+          anchor={month}
           today={today}
-          monthTasks={monthTasks}
-          categories={categories}
-          onToggleCategory={toggleCategory}
-          onClearCategories={clearCategories}
+          isCurrent={isCurrentMonth}
+          stats={stats}
+          filter={
+            <CategoryFilter
+              tasks={monthTasks}
+              period="month"
+              hidden={hidden}
+              onToggle={categoryFilter.toggle}
+              onOnly={categoryFilter.only}
+              onShowAll={categoryFilter.showAll}
+            />
+          }
+          pickerOpen={picking}
+          onOpenPicker={() => setPicking(true)}
+          onCreate={() => addBlock()}
+          sidebar={isDesktop ? { open: sidebar.open, onToggle: sidebar.toggle } : undefined}
+        />
+      }
+      dialogs={
+        <>
+          <DatePickerModal
+            open={picking}
+            initial={month}
+            activeMonth={month.slice(0, 7)}
+            today={today}
+            weekStartsOnMonday={weekStartsOnMonday}
+            onClose={() => setPicking(false)}
+          />
+
+          <TaskEditor
+            request={editor}
+            templates={templates}
+            onClose={() => setEditor(null)}
+            onSave={(vars) => saveTask(vars)}
+            onDelete={(task) => deleteTask(task)}
+            onDeleteTemplate={(id) => library.deleteTemplate({ id })}
+          />
+
+          {/* After the editor so it opens on top of it (e.g. from the category picker). */}
+          <LibraryModal templates={templates} />
+        </>
+      }
+    >
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+        <MonthGrid
+          days={days}
+          weekdays={weekdayLabels(weekStartsOnMonday)}
+          todayColumn={todayColumn}
           onAddBlock={addBlock}
+          dropping={planning.dragging}
+          onDropActivity={(day) => {
+            if (planning.dragging) planning.place(planning.dragging, day);
+          }}
         />
       </div>
-
-      <DatePickerModal
-        open={isDateSelectorOpen}
-        initial={month}
-        activeMonth={month.slice(0, 7)}
-        today={today}
-        onClose={() => setDateSelectorOpen(false)}
-      />
-
-      <TaskEditor
-        request={editor}
-        templates={templates}
-        onClose={() => setEditor(null)}
-        onSave={(vars) => saveTask(vars)}
-        onDelete={(task) => deleteTask(task)}
-        onDeleteTemplate={(id) => library.deleteTemplate({ id })}
-      />
-
-      {/* After the editor so it opens on top of it (e.g. from the category picker). */}
-      <LibraryModal templates={templates} />
-    </div>
+    </PlannerLayout>
   );
 }

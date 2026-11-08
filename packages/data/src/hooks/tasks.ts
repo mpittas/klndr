@@ -1,4 +1,4 @@
-import type { ScheduledTask } from "@klndr/core";
+import type { ScheduledTask, TaskDraft } from "@klndr/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { taskMutationOptions } from "../mutations/tasks";
@@ -17,6 +17,7 @@ export function useTaskActions() {
   const { mutateAsync: toggle } = useMutation(options.toggle);
   const { mutateAsync: remove } = useMutation(options.remove);
   const { mutateAsync: save } = useMutation(options.save);
+  const { mutateAsync: change } = useMutation(options.change);
 
   return {
     /** Tick a block off, or reopen it. Never throws: a failure is put back and reported. */
@@ -30,6 +31,18 @@ export function useTaskActions() {
     ),
     /** Create (`id: null`) or edit a block; waits for the server and throws its message, so a form can show it. */
     saveTask: save,
+    /**
+     * Change some fields of a block at once (its day and start, say, when it is dragged to another day), put back
+     * if saving fails. Never throws.
+     */
+    changeTask: useCallback(
+      (task: ScheduledTask, changes: Partial<TaskDraft>, message?: string) =>
+        change({ task, changes, message }).then(
+          () => undefined,
+          () => undefined,
+        ),
+      [change],
+    ),
     /** Resolves to whether the block was deleted; a failure is put back and reported. */
     deleteTask: useCallback(
       (task: ScheduledTask) =>

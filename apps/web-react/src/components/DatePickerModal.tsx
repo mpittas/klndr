@@ -1,4 +1,4 @@
-import { addDaysISO, addMonths, MONTH_LABELS, monthMatrix, monthTitle, WEEKDAY_LABELS } from "@klndr/core";
+import { addDaysISO, addMonths, MONTH_LABELS, monthMatrix, monthTitle, weekdayLabels } from "@klndr/core";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
@@ -39,6 +39,7 @@ export function DatePickerModal({
   onPick,
   title: dialogTitle = "Go to date",
   subtitle: dialogSubtitle = "Pick a day, or open a whole month",
+  weekStartsOnMonday = false,
 }: {
   open: boolean;
   /** Any date in the month the calendar opens on. */
@@ -52,6 +53,8 @@ export function DatePickerModal({
   onPick?: (date: string) => void;
   title?: string;
   subtitle?: string;
+  /** Start the weeks on Monday, as the month grid and the week do when the profile says so. */
+  weekStartsOnMonday?: boolean;
 }) {
   const navigate = useNavigate();
 
@@ -156,7 +159,7 @@ export function DatePickerModal({
           {view === "days" && (
             <div>
               <div className="grid grid-cols-7">
-                {WEEKDAY_LABELS.map((label) => (
+                {weekdayLabels(weekStartsOnMonday).map((label) => (
                   <div
                     key={label}
                     className="py-1.5 text-center text-[11px] font-medium text-muted-foreground"
@@ -166,7 +169,7 @@ export function DatePickerModal({
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-1">
-                {monthMatrix(shown).map((date) => {
+                {monthMatrix(shown, weekStartsOnMonday).map((date) => {
                   const inMonth = date.slice(0, 7) === shownMonth;
                   const isSelected = date === selected;
                   return (

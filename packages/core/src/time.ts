@@ -94,6 +94,26 @@ export function monthMatrix(iso: string, weekStartsOnMonday = false): string[] {
   return cells;
 }
 
+/** The seven ISO dates of the week that `iso` falls in, starting on Sunday, or on Monday when `weekStartsOnMonday`. */
+export function weekDays(iso: string, weekStartsOnMonday = false): string[] {
+  const date = parseISODate(iso);
+  const back = weekStartsOnMonday ? (date.getDay() + 6) % 7 : date.getDay();
+  const first = addDaysISO(iso, -back);
+  return Array.from({ length: 7 }, (_, i) => addDaysISO(first, i));
+}
+
+/** A week as a short range: "Nov 2 – 8, 2026", "Oct 30 – Nov 5, 2026" or "Dec 28, 2026 – Jan 3, 2027". */
+export function weekTitle(from: string, to: string): string {
+  const a = parseISODate(from);
+  const b = parseISODate(to);
+  const month = (date: Date) => MONTH_LABELS[date.getMonth()].slice(0, 3);
+  if (a.getFullYear() !== b.getFullYear()) {
+    return `${month(a)} ${a.getDate()}, ${a.getFullYear()} – ${month(b)} ${b.getDate()}, ${b.getFullYear()}`;
+  }
+  const end = a.getMonth() === b.getMonth() ? `${b.getDate()}` : `${month(b)} ${b.getDate()}`;
+  return `${month(a)} ${a.getDate()} – ${end}, ${b.getFullYear()}`;
+}
+
 export function isSameMonth(iso: string, reference: string): boolean {
   return iso.slice(0, 7) === reference.slice(0, 7);
 }

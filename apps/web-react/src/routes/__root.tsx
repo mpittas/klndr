@@ -15,8 +15,9 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootLayout() {
   const path = useRouterState({ select: (state) => state.location.pathname });
 
-  // The day planner is an app-like screen: the page itself never scrolls, only the timeline does.
-  const isDayView = path.startsWith("/day");
+  // The month, the week and the day share one app-like frame (`PlannerLayout`): the page itself never scrolls,
+  // only the grid and the sidebar do.
+  const isPlanner = path === "/calendar" || path.startsWith("/day") || path.startsWith("/week");
   // The landing page brings its own header.
   const isLanding = path === "/";
 
@@ -24,7 +25,7 @@ function RootLayout() {
     <div
       className={[
         "flex w-full flex-col bg-canvas font-sans text-foreground antialiased",
-        isDayView ? "h-dvh overflow-hidden" : "min-h-dvh",
+        isPlanner ? "h-dvh overflow-hidden" : "min-h-dvh",
       ].join(" ")}
     >
       {!isLanding ? <AppHeader /> : null}

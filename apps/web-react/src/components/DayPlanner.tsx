@@ -3,7 +3,6 @@ import {
   GRID_HEIGHT,
   addDaysISO,
   boxOf,
-  initialScrollOffset,
   layoutDay,
   longDate,
   nowMinutes,
@@ -25,21 +24,31 @@ import {
   useNotesEditor,
   useTemplates,
 } from "@klndr/data";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type DragEvent } from "react";
 
 import { DailyChecklist } from "@/components/DailyChecklist";
+import { DatePickerModal } from "@/components/DatePickerModal";
 import { DayNotes } from "@/components/DayNotes";
-import { ActivityPalette } from "@/components/day-planner/ActivityPalette";
 import type { BlockMenuActions } from "@/components/day-planner/BlockContextMenu";
 import { DayMobileNav } from "@/components/day-planner/DayMobileNav";
-import { DayPlannerHeader } from "@/components/day-planner/DayPlannerHeader";
+import { DayPanel, type DayPanelTab } from "@/components/day-planner/DayPanel";
 import { DayRoutinesShelf } from "@/components/day-planner/DayRoutinesShelf";
 import { DayTimelineGrid } from "@/components/day-planner/DayTimelineGrid";
-import { SidebarTabs, type SidebarTab } from "@/components/day-planner/SidebarTabs";
 import { useBlockResize } from "@/components/day-planner/useBlockResize";
 import { LibraryModal } from "@/components/LibraryModal";
 import { Modal } from "@/components/Modal";
+import { CategoryFilter } from "@/components/planner/CategoryFilter";
+import { PlannerLayout } from "@/components/planner/PlannerLayout";
+import { PlannerSidebar } from "@/components/planner/PlannerSidebar";
+import { PlannerToolbar } from "@/components/planner/PlannerToolbar";
+import { scrollTimeline } from "@/components/planner/planning";
+import { usePlannerShortcuts } from "@/components/planner/usePlannerShortcuts";
 import { TaskEditor, type EditorRequest } from "@/components/TaskEditor";
+import { useHiddenCategories } from "@/hooks/useHiddenCategories";
+import { useSidebarOpen } from "@/hooks/useSidebarOpen";
+import { useMediaQuery } from "@/hooks/useViewport";
+import { useWeekStartsOnMonday } from "@/hooks/useWeekStart";
 import { useLibrary } from "@/lib/library";
 
 const NO_TEMPLATES: ActivityTemplate[] = [];
@@ -65,8 +74,9 @@ type MobileSheet = "checklist" | "notes";
 type Preview = { start: number; duration: number; color: string; label: string; emoji: string };
 
 /**
- * One day, side by side: the activities, the checklist and the notes in the sidebar (a full-height sheet's
- * worth of them on a phone) and the timeline with its hour gutter, routines shelf and mobile bar.
+ * One day, in the planner's frame (`PlannerLayout` + `PlannerToolbar`, as the month and the week): the
+ * activities, the checklist and the notes in the sidebar (a full-height sheet's worth of them on a phone) and
+ * the timeline with its hour gutter, routines shelf and mobile bar.
  *
  * The data is `@klndr/data`'s: `useDayTimeline` for the blocks and their undo history, `useChecklist` for
  * the routines, `useNotesEditor` for the notes and `useLibraryActions` for the activities and categories.
@@ -82,12 +92,18 @@ export function DayPlanner({ day }: { day: string }) {
   const colorOf = useCategoryColor();
   const categories = useCategories().data ?? NO_CATEGORIES;
   const { open: libraryOpen, show: showLibrary } = useLibrary();
+  const navigate = useNavigate();
+  const sidebar = useSidebarOpen();
+  const weekStartsOnMonday = useWeekStartsOnMonday();
 
   const templates = templatesQuery.data ?? NO_TEMPLATES;
 
-  const [activeSidebarTab, setActiveSidebarTab] = useState<SidebarTab>("activities");
+  const [panelTab, setPanelTab] = useState<DayPanelTab>("checklist");
+  const categoryFilter = useHiddenCategories();
+  const hasPanel = useMediaQuery("(min-width: 80rem)");
   const [mobileSheet, setMobileSheet] = useState<MobileSheet | null>(null);
   const [editor, setEditor] = useState<EditorRequest | null>(null);
+  const [picking, setPicking] = useState(false);
   /** The activity picked up in the palette, waiting to be dropped on the timeline. */
   const [dragSource, setDragSource] = useState<ActivityTemplate | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -107,8 +123,9 @@ export function DayPlanner({ day }: { day: string }) {
   const isToday = day === today;
   const nowMinute = isToday ? clock : null;
 
-  // The timeline as it should look right now, including a resize still in flight.
-  const tasks = useMemo(
+  // The timeline as it should look right now, including a resize still in flight; then without the categories
+  // hidden from the toolbar (the same setting as on the week and the month).
+  const allTasks = useMemo(
     () =>
       resize.override
         ? timeline.tasks.map((task) =>
@@ -116,6 +133,11 @@ export function DayPlanner({ day }: { day: string }) {
           )
         : timeline.tasks,
     [timeline.tasks, resize.override],
+  );
+  const hiddenCategories = categoryFilter.hidden;
+  const tasks = useMemo(
+    () => (hiddenCategories.length ? allTasks.filter((task) => !hiddenCategories.includes(task.category)) : allTasks),
+    [allTasks, hiddenCategories],
   );
 
   // Blocks that share time sit side by side; a block moved by hand keeps its column (see core's layout).
@@ -127,13 +149,14 @@ export function DayPlanner({ day }: { day: string }) {
 
   const stats = useMemo(() => dayStats(tasks), [tasks]);
 
-  // Land on a useful hour rather than midnight, once the day's blocks are known.
+  // Land on a useful hour rather than midnight, once the day's blocks are known: today on now (as the week does),
+  // any other day on its first block.
   useEffect(() => {
     if (scrolledForDay.current === day || !timeline.query.isSuccess) return;
     scrolledForDay.current = day;
     const el = scrollRef.current;
-    if (el) el.scrollTop = initialScrollOffset(tasks);
-  }, [day, timeline.query.isSuccess, tasks]);
+    if (el) scrollTimeline(el, { nowMinute: isToday ? nowMinutes() : null, tasks });
+  }, [day, timeline.query.isSuccess, tasks, isToday]);
 
   // Ctrl+Z undoes; Ctrl+Shift+Z or Ctrl+Y redoes (Cmd on a Mac). Left alone while typing or in a dialog.
   // An Effect Event reads the current timeline and dialogs without re-attaching the listener every render.
@@ -157,6 +180,20 @@ export function DayPlanner({ day }: { day: string }) {
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
   }, []);
+
+  // The keys every planner view answers to (← → days, T today, N a new block, G go to a day, \ the sidebar).
+  const goToDay = (date: string) => void navigate({ to: "/day/$date", params: { date } });
+  usePlannerShortcuts(
+    {
+      previous: () => goToDay(addDaysISO(day, -1)),
+      next: () => goToDay(addDaysISO(day, 1)),
+      today: () => goToDay(today),
+      create: () => setEditor(createBlockRequest()),
+      goTo: () => setPicking(true),
+      toggleSidebar: sidebar.toggle,
+    },
+    Boolean(editor || picking || mobileSheet || libraryOpen || resizing || dragSource),
+  );
 
   const minutesFromEvent = (container: HTMLDivElement | null, clientY: number) => {
     if (!container) return 0;
@@ -238,143 +275,158 @@ export function DayPlanner({ day }: { day: string }) {
     if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPreview(null);
   };
 
+  // The checklist is the day panel's on wide screens, a sheet below that.
   const openChecklistManager = () => {
-    setActiveSidebarTab("checklist");
-    setMobileSheet("checklist");
+    if (hasPanel) setPanelTab("checklist");
+    else setMobileSheet("checklist");
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-background lg:flex-row">
-      {/* Desktop Sidebar (Activities, Checklist & Notes) */}
-      <aside className="hidden border-r border-border bg-card lg:flex lg:w-80 lg:shrink-0 lg:flex-col">
-        <SidebarTabs
-          active={activeSidebarTab}
-          onChange={setActiveSidebarTab}
-          activityCount={templates.length}
-          checklist={checklist.stats}
-          hasNotes={notes.text.trim().length > 0}
-        />
-
-        {activeSidebarTab === "notes" ? (
-          <DayNotes key={day} notes={notes} />
-        ) : activeSidebarTab === "checklist" ? (
-          <DailyChecklist key={day} checklist={checklist} />
-        ) : (
-          <ActivityPalette
-            templates={templates}
-            onPick={(template) => void timeline.createFromTemplate(template, snapMinutes(nowMinutes(), 30))}
-            onDragStart={(template) => setDragSource(template)}
-            onDragEnd={() => {
-              setDragSource(null);
-              setPreview(null);
-            }}
-            onMove={(template, category) => void library.moveTemplate(template, category)}
-            onManage={() => showLibrary()}
-          />
-        )}
-      </aside>
-
-      {/* Timeline section */}
-      <section className="flex min-h-0 flex-1 flex-col bg-background">
-        <DayPlannerHeader
-          day={day}
-          isToday={isToday}
+    <PlannerLayout
+      sidebarLabel="Calendar and activities"
+      sidebarOpen={sidebar.open}
+      sidebar={
+        <PlannerSidebar
+          view="day"
+          anchor={day}
           today={today}
-          stats={stats}
-          onCreateBlock={() => setEditor(createBlockRequest())}
+          weekStartsOnMonday={weekStartsOnMonday}
+          onPickDate={goToDay}
+          templates={templates}
+          onPickActivity={(template) => void timeline.createFromTemplate(template, snapMinutes(nowMinutes(), 30))}
+          onDragActivity={(template) => setDragSource(template)}
+          onDropActivityEnd={() => {
+            setDragSource(null);
+            setPreview(null);
+          }}
+          onMoveActivity={(template, category) => void library.moveTemplate(template, category)}
+          onManage={() => showLibrary()}
         />
-
-        <div
-          ref={scrollRef}
-          className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background scroll-pt-6"
-        >
-          {checklist.hasChecklist ? (
-            <DayRoutinesShelf
-              items={checklist.items}
-              completedIds={checklist.completedIds}
-              onToggle={(id, completed) => checklist.toggle(id, completed)}
-              onOpenManager={openChecklistManager}
+      }
+      panelLabel="The day's checklist and notes"
+      panel={<DayPanel day={day} active={panelTab} onChange={setPanelTab} checklist={checklist} notes={notes} />}
+      toolbar={
+        <PlannerToolbar
+          view="day"
+          anchor={day}
+          today={today}
+          isCurrent={isToday}
+          stats={{ minutes: stats.scheduled, done: stats.done, count: stats.count }}
+          filter={
+            <CategoryFilter
+              tasks={allTasks}
+              period="day"
+              hidden={categoryFilter.hidden}
+              onToggle={categoryFilter.toggle}
+              onOnly={categoryFilter.only}
+              onShowAll={categoryFilter.showAll}
             />
-          ) : null}
-
-          <DayTimelineGrid
-            tasks={tasks}
-            nowMinute={nowMinute}
-            resizing={resizing}
-            preview={preview}
-            layout={layout}
-            gridHeight={GRID_HEIGHT}
-            onTaskClick={(task) => {
-              if (resize.justResized()) return;
-              setEditor({ mode: "edit", day, startMinutes: task.startMinutes, task });
-            }}
-            onGridClick={(event) => {
-              if (resize.justResized()) return;
-              setEditor({
-                mode: "create",
-                day,
-                startMinutes: minutesFromEvent(event.currentTarget, event.clientY),
-                template: null,
-              });
-            }}
-            onToggleComplete={(task) => void timeline.toggleComplete(task)}
-            onDeleteTask={(task) => void timeline.deleteTask(task)}
-            onStartResize={resize.startResize}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onMoveTask={(task, start, lanes) => void timeline.moveTask(task, start, lanes)}
-            isToday={isToday}
-            nowStart={nowStart}
-            menuActions={menuActions}
-          />
-        </div>
-
+          }
+          pickerOpen={picking}
+          onOpenPicker={() => setPicking(true)}
+          onCreate={() => setEditor(createBlockRequest())}
+          sidebar={{ open: sidebar.open, onToggle: sidebar.toggle }}
+        />
+      }
+      footer={
         <DayMobileNav
           checklistStats={{ total: checklist.stats.total, done: checklist.stats.done }}
           hasNotes={notes.text.trim().length > 0}
           onOpenSheet={(sheet) => setMobileSheet(sheet)}
           onCustomize={() => showLibrary()}
-          onCreateBlock={() => setEditor(createBlockRequest())}
         />
-      </section>
+      }
+      dialogs={
+        <>
+          <DatePickerModal
+            open={picking}
+            initial={day}
+            selected={day}
+            today={today}
+            weekStartsOnMonday={weekStartsOnMonday}
+            onClose={() => setPicking(false)}
+          />
 
-      {/* Modals & Sheets */}
-      <TaskEditor
-        request={editor}
-        templates={templates}
-        onClose={() => setEditor(null)}
-        onSave={(vars) => timeline.saveTask(vars)}
-        onDelete={(task) => timeline.deleteTask(task)}
-        onDeleteTemplate={(id) => library.deleteTemplate({ id })}
-      />
+          <TaskEditor
+            request={editor}
+            templates={templates}
+            onClose={() => setEditor(null)}
+            onSave={(vars) => timeline.saveTask(vars)}
+            onDelete={(task) => timeline.deleteTask(task)}
+            onDeleteTemplate={(id) => library.deleteTemplate({ id })}
+          />
 
-      {/* After the editors so it opens on top of them (e.g. from a category picker). */}
-      <LibraryModal templates={templates} />
+          {/* After the editors so it opens on top of them (e.g. from a category picker). */}
+          <LibraryModal templates={templates} />
 
-      <Modal
-        open={mobileSheet === "notes"}
-        title="Notes"
-        subtitle={longDate(day)}
-        flush
-        onClose={() => setMobileSheet(null)}
-      >
-        <div className="flex h-[min(60dvh,32rem)] flex-col">
-          <DayNotes key={day} notes={notes} />
-        </div>
-      </Modal>
+          <Modal
+            open={mobileSheet === "notes"}
+            title="Notes"
+            subtitle={longDate(day)}
+            flush
+            onClose={() => setMobileSheet(null)}
+          >
+            <div className="flex h-[min(60dvh,32rem)] flex-col">
+              <DayNotes key={day} notes={notes} />
+            </div>
+          </Modal>
 
-      <Modal
-        open={mobileSheet === "checklist"}
-        title="Checklist"
-        subtitle={longDate(day)}
-        flush
-        onClose={() => setMobileSheet(null)}
-      >
-        <div className="flex h-[min(70dvh,36rem)] flex-col">
-          <DailyChecklist key={day} checklist={checklist} />
-        </div>
-      </Modal>
-    </div>
+          <Modal
+            open={mobileSheet === "checklist"}
+            title="Checklist"
+            subtitle={longDate(day)}
+            flush
+            onClose={() => setMobileSheet(null)}
+          >
+            <div className="flex h-[min(70dvh,36rem)] flex-col">
+              <DailyChecklist key={day} checklist={checklist} />
+            </div>
+          </Modal>
+        </>
+      }
+    >
+      <div ref={scrollRef} className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain bg-background scroll-pt-6">
+        {checklist.hasChecklist ? (
+          <DayRoutinesShelf
+            items={checklist.items}
+            completedIds={checklist.completedIds}
+            onToggle={(id, completed) => checklist.toggle(id, completed)}
+            onOpenManager={openChecklistManager}
+          />
+        ) : null}
+
+        <DayTimelineGrid
+          tasks={tasks}
+          nowMinute={nowMinute}
+          resizing={resizing}
+          preview={preview}
+          layout={layout}
+          gridHeight={GRID_HEIGHT}
+          onTaskClick={(task) => {
+            if (resize.justResized()) return;
+            setEditor({ mode: "edit", day, startMinutes: task.startMinutes, task });
+          }}
+          onGridClick={(event) => {
+            if (resize.justResized()) return;
+            setEditor({
+              mode: "create",
+              day,
+              startMinutes: minutesFromEvent(event.currentTarget, event.clientY),
+              template: null,
+            });
+          }}
+          onToggleComplete={(task) => void timeline.toggleComplete(task)}
+          onDeleteTask={(task) => void timeline.deleteTask(task)}
+          onStartResize={resize.startResize}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onMoveTask={(task, start, lanes) => void timeline.moveTask(task, start, lanes)}
+          isToday={isToday}
+          nowStart={nowStart}
+          menuActions={menuActions}
+        />
+      </div>
+    </PlannerLayout>
   );
 }

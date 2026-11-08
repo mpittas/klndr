@@ -11,7 +11,7 @@ const THEMES: Array<{ value: ThemePreference; label: string; icon: LucideIcon }>
 
 const LAYOUTS: Array<{ value: EditorLayout; label: string; description: string }> = [
   { value: "center", label: "Dialog", description: "Centred over the page" },
-  { value: "side", label: "Side panel", description: "Slides in from the right, the page stays in view" },
+  { value: "side", label: "Side panel", description: "Slides in from the left, the page stays in view" },
 ];
 
 /**

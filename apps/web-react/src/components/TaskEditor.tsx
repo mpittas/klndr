@@ -19,7 +19,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ChevronDown,
-  PanelRight,
+  PanelLeft,
   SquareSquare,
   StickyNote,
   Timer,
@@ -329,7 +329,7 @@ function TaskEditorDialog({
             className="segmented-item w-8 flex-none px-0"
             onClick={() => setLayout("side")}
           >
-            <PanelRight className="h-3.5 w-3.5" aria-hidden="true" />
+            <PanelLeft className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
       }

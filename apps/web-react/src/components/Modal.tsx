@@ -15,7 +15,7 @@ import { lockScroll, unlockScroll } from "@/hooks/useScrollLock";
 
 /**
  * A bottom sheet on phones and a centred dialog from `sm` (or, with `side`, a drawer that slides in from the
- * right edge and leaves the page in view, like Notion's side peek), with a focus trap, a shared Escape stack, a
+ * left edge and leaves the page in view, like Notion's side peek), with a focus trap, a shared Escape stack, a
  * scroll lock and swipe-to-dismiss.
  *
  * Put `data-autofocus` on the field that should take focus when the dialog opens. It is honoured on
@@ -64,7 +64,7 @@ export type ModalProps = {
   /** Content runs edge to edge (no padding) and brings its own height, e.g. notes or a list with a pinned footer. */
   flush?: boolean;
   /**
-   * From `sm`, open as a full-height drawer on the right instead of a centred dialog. It can change while the
+   * From `sm`, open as a full-height drawer on the left instead of a centred dialog. It can change while the
    * dialog is open: the panel moves over and nothing inside it is lost. Phones always get the bottom sheet.
    */
   side?: boolean;
@@ -125,7 +125,7 @@ export function Modal({
     panel.animate(
       side
         ? [
-            { opacity: 0, transform: "translateX(28px)" },
+            { opacity: 0, transform: "translateX(-28px)" },
             { opacity: 1, transform: "none" },
           ]
         : [
@@ -242,7 +242,7 @@ export function Modal({
         "fixed inset-0 z-50 flex items-end justify-center bg-[var(--scrim)] backdrop-blur-[3px] transition-[opacity,background-color] duration-200",
         // The drawer leaves the page readable: a lighter veil, no blur.
         side
-          ? "modal-side sm:items-stretch sm:justify-end sm:bg-[rgb(28_20_12/0.14)] sm:p-2 sm:backdrop-blur-none sm:dark:bg-black/40"
+          ? "modal-side sm:items-stretch sm:justify-start sm:bg-[rgb(28_20_12/0.14)] sm:p-2 sm:backdrop-blur-none sm:dark:bg-black/40"
           : "sm:items-center sm:p-6",
       ].join(" ")}
     >
@@ -257,7 +257,7 @@ export function Modal({
         className={[
           "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border/70 bg-background shadow-xl focus:outline-none dark:shadow-[0_28px_70px_-18px_rgb(0_0_0/0.75)] sm:rounded-2xl",
           side
-            ? "sm:h-full sm:max-h-full sm:max-w-[34rem] sm:shadow-[0_0_0_1px_rgb(60_40_20/0.03),-24px_0_60px_-24px_rgb(60_40_20/0.35)]"
+            ? "sm:h-full sm:max-h-full sm:max-w-[34rem] sm:shadow-[0_0_0_1px_rgb(60_40_20/0.03),24px_0_60px_-24px_rgb(60_40_20/0.35)]"
             : ["sm:max-h-[88dvh]", wide ? "sm:max-w-2xl" : lg ? "sm:max-w-xl" : "sm:max-w-md"].join(" "),
           dragY ? "" : "transition-transform duration-200",
         ].join(" ")}

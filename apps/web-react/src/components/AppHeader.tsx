@@ -1,6 +1,6 @@
 import { todayISO } from "@klndr/core";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Calendar, Clock, Moon, Sun } from "lucide-react";
+import { CalendarDays, CalendarRange, Clock, Moon, Sun } from "lucide-react";
 
 import { isSignedIn, useAuth } from "@/auth";
 import { AccountMenu } from "@/components/AccountMenu";
@@ -9,7 +9,7 @@ import { isFirebaseConfigured } from "@/env";
 import { useTheme } from "@/theme";
 
 /**
- * The logo, the Calendar/Today switch, the theme button and the account menu (profile, appearance, the way back
+ * The logo, the Month/Week/Day switch, the theme button and the account menu (profile, appearance, the way back
  * to the homepage, log out). The active tab comes from the router's pathname.
  *
  * The two theme icons stay rendered and CSS picks one (`dark:hidden` / `dark:block`).
@@ -26,6 +26,7 @@ export function AppHeader() {
 
   const isDayView = path.startsWith("/day");
   const isCalendarView = path === "/calendar";
+  const isWeekView = path.startsWith("/week");
   const onLoginPage = path === "/login";
 
   const displayName = profile?.displayName || user?.displayName || user?.email?.split("@")[0] || "User";
@@ -57,8 +58,17 @@ export function AppHeader() {
           {user ? (
             <nav aria-label="Primary" className="segmented h-10 sm:h-9">
               <Link to="/calendar" aria-current={isCalendarView ? "page" : undefined} className={tab}>
-                <Calendar className={tabIcon} aria-hidden="true" />
-                <span className="max-[359px]:sr-only">Calendar</span>
+                <CalendarDays className={tabIcon} aria-hidden="true" />
+                <span className="max-[359px]:sr-only">Month</span>
+              </Link>
+              <Link
+                to="/week/$date"
+                params={{ date: today }}
+                aria-current={isWeekView ? "page" : undefined}
+                className={tab}
+              >
+                <CalendarRange className={tabIcon} aria-hidden="true" />
+                <span className="max-[359px]:sr-only">Week</span>
               </Link>
               <Link
                 to="/day/$date"
@@ -67,7 +77,7 @@ export function AppHeader() {
                 className={tab}
               >
                 <Clock className={tabIcon} aria-hidden="true" />
-                <span className="max-[359px]:sr-only">Today</span>
+                <span className="max-[359px]:sr-only">Day</span>
               </Link>
             </nav>
           ) : null}

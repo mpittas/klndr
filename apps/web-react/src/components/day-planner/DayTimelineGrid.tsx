@@ -502,6 +502,7 @@ export function DayTimelineGrid({
         onDrop={onDrop}
         onClick={handleGridClick}
         style={{ height: `${gridHeight}px` }}
+        data-timeline-grid
         className="relative flex-1 cursor-pointer border-t border-border bg-background"
       >
         {HOUR_OPTIONS.map((minute) => (
