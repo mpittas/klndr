@@ -608,10 +608,10 @@ function LoadingBlocks() {
   return (
     <View pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: 0 }}>
       {[
-        { top: blockTop(8 * 60), height: SLOT_HEIGHT * 2 - 4 },
-        { top: blockTop(10 * 60 + 30), height: SLOT_HEIGHT - 4 },
-        { top: blockTop(12 * 60), height: SLOT_HEIGHT * 3 - 4 },
-        { top: blockTop(15 * 60), height: SLOT_HEIGHT * 2 - 4 },
+        { top: blockTop(8 * 60), height: blockHeight(60) },
+        { top: blockTop(10 * 60 + 30), height: blockHeight(30) },
+        { top: blockTop(12 * 60), height: blockHeight(90) },
+        { top: blockTop(15 * 60), height: blockHeight(60) },
       ].map((box) => (
         <View key={box.top} style={{ position: "absolute", top: box.top, left: 8, right: 8 }}>
           <Skeleton height={box.height} />

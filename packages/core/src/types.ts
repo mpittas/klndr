@@ -71,4 +71,5 @@ export type DayChecklistItem = ChecklistItem & { scope: "default" | "day" };
 
 export const SLOT_MINUTES = 30;
 export const SNAP_MINUTES = 15; // blocks move and resize in quarter-hour steps
-export const SLOT_HEIGHT = 48; // px per half hour row
+/** Pixels per half-hour row: tall enough that a 15-minute block reads on one line with room around it. */
+export const SLOT_HEIGHT = 60;

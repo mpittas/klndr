@@ -640,8 +640,8 @@ export function DayTimelineGrid({
                     type="button"
                     aria-label={task.completed ? "Mark as not done" : "Mark as done"}
                     className={[
-                      "relative z-[1] hidden h-3.5 w-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-colors after:absolute after:-inset-1.5 touch:after:-inset-2.5 @[8rem]:flex",
-                      !isShortBlock(task.durationMinutes) ? "mt-px" : "",
+                      "relative z-[1] hidden h-3 w-3 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-colors after:absolute after:-inset-2 touch:after:-inset-3 @[8rem]:flex",
+                      !isShortBlock(task.durationMinutes) ? "mt-0.5" : "",
                       task.completed
                         ? `${toneOf(task).accent} border-transparent`
                         : `${toneOf(task).check} text-transparent`,
@@ -651,7 +651,7 @@ export function DayTimelineGrid({
                       onToggleComplete(task);
                     }}
                   >
-                    <Check className="h-2.5 w-2.5" aria-hidden="true" strokeWidth={3} />
+                    <Check className="h-2 w-2" aria-hidden="true" strokeWidth={3.5} />
                   </button>
                 }
               >

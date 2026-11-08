@@ -29,14 +29,14 @@ export const EDGE_SCROLL_ZONE = 72;
 /** The fastest the edge scroll goes, in pixels per frame. */
 export const EDGE_SCROLL_MAX = 16;
 
-/** Blocks sit this far inside their slot, so back-to-back blocks keep a gap between them. */
-export const BLOCK_INSET = 2;
+/** Blocks sit this far inside their slot, so back-to-back blocks keep a clear gap (twice this) between them. */
+export const BLOCK_INSET = 3;
 /** No block is drawn shorter than this, however short its duration. */
 export const MIN_BLOCK_HEIGHT = 16;
 
 /** Where a day opens when it has no blocks to open on (07:00), and the room left above the first block. */
 export const DEFAULT_SCROLL_MINUTES = 420;
-export const SCROLL_LEAD = 96;
+export const SCROLL_LEAD = 2 * SLOT_HEIGHT; // an hour
 
 /** Minutes from midnight to pixels from the top of the grid. */
 export function minutesToPx(minutes: number): number {

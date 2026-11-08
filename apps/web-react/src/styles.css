@@ -414,36 +414,45 @@
   .tone-sky { --tone: var(--cat-sky); --tone-ink: var(--cat-sky-ink); }
   .tone-slate { --tone: var(--cat-slate); --tone-ink: var(--cat-slate-ink); }
 
-  /* A timeline block: a tint of the hue, a hairline of it, and ink of it. */
+  /*
+   * A timeline block still to do: a full tint of the hue, a clear hairline of it, and ink of it, so it stands
+   * forward from the paper.
+   */
   .tone-block {
-    background-color: color-mix(in oklab, var(--tone) 15%, var(--card));
-    border-color: color-mix(in oklab, var(--tone) 34%, var(--card));
+    background-color: color-mix(in oklab, var(--tone) 21%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 50%, var(--card));
     color: var(--tone-ink);
   }
   .tone-block:hover {
-    background-color: color-mix(in oklab, var(--tone) 21%, var(--card));
-    border-color: color-mix(in oklab, var(--tone) 48%, var(--card));
+    background-color: color-mix(in oklab, var(--tone) 27%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 64%, var(--card));
   }
   .dark .tone-block {
-    background-color: color-mix(in oklab, var(--tone) 19%, var(--card));
-    border-color: color-mix(in oklab, var(--tone) 32%, var(--card));
+    background-color: color-mix(in oklab, var(--tone) 26%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 44%, var(--card));
   }
   .dark .tone-block:hover {
-    background-color: color-mix(in oklab, var(--tone) 25%, var(--card));
-    border-color: color-mix(in oklab, var(--tone) 46%, var(--card));
+    background-color: color-mix(in oklab, var(--tone) 32%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 56%, var(--card));
   }
-  /* Done: the same hue, faded back into the paper. */
+  /*
+   * Done: drained back into the paper, a soft grey shape with no outline, in the paper's own grey ink (the
+   * title is also struck through, see `TimeBlock`). Only the filled tick keeps the category's color, so what is
+   * still to do is what stands out, and a run of finished short blocks reads calm rather than as a stack of boxes.
+   */
   .tone-block-done {
-    background-color: color-mix(in oklab, var(--tone) 6%, var(--card));
-    border-color: color-mix(in oklab, var(--tone) 18%, var(--card));
-    color: color-mix(in oklab, var(--tone-ink) 50%, transparent);
+    background-color: color-mix(in oklab, var(--tone) 5%, var(--muted));
+    border-color: transparent;
+    color: var(--muted-foreground);
   }
   .tone-block-done:hover {
-    border-color: color-mix(in oklab, var(--tone) 32%, var(--card));
+    background-color: color-mix(in oklab, var(--tone) 9%, var(--muted));
   }
   .dark .tone-block-done {
-    background-color: color-mix(in oklab, var(--tone) 8%, var(--card));
-    border-color: color-mix(in oklab, var(--tone) 16%, var(--card));
+    background-color: color-mix(in oklab, var(--tone) 6%, var(--muted));
+  }
+  .dark .tone-block-done:hover {
+    background-color: color-mix(in oklab, var(--tone) 10%, var(--muted));
   }
   /* The block's second line (its time). */
   .tone-meta {
@@ -487,12 +496,14 @@
     color: var(--tone-on, #fff);
   }
   /* The ring a block is ticked off with, before it is done. */
+  /* The ring of a block still to do: a quiet outline of the hue on the block's own tint, firmer on hover. */
   .tone-check {
-    border-color: color-mix(in oklab, var(--tone) 72%, transparent);
+    border-color: color-mix(in oklab, color-mix(in oklab, var(--tone) 55%, var(--tone-ink)) 65%, transparent);
   }
   .tone-check:hover {
     border-color: var(--tone);
-    color: color-mix(in oklab, var(--tone) 80%, transparent);
+    background-color: color-mix(in oklab, var(--tone) 18%, transparent);
+    color: color-mix(in oklab, var(--tone-ink) 70%, transparent);
   }
 }
 

@@ -58,20 +58,22 @@ export function TimeBlock({
       <div className={["min-w-0 flex-1", short ? "flex items-baseline gap-2" : ""].join(" ")}>
         <p
           className={[
-            "text-[13px] font-semibold leading-4 tracking-[-0.005em]",
+            "text-[13px] leading-4 tracking-[-0.005em]",
+            // Done reads at a glance without the color: lighter type and the title struck through.
+            done ? "font-medium" : "font-semibold",
             !short && lines === 2 ? "line-clamp-2 break-words" : "truncate",
           ].join(" ")}
         >
-          {emoji ? <EmojiPop emoji={emoji} className={done ? "opacity-50" : undefined} /> : null}
+          {emoji ? <EmojiPop emoji={emoji} className={done ? "opacity-45 grayscale" : undefined} /> : null}
           {emoji ? "\u00a0" : null}
-          {title}
+          <span className={done ? "line-through decoration-current/60 decoration-[1.5px]" : undefined}>{title}</span>
         </p>
         {time ? (
           <p
             className={[
               "text-xs leading-4 tabular-nums",
               short ? "hidden shrink-0 @[15rem]:block" : "mt-px truncate @max-[8rem]:hidden",
-              done ? "" : tone.meta,
+              done ? "opacity-75" : tone.meta,
             ].join(" ")}
           >
             {time}

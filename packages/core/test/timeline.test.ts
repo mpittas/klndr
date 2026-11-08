@@ -82,8 +82,8 @@ const original = {
     const offsetY = Math.max(0, Math.min(rectHeight, clientY - rectTop));
     return floorMinutes((offsetY / SLOT_HEIGHT) * SLOT_MINUTES, SNAP_MINUTES);
   },
-  blockTop: (minutes: number) => (minutes / SLOT_MINUTES) * SLOT_HEIGHT + 2,
-  blockHeight: (duration: number) => Math.max(16, (duration / SLOT_MINUTES) * SLOT_HEIGHT - 4),
+  blockTop: (minutes: number) => (minutes / SLOT_MINUTES) * SLOT_HEIGHT + BLOCK_INSET,
+  blockHeight: (duration: number) => Math.max(16, (duration / SLOT_MINUTES) * SLOT_HEIGHT - 2 * BLOCK_INSET),
   nudge: (start: number, duration: number, direction: number) =>
     Math.max(0, Math.min(24 * 60 - duration, start + direction * SNAP_MINUTES)),
 };
@@ -111,8 +111,8 @@ describe("how a block is drawn", () => {
   });
 
   it("is proportional to its duration, down to a minimum", () => {
-    expect(blockHeight(60)).toBe(92);
-    expect(blockHeight(15)).toBe(20); // 24 minus the inset, still above the 16 floor
+    expect(blockHeight(60)).toBe(114);
+    expect(blockHeight(15)).toBe(24); // 30 minus the inset, still above the 16 floor
     expect(blockHeight(1)).toBe(MIN_BLOCK_HEIGHT);
     expect(blockHeight(0)).toBe(MIN_BLOCK_HEIGHT);
   });
@@ -154,7 +154,7 @@ describe("where a day opens", () => {
 
   it("never scrolls above the top", () => {
     expect(initialScrollOffset([task("early", 0, 30)])).toBe(0);
-    expect(initialScrollOffset([task("early", 60, 30)])).toBe(0); // 96px is exactly what leaves the room
+    expect(initialScrollOffset([task("early", 60, 30)])).toBe(0); // an hour is exactly the room left
   });
 });
 
