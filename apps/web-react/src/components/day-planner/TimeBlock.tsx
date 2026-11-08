@@ -47,7 +47,7 @@ export function TimeBlock({
   return (
     <div
       className={[
-        "@container flex gap-2 overflow-hidden rounded-md border pl-2.5 pr-2",
+        "@container flex gap-2 overflow-hidden rounded-md border pl-2.5 pr-2 transition-colors duration-150",
         short ? "items-center" : "items-start pt-1",
         done ? tone.blockDone : tone.block,
         className ?? "",
@@ -58,7 +58,7 @@ export function TimeBlock({
       <div className={["min-w-0 flex-1", short ? "flex items-baseline gap-2" : ""].join(" ")}>
         <p
           className={[
-            "text-[13px] font-medium leading-4",
+            "text-[13px] font-semibold leading-4 tracking-[-0.005em]",
             !short && lines === 2 ? "line-clamp-2 break-words" : "truncate",
           ].join(" ")}
         >
@@ -71,7 +71,7 @@ export function TimeBlock({
             className={[
               "text-xs leading-4 tabular-nums",
               short ? "hidden shrink-0 @[15rem]:block" : "mt-px truncate @max-[8rem]:hidden",
-              done ? "opacity-80" : tone.meta,
+              done ? "" : tone.meta,
             ].join(" ")}
           >
             {time}

@@ -17,7 +17,7 @@ export function ProviderButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex h-11 w-full items-center justify-center gap-2.5 rounded-md border border-input bg-background px-3.5 py-2 text-sm font-medium text-foreground shadow-xs transition hover:bg-accent hover:text-accent-foreground disabled:opacity-50 sm:h-9"
+      className="btn btn-secondary btn-lg w-full text-sm"
     >
       {icon}
       {children}

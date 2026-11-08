@@ -1,52 +1,45 @@
 ---
-name: DayForge
-description: Tactile daily time-block planner
+name: klndr.
+description: Tactile daily time-block planner, drawn as a warm paper planner (web)
 colors:
-  primary: "#0f172a"
-  primary-hover: "#1e293b"
-  accent: "#4f46e5"
-  accent-hover: "#4338ca"
-  surface-bg: "#f8fafc"
-  surface-card: "#ffffff"
-  surface-subtle: "#f1f5f9"
-  border-subtle: "#e2e8f0"
-  border-strong: "#cbd5e1"
-  text-primary: "#0f172a"
-  text-secondary: "#475569"
-  text-muted: "#64748b"
-  scrollbar-thumb: "rgb(148 163 184 / 0.35)"
+  background: "#fbf8f3"
+  card: "#fffefb"
+  canvas: "#f4efe7"
+  foreground: "#231e18"
+  muted-foreground: "#74695c"
+  primary: "#2a231c"
+  border: "#e9e2d6"
+  input: "#ddd3c4"
+  brand: "#c4553a"
+  success: "#3f8a5c"
+  destructive: "#c8402c"
 typography:
-  display:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-    fontSize: "1.875rem"
-    fontWeight: 700
-    letterSpacing: "-0.025em"
-  title:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+  family: "Instrument Sans Variable"
+  page-title:
+    fontSize: "2.125rem"
+    fontWeight: 600
+    letterSpacing: "-0.035em"
+  dialog-title:
     fontSize: "1.125rem"
     fontWeight: 600
-    letterSpacing: "-0.015em"
+    letterSpacing: "-0.02em"
+  card-title:
+    fontSize: "0.8125rem"
+    fontWeight: 600
   body:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.5
   caption:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 500
-  micro:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-    fontSize: "0.6875rem"
-    fontWeight: 500
-  nano:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-    fontSize: "0.625rem"
-    fontWeight: 600
 rounded:
   sm: "6px"
-  md: "10px"
-  lg: "14px"
+  md: "8px"
+  lg: "10px"
+  xl: "14px"
+  2xl: "18px"
+  3xl: "24px"
   full: "9999px"
 spacing:
   xs: "4px"
@@ -54,11 +47,11 @@ spacing:
   md: "16px"
   lg: "24px"
 components:
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "#ffffff"
-    rounded: "{rounded.md}"
-    padding: "8px 16px"
+  button: "btn + btn-xs|sm|md|lg + btn-primary|secondary|soft|ghost|danger|danger-soft (+ btn-icon)"
+  surfaces: "card, card-title, card-meta, menu, menu-item, menu-label"
+  fields: "field, field-label"
+  small: "segmented, segmented-item, count, kbd, progress, progress-bar, tick, avatar"
+  categories: "tone-<key> + tone-block|block-done|meta|chip|icon|ghost|solid|selected|check"
 ---
 
 # Design System
@@ -67,18 +60,24 @@ components:
 
 ## Overview
 
-DayForge is an intentional, distraction-free daily planner. The interface is calm, tactile, and typographic. Color is reserved for user-created task categories rather than competing UI decoration.
+klndr. is an intentional, distraction-free daily planner. On the web it reads as a warm paper planner: cream paper, brown-black ink, one terracotta accent. The interface is calm, tactile and typographic. Color is reserved for the categories people create, never for decoration.
 
 ## Colors
 
-- **Foundations**: Slate-50 background (`#f8fafc`), pure white card surfaces (`#ffffff`), slate-200 structural borders (`#e2e8f0`).
-- **Foregrounds**: High-contrast slate-900 primary text (`#0f172a`), slate-600 secondary (`#475569`), slate-400 placeholder/tertiary (`#94a3b8`).
-- **Activity Categories**: Muted, studio-grade pastel fills with matched 1px borders and deep high-contrast ink text. Avoid heavy single-side saturated border bars.
+All web values live in `apps/web-react/src/styles.css` (they override the shared `@klndr/tokens` palette; the mobile app keeps its own).
+
+- **Paper and desk**: `background` is the paper, `card` a brighter sheet laid on it, `canvas` the desk under the pages (calendar, profile, auth). Borders are warm hairlines (`border`); `input` is the stronger edge on hover.
+- **Ink**: `foreground` for text, `muted-foreground` for secondary text, `primary` (ink) for the one main action on a screen.
+- **One accent**: `brand` (terracotta) marks *today* and *now* only: today's date disc, the "Today" labels, the now line and its pill, focus rings, selection, the wordmark's full stop. Nothing else is orange.
+- **Done is sage**: `success` for every completed state (ticks, progress bars, "all done").
+- **Activity Categories**: one hue per stored key (`--cat-<key>`) plus its ink (`--cat-<key>-ink`). Every role is mixed from those two against the paper by the `.tone-*` classes, handed out by `paletteOf()` in `src/lib/colors.ts`. Need the hue for a one-off mix (e.g. the block editor's time band)? Put `toneClassOf(color)` on the element and use `var(--tone)` / `var(--tone-ink)`, never the key itself: keys like `emerald` are not CSS colors. Avoid heavy single-side saturated border bars.
+- **Shadows** are tinted brown (`rgb(60 40 20 / …)`), never slate or black, in light mode.
 
 ## Typography
 
-- **Scale**: Inter / System sans-serif with tight tracking (`-0.01em` to `-0.025em`) for headers, relaxed line height for reading, and tabular numerals (`tabular-nums`) for timeline hours and elapsed time displays.
-- **Hierarchy**: Bold headings without decorative kickers or eyebrows; labels speak for themselves.
+- **One typeface**: Instrument Sans at every size, tight tracking on headings (`-0.02em` to `-0.035em`), relaxed leading for reading, and tabular numerals (`tabular-nums`) for every time, duration and count.
+- **Scale**: page title 28–34px semibold; dialog title 18px semibold; card title 13px semibold with an optional muted meta beside it (`card-title` + `card-meta`); body 14px; row text 13px; captions 12px; nothing below 11px in the app.
+- **Hierarchy**: headings without decorative kickers or eyebrows; labels speak for themselves. Sentence case everywhere ("Save changes", not "Save Changes").
 
 ## Layout
 
@@ -106,16 +105,27 @@ DayForge is an intentional, distraction-free daily planner. The interface is cal
 
 ## Shapes
 
-- Cohesive radii scale: `6px` for small chips and controls, `10px` for task cards and buttons, `14px` for structural panels and modals.
+- Radii: `6px` tiny marks (kbd, swatch chips), `8px` small controls and timeline blocks, `10px` buttons and fields, `14px` cards and menus, `18px` dialogs and the month grid, `24px` bottom sheets. Pills (`rounded-full`) for counts, duration chips, routines and avatars.
 - Interactive controls maintain consistent rounded geometries.
+
+## Shared parts (web)
+
+Build screens from the classes in `styles.css` (`@layer components`, so a utility on the same element still wins) instead of restyling a control in place:
+
+- **Buttons**: `btn` + a size (`btn-xs` 28, `btn-sm` 32, `btn-md` 36, `btn-lg` 44) + a variant (`btn-primary` ink, `btn-secondary` outlined paper, `btn-soft` tinted, `btn-ghost`, `btn-danger`, `btn-danger-soft`); `btn-icon` makes it square. Dialog footers use `btn btn-md h-11 px-5 sm:h-10`. Phones get 44px targets through `max-sm:`/`touch:` overrides.
+- **Surfaces**: `card` (+ `card-title`, `card-meta`), `menu` (+ `menu-item`, `menu-label`) for every popover and context menu.
+- **Fields**: `field` for every input, select and textarea (filled paper, hairline border, terracotta focus ring); `field-label` above it.
+- **Small things**: `segmented`/`segmented-item` (header nav, sidebar tabs, scope toggles: the chosen item is a raised sheet), `count`, `kbd`, `progress`/`progress-bar`, `tick` (round done-control), `avatar`.
+- **Wordmark**: `<Wordmark />` everywhere the logo appears.
+- **Times**: `TimeSelect` (a list of quarter-hour slots: popover on desktop, sheet on phones) instead of native time inputs; dates through `DatePickerModal` with `onPick`.
 
 ## Components
 
 - **Block Cards**: Tactile tiles with 1px cohesive borders, dark readable labels, completion toggle, and subtle hover-only controls.
 - **Activity Palettes**: Draggable items with clear drag handles and grab/grabbing cursors.
 - **Timeline Grid**: Crisp 30-minute rows, clean gutter labels, and a precise current-time indicator.
-- **Timeline Blocks** (`TimeBlock.tsx`): One anatomy at every length: emoji and title, the time beneath (beside it on 15-minute blocks), and a completion ring on the right. Opaque category tint with a matched 1px border, no shadow, no side bar, and a 6px radius so short and long blocks share their corners. Done blocks keep their color but fade. Notes, durations and other details live in the editor, not on the block.
-- **Header**: Minimalist top bar with custom vector logo and concise navigation.
+- **Timeline Blocks** (`TimeBlock.tsx`): One anatomy at every length: emoji and title, the time beneath (beside it on 15-minute blocks), and a completion ring on the right. Opaque category tint (`tone-block`) with a matched 1px border, ink-colored text, no shadow, no side bar, and an 8px radius so short and long blocks share their corners. Done blocks keep their color but fade. Notes, durations and other details live in the editor, not on the block.
+- **Header**: Translucent paper bar with the wordmark (terracotta full stop), a segmented Calendar/Today switch, a ghost theme button and the avatar chip, which opens the account menu (`AccountMenu.tsx`: who is signed in, Profile & settings, Appearance, About klndr. → the landing page, policies, Log out). Signed-in visitors on the landing page get "Open calendar" to go back.
 
 ## Do's and Don'ts
 

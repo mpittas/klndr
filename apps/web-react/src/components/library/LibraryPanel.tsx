@@ -401,13 +401,13 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
             autoComplete="off"
             placeholder="Search activities"
             aria-label="Search activities"
-            className="h-11 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9"
+            className="field h-11 pl-9 pr-3 sm:h-9"
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
         <button
           type="button"
-          className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md border border-input bg-background px-3.5 text-sm font-medium text-foreground shadow-xs transition hover:bg-accent sm:h-9 sm:flex-none"
+          className="btn btn-secondary btn-md h-11 flex-1 sm:h-9 sm:flex-none"
           onClick={() => startNewCategory()}
         >
           <FolderPlus className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -415,7 +415,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
         </button>
         <button
           type="button"
-          className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-md bg-primary px-3.5 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 sm:h-9 sm:flex-none"
+          className="btn btn-primary btn-md h-11 flex-1 sm:h-9 sm:flex-none"
           onClick={() => startCreate()}
         >
           <Plus className="h-4 w-4" aria-hidden="true" />
@@ -426,7 +426,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
       {/* New category */}
       {newCategoryOpen ? (
         <form
-          className="rounded-xl border border-border bg-muted/40 p-3"
+          className="rounded-xl border border-border bg-muted/50 p-3.5"
           onSubmit={(event) => {
             event.preventDefault();
             void addCategory();
@@ -438,11 +438,11 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
             setNewCategoryOpen(false);
           }}
         >
-          <label htmlFor="new-category-name" className="text-xs font-medium text-foreground">
+          <label htmlFor="new-category-name" className="field-label">
             New category
           </label>
           <div className="mt-2 flex items-stretch gap-2">
-            <div className="flex h-11 min-w-0 flex-1 items-center rounded-md border border-input bg-background shadow-xs transition-colors focus-within:ring-1 focus-within:ring-ring sm:h-9">
+            <div className="flex h-11 min-w-0 flex-1 items-center rounded-lg border border-border bg-card transition-[border-color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/15 sm:h-9">
               <EmojiPicker
                 value={newEmoji.emoji}
                 busy={newEmoji.picking}
@@ -461,7 +461,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                 maxLength={40}
                 autoComplete="off"
                 placeholder="e.g. Fitness, Side project…"
-                className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none"
+                className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-muted-foreground/75 focus-visible:outline-none"
                 onChange={(event) => {
                   setAddError(null);
                   setNewName(event.target.value);
@@ -471,7 +471,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
             </div>
             <button
               type="button"
-              className="h-11 shrink-0 cursor-pointer rounded-md px-3 text-sm font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground sm:h-9"
+              className="btn btn-ghost btn-md h-11 sm:h-9"
               onClick={() => setNewCategoryOpen(false)}
             >
               Cancel
@@ -479,7 +479,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
             <button
               type="submit"
               disabled={adding || !newName.trim()}
-              className="h-11 shrink-0 cursor-pointer rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 sm:h-9"
+              className="btn btn-primary btn-md h-11 px-4 sm:h-9"
             >
               {adding ? "Adding…" : "Add"}
             </button>
@@ -497,7 +497,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
 
       {/* New activity */}
       {activityForm?.kind === "create" ? (
-        <div data-activity-form className="rounded-xl border border-border bg-card p-4 shadow-2xs">
+        <div data-activity-form className="card p-4">
           <h3 className="mb-4 text-sm font-semibold tracking-tight text-foreground">New activity</h3>
           <ActivityForm
             key={`new-${activityForm.category}`}
@@ -512,7 +512,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
         </div>
       ) : error ? (
         <p
-          className="rounded-md border border-destructive/20 bg-destructive/10 p-2.5 text-xs font-medium text-destructive"
+          className="rounded-lg border border-destructive/20 bg-destructive/[0.06] px-3 py-2.5 text-[13px] font-medium text-destructive"
           role="alert"
         >
           {error}
@@ -521,7 +521,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
 
       {loadError ? (
         <p
-          className="rounded-lg border border-rose-200/80 bg-rose-50/80 p-3 text-xs font-medium text-rose-800 dark:border-rose-400/25 dark:bg-rose-500/10 dark:text-rose-200"
+          className="rounded-lg border border-destructive/20 bg-destructive/[0.06] px-3 py-2.5 text-[13px] font-medium text-destructive"
           role="alert"
         >
           Couldn't load your saved categories: {loadError}. Showing the ones your activities use.
@@ -538,7 +538,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
           {templates.length === 0 && !query ? (
             <button
               type="button"
-              className="mt-3 inline-flex h-11 cursor-pointer items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 sm:h-9"
+              className="btn btn-primary btn-md mt-3 h-11 sm:h-9"
               onClick={() => startCreate()}
             >
               Create your first activity
@@ -553,7 +553,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
           <section
             key={keyOf(entry)}
             className={[
-              "relative overflow-hidden rounded-xl border border-border bg-card shadow-2xs transition-shadow duration-500",
+              "relative overflow-hidden rounded-xl border border-border bg-card shadow-xs transition-shadow duration-500",
               justAdded !== null && justAdded === entry.id ? "ring-2 ring-ring/40" : "",
             ].join(" ")}
           >
@@ -576,7 +576,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                   placeholder={
                     <span className={["h-2 w-2 rounded-full", paletteOf(entry.color).dot].join(" ")} aria-hidden="true" />
                   }
-                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-base transition-colors hover:bg-background focus-visible:bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring touch:h-9 touch:w-9"
+                  className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-base transition-colors hover:bg-foreground/[0.06] focus-visible:bg-foreground/[0.06] focus-visible:outline-none touch:h-9 touch:w-9"
                   onChange={(emoji) => void patchCategory(entry, { emoji })}
                   onAuto={() => void autoPickEmoji(entry)}
                 />
@@ -593,7 +593,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                   maxLength={40}
                   aria-label={`Rename ${entry.name}`}
                   title="Click to rename"
-                  className="h-8 min-w-0 flex-1 truncate rounded-md border border-transparent bg-transparent px-1.5 text-sm font-semibold tracking-tight text-foreground transition hover:bg-background/70 focus:border-input focus:bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  className="h-8 min-w-0 flex-1 truncate rounded-md border border-transparent bg-transparent px-1.5 text-sm font-semibold tracking-[-0.01em] text-foreground transition hover:bg-foreground/[0.05] focus:border-ring focus:bg-card focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/15"
                   onChange={(event) =>
                     setNameDrafts((current) => ({ ...current, [keyOf(entry)]: event.target.value }))
                   }
@@ -612,17 +612,17 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                 />
               ) : (
                 <div className="flex min-w-0 flex-1 items-center gap-2 px-1.5">
-                  <span className="truncate text-sm font-semibold tracking-tight text-foreground">{entry.name}</span>
+                  <span className="truncate text-sm font-semibold tracking-[-0.01em] text-foreground">{entry.name}</span>
                   <span className="shrink-0 rounded-full border border-dashed border-border px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                     Not saved
                   </span>
                 </div>
               )}
 
-              <span className="hidden shrink-0 rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground sm:inline">
+              <span className="count hidden px-2 font-medium sm:inline-flex">
                 {countLabel(totalOf(entry))}
               </span>
-              <span className="shrink-0 rounded-full border border-border bg-background px-2 py-0.5 text-[11px] font-medium tabular-nums text-muted-foreground sm:hidden">
+              <span className="count px-2 font-medium sm:hidden">
                 {totalOf(entry)}
               </span>
 
@@ -634,8 +634,8 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                     aria-expanded={colorOpen === keyOf(entry)}
                     title="Change color"
                     className={[
-                      "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring touch:h-9 touch:w-9",
-                      colorOpen === keyOf(entry) ? "bg-background text-foreground shadow-xs" : "",
+                      "btn btn-ghost btn-icon h-8 rounded-md touch:h-9",
+                      colorOpen === keyOf(entry) ? "bg-foreground/[0.07] text-foreground" : "",
                     ].join(" ")}
                     onClick={() => toggleColors(entry)}
                   >
@@ -646,7 +646,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                     aria-label={`Delete category ${entry.name}`}
                     title="Delete category"
                     className={[
-                      "flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring touch:h-9 touch:w-9",
+                      "btn btn-ghost btn-icon h-8 rounded-md hover:bg-destructive/10 hover:text-destructive touch:h-9",
                       deleting === keyOf(entry) ? "bg-destructive/10 text-destructive" : "",
                     ].join(" ")}
                     onClick={() => askDeleteCategory(entry)}
@@ -657,7 +657,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
               ) : (
                 <button
                   type="button"
-                  className="h-8 shrink-0 cursor-pointer rounded-md border border-input bg-background px-2.5 text-xs font-medium text-foreground shadow-xs transition hover:bg-accent"
+                  className="btn btn-secondary btn-xs h-8"
                   onClick={() => void saveUnsaved(entry)}
                 >
                   Save
@@ -700,7 +700,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                             value={moveTo}
                             disabled={deleteMode !== "move"}
                             aria-label="Move activities to"
-                            className="h-11 w-full cursor-pointer rounded-md border border-input bg-background px-2.5 text-sm shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 sm:h-9"
+                            className="field h-11 cursor-pointer px-2.5 sm:h-9"
                             onChange={(event) => setMoveTo(event.target.value)}
                             onFocus={() => setDeleteMode("move")}
                           >
@@ -739,7 +739,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                 <div className="flex justify-end gap-2">
                   <button
                     type="button"
-                    className="h-11 flex-1 cursor-pointer rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground shadow-xs transition hover:bg-accent sm:h-8 sm:flex-none sm:text-xs"
+                    className="btn btn-secondary btn-sm h-11 flex-1 sm:h-8 sm:flex-none"
                     onClick={() => setDeleting(null)}
                   >
                     Cancel
@@ -747,7 +747,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                   <button
                     type="button"
                     disabled={removing || (totalOf(entry) > 0 && deleteMode === "move" && !moveTo)}
-                    className="h-11 flex-1 cursor-pointer rounded-md bg-destructive px-3 text-sm font-medium text-destructive-foreground shadow-xs transition hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:flex-none sm:text-xs"
+                    className="btn btn-danger btn-sm h-11 flex-1 sm:h-8 sm:flex-none"
                     onClick={() => void confirmDeleteCategory(entry)}
                   >
                     {removing
@@ -774,7 +774,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                   {activityForm?.kind === "edit" && activityForm.id === template.id ? (
                     <div
                       data-activity-form
-                      className="m-2 rounded-lg border border-border bg-background p-4 shadow-xs sm:p-3"
+                      className="m-2 rounded-xl border border-border bg-card p-4 shadow-sm"
                     >
                       <h3 className="mb-3 text-sm font-semibold tracking-tight text-foreground">Edit activity</h3>
                       <ActivityForm
@@ -790,7 +790,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-center gap-2.5 py-2 pl-2.5 pr-1.5 transition-colors hover:bg-muted/50 sm:gap-3 sm:pr-2">
+                      <div className="flex items-center gap-2.5 py-2 pl-2.5 pr-1.5 transition-colors hover:bg-foreground/[0.03] sm:gap-3 sm:pr-2">
                         <span
                           className={[
                             "flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-sm leading-none sm:h-7 sm:w-7 sm:text-base",
@@ -821,7 +821,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                             {template.notes}
                           </span>
                         </button>
-                        <span className="hidden shrink-0 items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-[11px] tabular-nums text-muted-foreground sm:inline-flex">
+                        <span className="hidden h-6 shrink-0 items-center gap-1 rounded-full bg-foreground/[0.05] px-2 text-[11px] font-medium tabular-nums text-muted-foreground sm:inline-flex">
                           <Clock className="h-3 w-3" aria-hidden="true" />
                           {formatDuration(template.defaultDuration)}
                         </span>
@@ -830,7 +830,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                             type="button"
                             aria-label={`Edit ${template.name}`}
                             title="Edit"
-                            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition hover:bg-background hover:text-foreground hover:shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring touch:h-9 touch:w-9"
+                            className="btn btn-ghost btn-icon h-8 rounded-md touch:h-9"
                             onClick={() => startEdit(template.id)}
                           >
                             <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
@@ -840,7 +840,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                             aria-label={`Delete ${template.name}`}
                             title="Delete"
                             className={[
-                              "flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring touch:h-9 touch:w-9",
+                              "btn btn-ghost btn-icon h-8 rounded-md hover:bg-destructive/10 hover:text-destructive touch:h-9",
                               deletingId === template.id ? "bg-destructive/10 text-destructive" : "",
                             ].join(" ")}
                             onClick={() =>
@@ -860,7 +860,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                           <div className="flex w-full gap-2 sm:w-auto">
                             <button
                               type="button"
-                              className="h-11 flex-1 cursor-pointer rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground shadow-xs transition hover:bg-accent sm:h-8 sm:flex-none sm:text-xs"
+                              className="btn btn-secondary btn-sm h-11 flex-1 sm:h-8 sm:flex-none"
                               onClick={() => setDeletingId(null)}
                             >
                               Cancel
@@ -868,7 +868,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                             <button
                               type="button"
                               disabled={busy}
-                              className="h-11 flex-1 cursor-pointer rounded-md bg-destructive px-3 text-sm font-medium text-destructive-foreground shadow-xs transition hover:bg-destructive/90 disabled:opacity-50 sm:h-8 sm:flex-none sm:text-xs"
+                              className="btn btn-danger btn-sm h-11 flex-1 sm:h-8 sm:flex-none"
                               onClick={() => void confirmDeleteActivity(template.id)}
                             >
                               Delete
@@ -885,10 +885,10 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
                 <li>
                   <button
                     type="button"
-                    className="flex w-full cursor-pointer items-center gap-2.5 py-2 pl-2.5 pr-2 text-sm text-muted-foreground transition hover:bg-muted/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring sm:gap-3"
+                    className="flex w-full cursor-pointer items-center gap-2.5 py-2 pl-2.5 pr-2 text-sm text-muted-foreground transition-colors hover:bg-foreground/[0.03] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:gap-3"
                     onClick={() => startCreate(entry.name)}
                   >
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-dashed border-border sm:h-9 sm:w-9">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-dashed border-foreground/20 sm:h-9 sm:w-9">
                       <Plus className="h-4 w-4" aria-hidden="true" />
                     </span>
                     Add activity{items.length === 0 ? ` to ${entry.name}` : ""}

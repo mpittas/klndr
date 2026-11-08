@@ -78,7 +78,7 @@ export function LandingMarquee() {
                 className={[
                   "flex h-4 w-4 items-center justify-center rounded-full border",
                   routine.done
-                    ? "border-emerald-600 bg-emerald-600 text-white"
+                    ? "border-success bg-success text-success-foreground"
                     : "border-muted-foreground/40 text-transparent",
                 ].join(" ")}
               >

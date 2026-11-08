@@ -71,16 +71,16 @@ export function LandingCompare() {
           {/* After: the same tasks on a timeline */}
           <div data-reveal className="relative [--reveal-delay:160ms]">
             <div aria-hidden="true" className="pointer-events-none absolute -inset-8 -z-10">
-              <div className="absolute left-0 top-[10%] h-1/2 w-2/3 rounded-full bg-indigo-300/40 blur-3xl dark:bg-indigo-500/20" />
-              <div className="absolute bottom-[6%] right-0 h-1/2 w-2/3 rounded-full bg-emerald-200/50 blur-3xl dark:bg-emerald-500/15" />
+              <div className="absolute left-0 top-[10%] h-1/2 w-2/3 rounded-full bg-[color-mix(in_oklab,var(--cat-indigo)_22%,transparent)] blur-3xl" />
+              <div className="absolute bottom-[6%] right-0 h-1/2 w-2/3 rounded-full bg-[color-mix(in_oklab,var(--cat-emerald)_20%,transparent)] blur-3xl" />
             </div>
-            <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_1px_2px_rgb(15_23_42/0.05),0_24px_56px_-28px_rgb(15_23_42/0.35)] sm:p-6 dark:shadow-[0_24px_56px_-28px_rgb(0_0_0/0.7)]">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_1px_2px_rgb(52_36_20/0.05),0_24px_56px_-28px_rgb(52_36_20/0.35)] sm:p-6 dark:shadow-[0_24px_56px_-28px_rgb(0_0_0/0.7)]">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-foreground">Thursday</p>
                 <span className="flex items-center gap-1.5 text-[11px] tabular-nums text-muted-foreground">
                   {formatDuration(planned)} planned
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-1.5 py-0.5 text-success">
+                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
                     {formatDuration(END - START - planned)} free
                   </span>
                 </span>

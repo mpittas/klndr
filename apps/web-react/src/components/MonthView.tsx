@@ -155,29 +155,19 @@ export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTas
     [month, byDay, today],
   );
 
-  const monthStats = useMemo(() => {
-    const inMonth = shown.filter((task) => isSameMonth(task.day, month));
-    return {
-      blocks: inMonth.length,
-      minutes: inMonth.reduce((sum, task) => sum + task.durationMinutes, 0),
-      done: inMonth.filter((task) => task.completed).length,
-    };
-  }, [shown, month]);
-
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
       <MonthViewHeader
         month={month}
         today={today}
         isCurrentMonth={isCurrentMonth}
         isDateSelectorOpen={isDateSelectorOpen}
-        monthStats={monthStats}
         filtered={categories.length > 0}
         onOpenSelector={() => setDateSelectorOpen(true)}
         onNewBlock={() => addBlock()}
       />
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_19.5rem] xl:gap-6">
         <MonthGrid days={days} onAddBlock={addBlock} />
         <MonthSidebar
           today={today}

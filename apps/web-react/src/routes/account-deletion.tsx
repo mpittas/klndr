@@ -28,48 +28,48 @@ function AccountDeletionPage() {
   useDocumentTitle("Delete your account \u00b7 klndr.");
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
-      <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Delete your account</h1>
-      <p className="mt-2 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+    <div className="mx-auto my-6 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-border bg-card px-6 py-9 shadow-xs sm:my-12 sm:px-12 sm:py-14">
+      <h1 className="text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-[2.25rem]">Delete your account</h1>
+      <p className="mt-3 text-[15px] leading-7 text-foreground/75">
         You can delete your klndr. account and everything in it at any time, from the app, without asking anyone.
       </p>
 
-      <section className="mt-8">
-        <h2 className="text-base font-semibold text-foreground sm:text-lg">In the app</h2>
+      <section className="mt-10">
+        <h2 className="text-[17px] font-semibold tracking-[-0.015em] text-foreground">In the app</h2>
         <ol className="mt-3 space-y-2">
           {steps.map((step, index) => (
             <li
               key={index}
-              className="flex gap-3 text-xs leading-relaxed text-muted-foreground sm:text-sm"
+              className="flex gap-3 text-[15px] leading-7 text-foreground/75"
             >
               <span className="shrink-0 font-semibold text-foreground">{index + 1}.</span>
               <span>{step}</span>
             </li>
           ))}
         </ol>
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+        <p className="mt-3 text-[15px] leading-7 text-foreground/75">
           Deleting cannot be undone: there is no backup and no waiting period.
         </p>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-base font-semibold text-foreground sm:text-lg">What gets deleted</h2>
+      <section className="mt-10">
+        <h2 className="text-[17px] font-semibold tracking-[-0.015em] text-foreground">What gets deleted</h2>
         <ul className="mt-3 space-y-2">
           {removed.map((item) => (
-            <li key={item} className="flex gap-2.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-              <span aria-hidden="true" className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-foreground/40" />
+            <li key={item} className="flex gap-2.5 text-[15px] leading-7 text-foreground/75">
+              <span aria-hidden="true" className="mt-[11px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand/60" />
               <span>{item}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-base font-semibold text-foreground sm:text-lg">If you can't sign in</h2>
-        <p className="mt-3 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+      <section className="mt-10">
+        <h2 className="text-[17px] font-semibold tracking-[-0.015em] text-foreground">If you can't sign in</h2>
+        <p className="mt-3 text-[15px] leading-7 text-foreground/75">
           Email{" "}
           <a
-            className="font-medium text-foreground underline underline-offset-4"
+            className="rounded-sm font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:decoration-foreground"
             href={`mailto:${CONTACT_EMAIL}?subject=Delete%20my%20klndr.%20account`}
           >
             {CONTACT_EMAIL}
@@ -79,11 +79,11 @@ function AccountDeletionPage() {
         </p>
       </section>
 
-      <div className="mt-10 flex flex-wrap gap-x-4 gap-y-2 border-t border-border pt-6 text-xs sm:text-sm">
-        <Link to="/privacy" className="font-medium text-foreground underline underline-offset-4">
+      <div className="mt-12 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-6 text-sm">
+        <Link to="/privacy" className="rounded-sm font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:decoration-foreground">
           Privacy policy
         </Link>
-        <Link to="/" className="text-muted-foreground underline underline-offset-4">
+        <Link to="/" className="rounded-sm text-muted-foreground transition hover:text-foreground">
           Back to klndr.
         </Link>
       </div>

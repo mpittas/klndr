@@ -171,14 +171,14 @@ function ProfilePage() {
   const needsPassword = providerIds.includes("password");
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       {!user ? (
         // Not authenticated. A signed-out visitor never reaches here (the route guard sends them to
         // /login); this is what a build with no Firebase configuration shows.
-        <div className="rounded-xl border border-border bg-card p-8 text-center shadow-xs">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-muted text-xl">🔒</div>
-          <h2 className="mt-4 text-xl font-bold tracking-tight text-foreground">Sign in to view your profile</h2>
-          <p className="mx-auto mt-2 max-w-md text-xs text-muted-foreground sm:text-sm">
+        <div className="card rounded-2xl p-8 text-center sm:p-10">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-xl">🔒</div>
+          <h2 className="mt-4 text-xl font-semibold tracking-[-0.02em] text-foreground">Sign in to view your profile</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
             Your user profile and personal preferences are stored securely in your Firebase backend. Please sign in or
             create an account to view and edit this information.
           </p>
@@ -186,20 +186,20 @@ function ProfilePage() {
             <Link
               to="/login"
               search={{ redirect: "/profile" }}
-              className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 sm:h-9 sm:px-4"
+              className="btn btn-primary btn-md h-11 px-5 sm:h-9"
             >
-              Sign In
+              Sign in
             </Link>
             <Link
               to="/signup"
-              className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-5 py-2 text-sm font-medium text-foreground shadow-2xs transition hover:bg-accent sm:h-9 sm:px-4"
+              className="btn btn-secondary btn-md h-11 px-5 sm:h-9"
             >
               Create Account
             </Link>
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-5">
           <ProfileCard
             initials={initials}
             displayName={form.displayName || ""}
@@ -209,12 +209,12 @@ function ProfilePage() {
           />
 
           {profileError ? (
-            <div className="flex items-center justify-between gap-2.5 rounded-lg border border-rose-200/80 bg-rose-50/80 p-3 text-xs font-medium text-rose-800 sm:text-sm dark:border-rose-400/25 dark:bg-rose-500/10 dark:text-rose-200">
+            <div className="flex items-center justify-between gap-2.5 rounded-xl border border-destructive/20 bg-destructive/[0.06] p-3 text-[13px] font-medium text-destructive">
               <span>{profileError}</span>
               <button
                 type="button"
                 onClick={retryProfile}
-                className="h-10 shrink-0 cursor-pointer rounded-md border border-rose-300 bg-background px-3 text-xs text-rose-800 transition hover:bg-rose-50 sm:h-auto sm:px-2 sm:py-1 dark:border-rose-400/40 dark:text-rose-200 dark:hover:bg-rose-500/10"
+                className="btn btn-secondary btn-xs h-10 sm:h-7"
               >
                 Retry
               </button>
@@ -228,24 +228,24 @@ function ProfilePage() {
           {resetEmailSent.on ? (
             <div
               role="status"
-              className="flex items-center gap-2.5 rounded-lg border border-border bg-muted/40 p-3 text-xs font-medium text-foreground sm:text-sm"
+              className="flex items-center gap-2.5 rounded-xl border border-border bg-muted/50 p-3 text-[13px] font-medium text-foreground"
             >
               <Mail className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               <span>Password reset instructions sent to {user.email}.</span>
             </div>
           ) : null}
 
-          <div className="rounded-xl border border-border bg-card p-5 shadow-xs sm:p-6">
-            <form onSubmit={handleSave} className="space-y-6">
-              <div className="border-b border-border pb-3">
-                <h2 className="text-sm font-semibold text-foreground sm:text-base">Personal Information</h2>
-                <p className="text-xs text-muted-foreground sm:text-sm">Update your details and contact information.</p>
+          <div className="card p-5 sm:p-7">
+            <form onSubmit={handleSave} className="space-y-7">
+              <div className="border-b border-border pb-4">
+                <h2 className="text-base font-semibold tracking-[-0.015em] text-foreground">Personal information</h2>
+                <p className="mt-0.5 text-[13px] text-muted-foreground">Update your details and contact information.</p>
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 <TextField
                   id="displayName"
-                  label="Display Name"
+                  label="Display name"
                   value={form.displayName}
                   onChange={(value) => setForm((current) => ({ ...current, displayName: value }))}
                   required
@@ -253,22 +253,22 @@ function ProfilePage() {
                   placeholder="Your full name"
                 />
 
-                <div className="space-y-1.5">
-                  <label htmlFor="email" className="block text-xs font-medium text-foreground sm:text-sm">
-                    Account Email
+                <div className="space-y-2">
+                  <label htmlFor="email" className="field-label">
+                    Account email
                   </label>
                   <input
                     id="email"
                     value={user.email ?? ""}
                     disabled
                     type="email"
-                    className="h-11 w-full cursor-not-allowed rounded-md border border-input bg-muted/50 px-3 py-1 text-sm text-muted-foreground shadow-2xs sm:h-9"
+                    className="field h-11 cursor-not-allowed text-muted-foreground hover:bg-muted/50 sm:h-10"
                   />
                 </div>
 
                 <TextField
                   id="phone"
-                  label="Phone Number"
+                  label="Phone number"
                   type="tel"
                   value={form.phone}
                   onChange={(value) => setForm((current) => ({ ...current, phone: value }))}
@@ -285,9 +285,9 @@ function ProfilePage() {
                   placeholder="City, Country"
                 />
 
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label htmlFor="bio" className="block text-xs font-medium text-foreground sm:text-sm">
-                    Bio / Notes
+                <div className="space-y-2 sm:col-span-2">
+                  <label htmlFor="bio" className="field-label">
+                    Bio / notes
                   </label>
                   <textarea
                     id="bio"
@@ -296,14 +296,14 @@ function ProfilePage() {
                     value={form.bio}
                     onChange={(event) => setForm((current) => ({ ...current, bio: event.target.value }))}
                     placeholder="Tell us a little about your scheduling goals..."
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-2xs transition-colors placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:outline-none"
+                    className="field h-auto py-2.5 leading-relaxed"
                   />
                 </div>
               </div>
 
-              <div className="border-b border-border pb-3 pt-3">
-                <h2 className="text-sm font-semibold text-foreground sm:text-base">Preferences &amp; Schedule</h2>
-                <p className="text-xs text-muted-foreground sm:text-sm">Configure default planning options.</p>
+              <div className="border-b border-border pb-4 pt-2">
+                <h2 className="text-base font-semibold tracking-[-0.015em] text-foreground">Preferences &amp; schedule</h2>
+                <p className="mt-0.5 text-[13px] text-muted-foreground">Configure default planning options.</p>
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -316,9 +316,9 @@ function ProfilePage() {
                   placeholder="e.g. America/New_York or UTC"
                 />
 
-                <div className="space-y-1.5">
-                  <label htmlFor="defaultDuration" className="block text-xs font-medium text-foreground sm:text-sm">
-                    Default Block Duration
+                <div className="space-y-2">
+                  <label htmlFor="defaultDuration" className="field-label">
+                    Default block duration
                   </label>
                   <select
                     id="defaultDuration"
@@ -326,7 +326,7 @@ function ProfilePage() {
                     onChange={(event) =>
                       setForm((current) => ({ ...current, defaultTaskDuration: Number(event.target.value) }))
                     }
-                    className="h-11 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-2xs transition-colors focus-visible:border-foreground focus-visible:outline-none sm:h-9"
+                    className="field h-11 cursor-pointer sm:h-10"
                   >
                     <option value={15}>15 minutes</option>
                     <option value={30}>30 minutes</option>
@@ -345,18 +345,18 @@ function ProfilePage() {
                       onChange={(event) =>
                         setForm((current) => ({ ...current, weekStartsOnMonday: event.target.checked }))
                       }
-                      className="h-5 w-5 rounded border-input accent-primary text-primary focus:ring-ring sm:h-4 sm:w-4"
+                      className="h-5 w-5 cursor-pointer rounded accent-[var(--primary)] sm:h-4 sm:w-4"
                     />
-                    <span className="text-xs font-medium text-foreground sm:text-sm">Week starts on Monday</span>
+                    <span className="text-sm font-medium text-foreground">Week starts on Monday</span>
                   </label>
                 </div>
               </div>
 
-              <div className="flex flex-col-reverse items-stretch gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col-reverse items-stretch gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
                   onClick={() => void handleSendResetEmail()}
-                  className="min-h-11 cursor-pointer text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline sm:min-h-0"
+                  className="btn btn-ghost btn-sm h-11 self-start sm:h-8 sm:-ml-3"
                 >
                   Reset password via email
                 </button>
@@ -364,18 +364,18 @@ function ProfilePage() {
                 <button
                   type="submit"
                   disabled={update.isPending || !loaded}
-                  className="inline-flex h-11 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:opacity-50 sm:h-9"
+                  className="btn btn-primary btn-md h-11 px-5 sm:h-9"
                 >
-                  {update.isPending ? "Saving..." : "Save Changes"}
+                  {update.isPending ? "Saving…" : "Save changes"}
                 </button>
               </div>
             </form>
           </div>
 
           {guest ? (
-            <div className="rounded-xl border border-border bg-card p-5 shadow-xs sm:p-6">
-              <h3 className="text-sm font-semibold text-foreground">Guest mode</h3>
-              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+            <div className="card p-5 sm:p-7">
+              <h3 className="text-base font-semibold tracking-[-0.015em] text-foreground">Guest mode</h3>
+              <p className="mt-1 text-[13px] text-muted-foreground">
                 Your planner and profile are saved in this browser only. To create an account or sign in, sign out
                 first.
               </p>

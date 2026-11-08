@@ -217,11 +217,11 @@ export function ActivityPalette({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Search */}
-      <div className="px-3 pb-2 pt-2.5">
+      <div className="px-3 pb-2 pt-1">
         <div className="flex items-center gap-2">
           <div className="relative min-w-0 flex-1">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden="true"
             />
             <input
@@ -230,7 +230,7 @@ export function ActivityPalette({
               type="text"
               placeholder="Search activities"
               aria-label="Search activities"
-              className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-8 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="field h-9 pl-8 pr-8 text-[13px]"
               onChange={(event) => setSearch(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === "Escape") clearSearch();
@@ -239,7 +239,7 @@ export function ActivityPalette({
             {search ? (
               <button
                 type="button"
-                className="absolute right-1.5 top-1/2 flex h-6 w-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                className="btn btn-ghost btn-icon absolute right-1.5 top-1/2 h-6 -translate-y-1/2 rounded-md"
                 aria-label="Clear search"
                 onClick={clearSearch}
               >
@@ -250,7 +250,7 @@ export function ActivityPalette({
           {!query && groups.length > 1 ? (
             <button
               type="button"
-              className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-input bg-background text-muted-foreground shadow-xs transition hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="btn btn-ghost btn-icon h-9"
               title={allCollapsed ? "Expand all categories" : "Collapse all categories"}
               aria-label={allCollapsed ? "Expand all categories" : "Collapse all categories"}
               onClick={toggleAll}
@@ -266,7 +266,7 @@ export function ActivityPalette({
       </div>
 
       {/* Activities, grouped by category */}
-      <div className="flex-1 overflow-y-auto px-2 pb-3 pt-1">
+      <div className="flex-1 overflow-y-auto px-2 pb-3 pt-1.5">
         {groups.length === 0 ? (
           <div className="px-3 py-10 text-center">
             <p className="text-sm font-medium text-foreground">
@@ -274,7 +274,7 @@ export function ActivityPalette({
             </p>
             <button
               type="button"
-              className="mt-2 cursor-pointer text-xs font-medium text-muted-foreground underline underline-offset-2 transition hover:text-foreground"
+              className="btn btn-secondary btn-xs mt-3"
               onClick={() => (templates.length === 0 ? onManage() : clearSearch())}
             >
               {templates.length === 0 ? "Create your first activity" : "Clear search"}
@@ -286,10 +286,10 @@ export function ActivityPalette({
           <section
             key={group.category}
             className={[
-              "mb-2.5 overflow-hidden rounded-xl border bg-card shadow-2xs transition-all",
+              "mb-2 rounded-xl border transition-colors duration-150",
               dropTarget === group.category && dragging?.category !== group.category
-                ? "border-ring bg-accent/60 ring-2 ring-ring/30"
-                : "border-border/70",
+                ? "border-ring/50 bg-brand/[0.05]"
+                : "border-transparent",
             ].join(" ")}
             onDragOver={(event) => onGroupDragOver(event, group.category)}
             onDragLeave={(event) => onGroupDragLeave(event, group.category)}
@@ -298,32 +298,32 @@ export function ActivityPalette({
               onGroupDrop(group.category);
             }}
           >
-            <div className="bg-muted/40">
+            <div>
               <button
                 type="button"
-                className="flex w-full cursor-pointer items-center justify-between gap-2 px-2.5 py-2 text-left text-xs font-semibold text-foreground transition hover:bg-muted/70"
+                className="flex h-8 w-full cursor-pointer items-center justify-between gap-2 rounded-lg pl-1.5 pr-2 text-left text-[13px] font-semibold text-foreground transition-colors hover:bg-foreground/[0.045]"
                 aria-expanded={isOpen(group.category)}
                 onClick={() => toggleGroup(group.category)}
               >
                 <div className="flex min-w-0 items-center gap-2">
                   <ChevronRight
                     className={[
-                      "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200",
-                      isOpen(group.category) ? "rotate-90 text-foreground" : "",
+                      "h-3.5 w-3.5 shrink-0 text-muted-foreground/70 transition-transform duration-200",
+                      isOpen(group.category) ? "rotate-90" : "",
                     ].join(" ")}
                     aria-hidden="true"
                   />
                   <CategoryMark emoji={group.emoji} color={group.color} size="sm" />
-                  <span className="truncate font-semibold tracking-tight text-foreground">{group.category}</span>
+                  <span className="truncate tracking-[-0.01em]">{group.category}</span>
                 </div>
-                <span className="inline-flex items-center rounded-full border border-border bg-background px-2 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
+                <span className="count">
                   {group.items.length}
                 </span>
               </button>
             </div>
 
             {isOpen(group.category) ? (
-              <ul className="space-y-0.5 border-t border-border/40 p-1">
+              <ul className="space-y-px pb-1 pt-0.5">
                 {group.items.map((template) => (
                   <li
                     key={template.id}
@@ -332,7 +332,7 @@ export function ActivityPalette({
                     tabIndex={0}
                     title={`${template.name} · ${formatDuration(template.defaultDuration)}`}
                     className={[
-                      "group flex cursor-grab items-center gap-2 rounded-md border border-transparent px-2 py-1 outline-none transition hover:border-border hover:bg-accent/50 focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring active:cursor-grabbing",
+                      "group flex h-9 cursor-grab items-center gap-2.5 rounded-lg px-2 transition-colors hover:bg-foreground/[0.045] active:cursor-grabbing touch:h-11",
                       dragging?.id === template.id ? "opacity-40" : "",
                     ].join(" ")}
                     onDragStart={(event) => onRowDragStart(event, template)}
@@ -346,16 +346,16 @@ export function ActivityPalette({
                   >
                     <span
                       className={[
-                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-xs leading-none",
+                        "flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[13px] leading-none",
                         paletteOf(colorOf(template)).icon,
                       ].join(" ")}
                     >
                       <EmojiPop emoji={template.emoji} />
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
+                    <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">
                       {template.name}
                     </span>
-                    <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground group-hover:hidden group-focus-within:hidden touch:hidden">
                       {formatDuration(template.defaultDuration)}
                     </span>
                     <button
@@ -363,7 +363,7 @@ export function ActivityPalette({
                       aria-label={`Edit ${template.name}`}
                       title="Edit"
                       draggable={false}
-                      className="-mr-1 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring group-hover:opacity-100 touch:h-9 touch:w-9 touch:opacity-70"
+                      className="btn btn-ghost btn-icon -mr-1 hidden h-6 rounded-md hover:bg-foreground/[0.07] group-hover:inline-flex group-focus-within:inline-flex touch:inline-flex touch:h-9 touch:opacity-70"
                       onClick={(event) => {
                         event.stopPropagation();
                         showLibrary({ kind: "edit", id: template.id });
@@ -378,7 +378,7 @@ export function ActivityPalette({
                 ))}
 
                 {adding === group.category ? (
-                  <li className="rounded-md border border-ring/60 bg-background p-1.5 shadow-2xs">
+                  <li className="rounded-xl border border-border bg-card p-1.5 shadow-sm">
                     <form
                       className="space-y-1.5"
                       onSubmit={(event) => {
@@ -392,7 +392,7 @@ export function ActivityPalette({
                         stopAdd();
                       }}
                     >
-                      <div className="flex h-8 items-center rounded-md border border-input bg-background transition-colors focus-within:ring-1 focus-within:ring-ring">
+                      <div className="flex h-9 items-center rounded-lg border border-border bg-muted/50 transition-[border-color,box-shadow,background-color] focus-within:border-ring focus-within:bg-card focus-within:ring-[3px] focus-within:ring-ring/15">
                         <EmojiPicker
                           value={addEmoji.emoji}
                           busy={addEmoji.picking}
@@ -411,7 +411,7 @@ export function ActivityPalette({
                           enterKeyHint="done"
                           aria-label={`New activity in ${group.category}`}
                           placeholder="New activity, press Enter"
-                          className="h-full min-w-0 flex-1 bg-transparent px-2 text-xs placeholder:text-muted-foreground focus-visible:outline-none"
+                          className="h-full min-w-0 flex-1 bg-transparent px-2 text-[13px] placeholder:text-muted-foreground/75 focus-visible:outline-none"
                           onChange={(event) => setAddName(event.target.value)}
                           onBlur={addEmoji.settle}
                         />
@@ -420,7 +420,7 @@ export function ActivityPalette({
                         <select
                           value={addDuration}
                           aria-label="Default length"
-                          className="h-7 min-w-0 flex-1 cursor-pointer rounded-md border border-input bg-background px-2 text-xs tabular-nums focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          className="field h-7 flex-1 cursor-pointer rounded-md px-1.5 text-xs tabular-nums"
                           onChange={(event) => setAddDuration(Number(event.target.value))}
                         >
                           {DURATION_CHOICES.map((minutes) => (
@@ -431,7 +431,7 @@ export function ActivityPalette({
                         </select>
                         <button
                           type="button"
-                          className="h-7 cursor-pointer rounded-md px-2.5 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                          className="btn btn-ghost btn-xs"
                           onClick={stopAdd}
                         >
                           Done
@@ -439,13 +439,13 @@ export function ActivityPalette({
                         <button
                           type="submit"
                           disabled={!addName.trim()}
-                          className="h-7 cursor-pointer rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="btn btn-primary btn-xs px-3"
                         >
                           {addPending > 0 ? "Adding…" : "Add"}
                         </button>
                       </div>
                       {addError ? (
-                        <p className="text-[11px] font-medium text-destructive" role="alert">
+                        <p className="px-0.5 text-xs font-medium text-destructive" role="alert">
                           {addError}
                         </p>
                       ) : null}
@@ -455,11 +455,13 @@ export function ActivityPalette({
                   <li>
                     <button
                       type="button"
-                      className="flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground/80 transition hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      className="group/add flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.045] hover:text-foreground"
                       onClick={() => startAdd(group.category)}
                     >
-                      <Plus className="h-3 w-3" aria-hidden="true" />
-                      Add new activity
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-dashed border-foreground/20 transition-colors group-hover/add:border-foreground/40">
+                        <Plus className="h-3 w-3" aria-hidden="true" />
+                      </span>
+                      Add activity
                     </button>
                   </li>
                 )}
@@ -470,18 +472,18 @@ export function ActivityPalette({
       </div>
 
       {/* Footer: where to edit the library */}
-      <div className="border-t border-border px-3 py-2.5">
+      <div className="border-t border-border px-3 py-3">
         {query ? (
-          <p className="mb-2 text-[11px] tabular-nums text-muted-foreground">
+          <p className="mb-2 text-xs tabular-nums text-muted-foreground">
             {matchCount} of {templates.length} activities
           </p>
         ) : null}
         <button
           type="button"
-          className="inline-flex h-8 w-full cursor-pointer items-center justify-center gap-1.5 rounded-md border border-input bg-background text-xs font-medium text-foreground shadow-xs transition hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="btn btn-secondary btn-sm w-full"
           onClick={() => showLibrary()}
         >
-          <SquarePen className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+          <SquarePen className="text-muted-foreground" aria-hidden="true" />
           Edit activities &amp; categories
         </button>
       </div>

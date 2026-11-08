@@ -157,20 +157,20 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
       {/* App bar */}
       <div className="flex h-11 items-center justify-between border-b border-border px-3 sm:px-4">
         <div className="flex items-center gap-3">
-          <span className="text-[15px] font-bold tracking-tight text-foreground">klndr.</span>
-          <span className="hidden h-7 items-center rounded-lg bg-muted p-0.5 text-[11px] font-medium text-muted-foreground sm:inline-flex">
+          <span className="text-[15px] font-bold tracking-[-0.045em] text-foreground">klndr<span className="text-brand">.</span></span>
+          <span className="hidden h-7 items-center rounded-[9px] bg-foreground/[0.055] p-0.5 text-[11px] font-medium text-muted-foreground sm:inline-flex">
             <span className="px-2.5 py-1">Calendar</span>
-            <span className="rounded-md bg-primary px-2.5 py-1 font-semibold text-primary-foreground shadow-xs">
+            <span className="rounded-[7px] bg-card px-2.5 py-1 text-foreground shadow-[0_1px_2px_rgb(60_40_20/0.1),0_0_0_0.5px_rgb(60_40_20/0.08)] dark:bg-accent">
               Day
             </span>
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md border border-input text-foreground">
+          <span className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground">
             <Moon className="h-3.5 w-3.5" />
           </span>
-          <span className="flex h-7 items-center gap-1.5 rounded-md border border-input px-1 text-[11px] font-medium text-foreground sm:pr-2">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[9px] font-semibold text-primary-foreground">
+          <span className="flex h-7 items-center gap-1.5 rounded-md px-1 text-[11px] font-medium text-foreground sm:pr-2">
+            <span className="avatar h-5 w-5 text-[9px]">
               AL
             </span>
             <span className="hidden sm:inline">Alex</span>
@@ -180,42 +180,42 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
 
       <div ref={bodyRef} className={`relative grid md:grid-cols-[15rem_minmax(0,1fr)] ${playing ? "is-playing" : ""}`}>
         {/* Activity library */}
-        <aside className="hidden flex-col border-r border-border bg-background md:flex">
-          <div className="flex items-center gap-0.5 whitespace-nowrap border-b border-border px-2 py-2 text-[11px] font-medium text-muted-foreground">
-            <span className="rounded-md bg-muted px-2 py-1 font-semibold text-foreground">
-              Activities <span className="ml-0.5 font-medium text-muted-foreground">12</span>
-            </span>
-            <span className="px-1.5 py-1">
-              Checklist <span className="">2/4</span>
-            </span>
-            <span className="px-1.5 py-1">Notes</span>
+        <aside className="hidden flex-col border-r border-border bg-card md:flex">
+          <div className="px-2.5 pb-2 pt-2.5">
+            <div className="flex h-7 items-center gap-0.5 whitespace-nowrap rounded-[9px] bg-foreground/[0.055] p-0.5 text-[11px] font-medium text-muted-foreground">
+              <span className="flex h-full flex-1 items-center justify-center gap-1 rounded-[7px] bg-card text-foreground shadow-[0_1px_2px_rgb(60_40_20/0.1),0_0_0_0.5px_rgb(60_40_20/0.08)] dark:bg-accent">
+                Activities <span className="count h-4 min-w-4 px-1 text-[10px]">12</span>
+              </span>
+              <span className="flex flex-1 items-center justify-center gap-1">
+                Checklist <span className="count h-4 min-w-4 px-1 text-[10px]">2/4</span>
+              </span>
+              <span className="flex flex-1 items-center justify-center">Notes</span>
+            </div>
           </div>
-          <div className="px-3 pb-2 pt-2.5">
-            <div className="flex h-8 items-center gap-2 rounded-lg border border-input bg-background px-2.5 text-xs text-muted-foreground shadow-xs">
+          <div className="px-2.5 pb-1.5">
+            <div className="flex h-8 items-center gap-2 rounded-lg border border-border bg-muted/50 px-2.5 text-xs text-muted-foreground">
               <Search className="h-3.5 w-3.5" />
               Search activities
             </div>
           </div>
-          <div className="space-y-2 px-2 pb-3 pt-1">
+          <div className="space-y-1.5 px-1.5 pb-3 pt-1">
             {groups.map((group) => (
-              <section key={group.name} className="overflow-hidden rounded-xl border border-border/70 bg-card shadow-2xs">
-                <div className="flex items-center justify-between gap-2 bg-muted/40 px-2.5 py-1.5 text-xs font-semibold text-foreground">
+              <section key={group.name}>
+                <div className="flex h-7 items-center justify-between gap-2 px-1.5 text-xs font-semibold text-foreground">
                   <span className="flex items-center gap-2">
-                    <ChevronRight className="h-3 w-3 rotate-90 text-foreground" />
+                    <ChevronRight className="h-3 w-3 rotate-90 text-muted-foreground/70" />
                     <span className={`h-2 w-2 rounded-full ${paletteOf(group.color).dot}`} />
                     {group.name}
                   </span>
-                  <span className="rounded-full border border-border bg-background px-1.5 text-[10px] text-muted-foreground">
-                    {group.items.length}
-                  </span>
+                  <span className="count h-4 min-w-4 px-1 text-[10px]">{group.items.length}</span>
                 </div>
-                <ul className="space-y-0.5 border-t border-border/40 p-1">
+                <ul className="space-y-px">
                   {group.items.map((item) => (
                     <li
                       key={item.title}
                       ref={item.title === dropped.title ? sourceRef : undefined}
                       className={[
-                        "flex items-center gap-2 rounded-md px-2 py-1",
+                        "flex h-8 items-center gap-2 rounded-lg px-1.5",
                         item.title === dropped.title ? "mock-source" : "",
                       ].join(" ")}
                     >
@@ -236,16 +236,14 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
             {collapsedGroups.map((group) => (
               <div
                 key={group.name}
-                className="flex items-center justify-between rounded-xl border border-border/70 bg-muted/40 px-2.5 py-1.5 text-xs font-semibold text-foreground shadow-2xs"
+                className="flex h-7 items-center justify-between px-1.5 text-xs font-semibold text-foreground"
               >
                 <span className="flex items-center gap-2">
-                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                  <ChevronRight className="h-3 w-3 text-muted-foreground/70" />
                   <span className={`h-2 w-2 rounded-full ${paletteOf(group.color).dot}`} />
                   {group.name}
                 </span>
-                <span className="rounded-full border border-border bg-background px-1.5 text-[10px] text-muted-foreground">
-                  {group.count}
-                </span>
+                <span className="count h-4 min-w-4 px-1 text-[10px]">{group.count}</span>
               </div>
             ))}
           </div>
@@ -279,8 +277,8 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
 
           {/* Routines */}
           <div className="flex items-center gap-2 overflow-hidden border-b border-border/40 px-3 py-2.5 [mask-image:linear-gradient(to_right,black_85%,transparent)] sm:px-5">
-            <span className="flex shrink-0 items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" strokeWidth={3} />
+            <span className="flex shrink-0 items-center gap-1 text-[11px] font-semibold text-muted-foreground">
+              <Check className="h-3 w-3 text-success" strokeWidth={3} />
               Routines
             </span>
             {routines.map((routine) => (
@@ -297,7 +295,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
                   className={[
                     "flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px]",
                     routine.done
-                      ? "border-emerald-600 bg-emerald-600 font-bold text-white"
+                      ? "border-success bg-success font-bold text-success-foreground"
                       : "border-muted-foreground/40 text-transparent",
                   ].join(" ")}
                 >
@@ -321,7 +319,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
                 </div>
               ))}
               <span
-                className="absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-md bg-rose-500 px-1 py-0.5 text-[10px] font-bold leading-none text-white shadow-xs sm:right-1 sm:px-1.5"
+                className="absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-full bg-brand px-1.5 py-[3px] text-[10px] font-semibold leading-none tabular-nums text-brand-foreground shadow-xs sm:right-1"
                 style={{ top: `${top(NOW)}px` }}
               >
                 {formatTime(NOW)}
@@ -343,10 +341,10 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
               {/* Now line */}
               <div className="absolute inset-x-0 z-20 flex items-center" style={{ top: `${top(NOW)}px` }}>
                 <span className="absolute -left-1 flex h-2 w-2 items-center justify-center">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-50" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-brand ring-2 ring-background" />
                 </span>
-                <span className="h-[1.5px] w-full bg-rose-500/80" />
+                <span className="h-[1.5px] w-full bg-brand" />
               </div>
 
               {blocks.map((block) => (

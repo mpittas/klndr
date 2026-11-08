@@ -3,7 +3,7 @@ import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { isFirebaseConfigured, isSignedIn, useAuth } from "@/auth";
-import { LandingLogo } from "@/components/landing/LandingLogo";
+import { Wordmark } from "@/components/Wordmark";
 import type { LandingStart } from "@/components/landing/types";
 import { useTheme } from "@/theme";
 
@@ -34,7 +34,7 @@ export function LandingNav({ start }: { start: LandingStart }) {
         className={[
           "mx-auto mt-2 flex h-14 items-center justify-between gap-3 rounded-2xl border transition-all duration-500 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
           scrolled
-            ? "max-w-4xl border-border/70 bg-background/80 pl-4 pr-2 shadow-[0_10px_32px_-14px_rgb(15_23_42/0.22)] backdrop-blur-xl dark:shadow-[0_10px_32px_-14px_rgb(0_0_0/0.6)]"
+            ? "max-w-4xl border-border/70 bg-background/80 pl-4 pr-2 shadow-[0_10px_32px_-14px_rgb(52_36_20/0.22)] backdrop-blur-xl dark:shadow-[0_10px_32px_-14px_rgb(0_0_0/0.6)]"
             : "max-w-[70.5rem] border-transparent px-2 sm:px-5",
         ].join(" ")}
       >
@@ -43,7 +43,7 @@ export function LandingNav({ start }: { start: LandingStart }) {
           className="-mx-1 px-1 py-2 text-lg text-foreground transition hover:opacity-80 sm:text-xl"
           aria-label="klndr. home"
         >
-          <LandingLogo />
+          <Wordmark />
         </Link>
 
         <nav className="hidden items-center gap-0.5 md:flex" aria-label="Sections">

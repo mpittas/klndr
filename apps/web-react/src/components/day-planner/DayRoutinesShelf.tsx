@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const DRAG_THRESHOLD = 4;
 
 const ARROW =
-  "flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-2xs transition hover:bg-accent hover:text-foreground";
+  "btn btn-secondary btn-icon h-7 rounded-full text-muted-foreground hover:text-foreground";
 
 /**
  * The strip of the day's routines above the timeline. It scrolls sideways with the wheel or by dragging with a mouse, keeps the faded edges in step
@@ -113,14 +113,14 @@ export function DayRoutinesShelf({
   }, [canLeft, canRight]);
 
   return (
-    <div className="mx-auto max-w-4xl border-b border-border/40 px-3 pb-2 pt-3 sm:px-6">
+    <div className="mx-auto max-w-4xl border-b border-border/60 px-3 pb-2.5 pt-3 sm:px-6">
       <div className="flex items-center gap-2">
-        <span className="flex shrink-0 items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-foreground">
           Routines
           <span
             className={[
-              "font-medium normal-case tabular-nums",
-              doneCount === items.length ? "text-emerald-600 dark:text-emerald-400" : "",
+              "font-medium tabular-nums",
+              doneCount === items.length ? "text-success" : "text-muted-foreground",
             ].join(" ")}
           >
             {doneCount}/{items.length}
@@ -159,19 +159,17 @@ export function DayRoutinesShelf({
                 type="button"
                 aria-pressed={done}
                 className={[
-                  "group inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium shadow-2xs transition touch:min-h-10 touch:gap-2 touch:px-3.5 touch:text-[13px]",
+                  "group inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-full border pl-1.5 pr-3 text-[13px] font-medium transition-colors touch:h-10 touch:pl-2 touch:pr-3.5",
                   done
-                    ? "border-border/60 bg-muted/50 text-muted-foreground line-through opacity-70"
-                    : "border-border bg-card text-foreground hover:border-foreground/30 hover:bg-accent",
+                    ? "border-transparent bg-foreground/[0.045] text-muted-foreground line-through decoration-foreground/30"
+                    : "border-border bg-card text-foreground shadow-xs hover:border-input hover:bg-accent/50",
                 ].join(" ")}
                 onClick={() => onToggle(item.id, !done)}
               >
                 <span
                   className={[
-                    "flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px] transition touch:h-4.5 touch:w-4.5 touch:text-[10px]",
-                    done
-                      ? "border-emerald-600 bg-emerald-600 font-bold text-white"
-                      : "border-muted-foreground/40 text-transparent group-hover:border-foreground",
+                    "tick pointer-events-none h-[18px] w-[18px] text-[10px] font-bold touch:h-5 touch:w-5",
+                    done ? "border-success bg-success text-success-foreground" : "group-hover:border-success",
                   ].join(" ")}
                   aria-hidden="true"
                 >
@@ -196,7 +194,7 @@ export function DayRoutinesShelf({
 
         <button
           type="button"
-          className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full border border-dashed border-border px-2 py-0.5 text-xs text-muted-foreground transition hover:border-foreground/30 hover:text-foreground touch:min-h-10 touch:px-3.5 touch:text-[13px]"
+          className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1 rounded-full border border-dashed border-foreground/20 px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground touch:h-10 touch:px-3.5 touch:text-[13px]"
           title="Manage habits"
           onClick={onOpenManager}
         >

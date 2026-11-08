@@ -344,7 +344,7 @@ export function EmojiPicker({
   const shown =
     value === null ? (
       (placeholder ?? (
-        <span className="flex h-6 w-6 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
+        <span className="flex h-6 w-6 items-center justify-center rounded-md border border-dashed border-foreground/20 text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
         </span>
       ))
@@ -381,15 +381,15 @@ export function EmojiPicker({
 
       {open &&
         createPortal(
-          <div className={["fixed inset-0 z-[60]", isSheet ? "bg-black/40" : ""].join(" ")} onClick={hide}>
+          <div className={["fixed inset-0 z-[60]", isSheet ? "bg-[var(--scrim)]" : ""].join(" ")} onClick={hide}>
             <div
               role="dialog"
               aria-label="Emoji picker"
               className={[
-                "fixed flex flex-col overflow-hidden border border-border bg-popover text-popover-foreground shadow-lg",
+                "fixed flex flex-col overflow-hidden border border-border bg-popover text-popover-foreground shadow-xl",
                 // The popover appears at once; only the phone's sheet slides up, a short transform-only move.
                 isSheet
-                  ? "animate-in slide-in-from-bottom inset-x-0 rounded-t-2xl border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)] duration-150"
+                  ? "animate-in slide-in-from-bottom inset-x-0 rounded-t-3xl border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)] duration-150"
                   : "rounded-xl",
               ].join(" ")}
               style={
@@ -400,7 +400,7 @@ export function EmojiPicker({
               onClick={(event) => event.stopPropagation()}
               onKeyDown={handleKeyDown}
             >
-              {isSheet && <div className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-muted-foreground/30" />}
+              {isSheet && <div className="mx-auto mt-2.5 h-1.5 w-10 shrink-0 rounded-full bg-foreground/15" />}
               <div className="flex items-center gap-2 border-b border-border p-2">
                 <input
                   ref={searchRef}
@@ -421,12 +421,12 @@ export function EmojiPicker({
                   autoComplete="off"
                   placeholder="Search emoji…"
                   aria-label="Search emoji"
-                  className="flex h-11 w-full min-w-0 rounded-md border border-input bg-background px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-8 sm:px-2.5"
+                  className="field h-11 sm:h-8 sm:px-2.5"
                 />
                 {isSheet && (
                   <button
                     type="button"
-                    className="h-11 shrink-0 cursor-pointer rounded-md px-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+                    className="btn btn-ghost btn-md h-11"
                     onClick={hide}
                   >
                     Cancel
@@ -450,7 +450,7 @@ export function EmojiPicker({
                       {value}
                     </span>
                   ) : (
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashed border-foreground/20 text-muted-foreground">
                       <Sparkles className={["h-3.5 w-3.5", busy ? "motion-safe:animate-pulse" : ""].join(" ")} aria-hidden="true" />
                     </span>
                   )}

@@ -1,4 +1,4 @@
-import { addMonths, MONTH_LABELS, monthMatrix, monthTitle, WEEKDAY_LABELS } from "@klndr/core";
+import { addDaysISO, addMonths, MONTH_LABELS, monthMatrix, monthTitle, WEEKDAY_LABELS } from "@klndr/core";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
@@ -25,6 +25,9 @@ const firstOf = (year: number, monthIndex: number) => `${String(year).padStart(4
  *
  * `selected` is the day on screen (the day view); the month view has none and passes `activeMonth` instead,
  * the month it is already showing.
+ *
+ * With `onPick` it is a plain date field instead (the block editor): choosing a day hands it back and closes,
+ * nothing is opened, and there is no month to view.
  */
 export function DatePickerModal({
   open,
@@ -33,6 +36,9 @@ export function DatePickerModal({
   activeMonth = null,
   today,
   onClose,
+  onPick,
+  title: dialogTitle = "Go to date",
+  subtitle: dialogSubtitle = "Pick a day, or open a whole month",
 }: {
   open: boolean;
   /** Any date in the month the calendar opens on. */
@@ -42,6 +48,10 @@ export function DatePickerModal({
   activeMonth?: string | null;
   today: string;
   onClose: () => void;
+  /** Hand the chosen day back instead of opening it. */
+  onPick?: (date: string) => void;
+  title?: string;
+  subtitle?: string;
 }) {
   const navigate = useNavigate();
 
@@ -66,7 +76,8 @@ export function DatePickerModal({
 
   const openDay = (date: string) => {
     onClose();
-    if (date !== selected) void navigate({ to: "/day/$date", params: { date } });
+    if (onPick) onPick(date);
+    else if (date !== selected) void navigate({ to: "/day/$date", params: { date } });
   };
   const openMonth = () => {
     onClose();
@@ -92,23 +103,23 @@ export function DatePickerModal({
   const titleHint = view === "days" ? "Choose month or year" : view === "months" ? "Choose year" : "";
 
   const stepButton =
-    "flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-border bg-card text-foreground transition hover:bg-muted active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-8 sm:w-8";
+    "btn btn-secondary btn-icon h-11 sm:h-8";
   const footerButton =
-    "inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground transition hover:bg-muted disabled:cursor-default disabled:opacity-50 sm:h-8 sm:text-xs";
+    "btn btn-secondary btn-md h-11 min-w-0 flex-1 sm:h-9 sm:text-[13px]";
   const cell = (state: "selected" | "today" | "normal" | "muted") =>
     [
-      "flex cursor-pointer items-center justify-center rounded-lg tabular-nums transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+      "flex cursor-pointer items-center justify-center rounded-lg tabular-nums transition-colors duration-150",
       state === "selected"
-        ? "bg-primary font-bold text-primary-foreground shadow-2xs"
+        ? "bg-primary font-semibold text-primary-foreground shadow-xs"
         : state === "today"
-          ? "border border-primary font-semibold text-foreground hover:bg-muted"
+          ? "font-semibold text-brand ring-1 ring-inset ring-brand/40 hover:bg-brand/[0.07]"
           : state === "normal"
-            ? "font-medium text-foreground hover:bg-muted"
-            : "text-muted-foreground/50 hover:bg-muted",
+            ? "font-medium text-foreground hover:bg-foreground/[0.06]"
+            : "text-muted-foreground/45 hover:bg-foreground/[0.06]",
     ].join(" ");
 
   return (
-    <Modal open={open} title="Go to date" subtitle="Pick a day, or open a whole month" onClose={onClose}>
+    <Modal open={open} title={dialogTitle} subtitle={dialogSubtitle} onClose={onClose}>
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-2">
           <button type="button" className={stepButton} onClick={() => step(-1)} aria-label={`Previous ${stepLabel}`}>
@@ -125,7 +136,7 @@ export function DatePickerModal({
               onClick={zoomOut}
               title={titleHint}
               aria-label={`${title}. ${titleHint}`}
-              className="group inline-flex h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-foreground transition hover:bg-muted active:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-8"
+              className="btn btn-ghost group h-11 min-w-0 flex-1 gap-1.5 px-2 text-[15px] font-semibold text-foreground sm:h-8 sm:text-sm"
             >
               <span aria-live="polite" className="truncate tabular-nums">
                 {title}
@@ -148,7 +159,7 @@ export function DatePickerModal({
                 {WEEKDAY_LABELS.map((label) => (
                   <div
                     key={label}
-                    className="py-1.5 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                    className="py-1.5 text-center text-[11px] font-medium text-muted-foreground"
                   >
                     {label}
                   </div>
@@ -220,13 +231,24 @@ export function DatePickerModal({
           )}
         </div>
 
-        <div className="flex items-center gap-2 border-t border-border pt-3">
+        <div className="flex items-center gap-2 border-t border-border pt-4">
           <button type="button" onClick={() => openDay(today)} disabled={selected === today} className={footerButton}>
             Today
           </button>
-          <button type="button" onClick={openMonth} disabled={activeMonth === shownMonth} className={footerButton}>
-            View {monthTitle(shown)}
-          </button>
+          {onPick ? (
+            <button
+              type="button"
+              onClick={() => openDay(addDaysISO(today, 1))}
+              disabled={selected === addDaysISO(today, 1)}
+              className={footerButton}
+            >
+              Tomorrow
+            </button>
+          ) : (
+            <button type="button" onClick={openMonth} disabled={activeMonth === shownMonth} className={footerButton}>
+              View {monthTitle(shown)}
+            </button>
+          )}
         </div>
       </div>
     </Modal>

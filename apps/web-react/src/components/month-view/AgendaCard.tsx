@@ -47,10 +47,10 @@ export function AgendaCard({
   const labelOf = (day: string) => (day === today ? "Today" : day === tomorrow ? "Tomorrow" : mediumDate(day));
 
   return (
-    <section className="rounded-xl border border-border bg-card p-3 shadow-xs">
+    <section className="card p-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
-          Agenda <span className="ml-1 font-medium normal-case tracking-normal text-muted-foreground">next 14 days</span>
+        <h2 className="card-title">
+          Agenda <span className="card-meta ml-1.5">Next 14 days</span>
         </h2>
         {doneCount > 0 && (
           <button
@@ -58,19 +58,19 @@ export function AgendaCard({
             role="switch"
             aria-checked={hideDone}
             onClick={() => setHideDone((value) => !value)}
-            className="inline-flex h-6 cursor-pointer items-center gap-1.5 rounded-full px-1.5 text-[11px] font-medium text-muted-foreground transition hover:text-foreground"
+            className="-mr-1.5 inline-flex h-6 cursor-pointer items-center gap-1.5 rounded-full px-1.5 text-xs font-medium text-muted-foreground transition hover:text-foreground"
           >
             <span
               aria-hidden="true"
               className={[
-                "flex h-3 w-5 items-center rounded-full p-0.5 transition-colors",
-                hideDone ? "bg-primary" : "bg-muted-foreground/30",
+                "flex h-3.5 w-6 items-center rounded-full p-0.5 transition-colors",
+                hideDone ? "bg-primary" : "bg-foreground/15",
               ].join(" ")}
             >
               <span
                 className={[
-                  "h-2 w-2 rounded-full bg-background shadow-xs transition-transform",
-                  hideDone ? "translate-x-2" : "",
+                  "h-2.5 w-2.5 rounded-full bg-background shadow-xs transition-transform",
+                  hideDone ? "translate-x-2.5" : "",
                 ].join(" ")}
               />
             </span>
@@ -80,14 +80,14 @@ export function AgendaCard({
       </div>
 
       {loading && tasks.length === 0 ? (
-        <div className="mt-2 space-y-1.5" aria-busy="true">
+        <div className="mt-3 space-y-1.5" aria-busy="true">
           {[0, 1, 2].map((row) => (
-            <div key={row} className="h-8 animate-pulse rounded-md bg-muted" />
+            <div key={row} className="h-8 animate-pulse rounded-lg bg-muted" />
           ))}
         </div>
       ) : shown.length === 0 ? (
-        <div className="flex items-center justify-between gap-2 py-2">
-          <p className="text-xs text-muted-foreground">
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <p className="text-[13px] text-muted-foreground">
             {filtered
               ? "No blocks in the selected categories."
               : tasks.length
@@ -98,7 +98,7 @@ export function AgendaCard({
             <button
               type="button"
               onClick={() => onAddBlock(today)}
-              className="inline-flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded-md border border-border bg-background px-2 text-xs font-medium text-foreground transition hover:bg-muted"
+              className="btn btn-secondary btn-xs"
             >
               <Plus className="h-3 w-3" aria-hidden="true" />
               Add
@@ -106,13 +106,13 @@ export function AgendaCard({
           )}
         </div>
       ) : (
-        <div className="mt-1.5 space-y-2">
+        <div className="-mx-1.5 mt-2 space-y-2.5">
           {groups.map(([day, dayTasks]) => (
             <div key={day}>
               <h3
                 className={[
-                  "px-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wider",
-                  day === today ? "text-primary" : "text-muted-foreground",
+                  "px-1.5 pb-1 text-xs font-medium",
+                  day === today ? "text-brand" : "text-muted-foreground",
                 ].join(" ")}
               >
                 {labelOf(day)}
@@ -123,7 +123,7 @@ export function AgendaCard({
                   return (
                     <li
                       key={task.id}
-                      className="group flex h-8 items-center gap-2 rounded-md px-1 transition hover:bg-muted/60"
+                      className="group flex h-9 items-center gap-2.5 rounded-lg px-1.5 transition-colors hover:bg-muted/70"
                     >
                       <button
                         type="button"
@@ -132,8 +132,8 @@ export function AgendaCard({
                         aria-label={`${task.completed ? "Reopen" : "Complete"} ${task.title}`}
                         onClick={() => void toggleComplete(task)}
                         className={[
-                          "flex h-[18px] w-[18px] shrink-0 cursor-pointer items-center justify-center rounded-full border-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                          task.completed ? "border-emerald-500 bg-emerald-500 text-white" : `${tone.check} text-transparent`,
+                          "tick h-[18px] w-[18px]",
+                          task.completed ? "" : tone.check,
                         ].join(" ")}
                       >
                         <Check className="h-2.5 w-2.5" strokeWidth={3.5} aria-hidden="true" />
@@ -147,12 +147,12 @@ export function AgendaCard({
                         <span
                           className={[
                             "min-w-0 flex-1 truncate text-[13px] font-medium transition-colors",
-                            task.completed ? "text-muted-foreground line-through" : "text-foreground group-hover:text-primary",
+                            task.completed ? "text-muted-foreground line-through decoration-foreground/30" : "text-foreground",
                           ].join(" ")}
                         >
                           {task.emoji} {task.title}
                         </span>
-                        <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                        <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                           {formatTime(task.startMinutes)}
                         </span>
                       </Link>
@@ -167,7 +167,7 @@ export function AgendaCard({
             <button
               type="button"
               onClick={() => setShowAll((value) => !value)}
-              className="w-full cursor-pointer rounded-md py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground"
+              className="btn btn-ghost btn-xs w-full"
             >
               {showAll ? "Show less" : `Show all (${shown.length})`}
             </button>

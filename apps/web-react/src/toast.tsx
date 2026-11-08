@@ -50,9 +50,9 @@ export function ToastProvider({ children }: PropsWithChildren) {
     <ToastContext.Provider value={value}>
       {children}
       {/* The live region is always mounted: assistive tech only announces changes to one that already exists. */}
-      <div role="status" className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+      <div role="status" className="pointer-events-none fixed inset-x-0 bottom-[max(1.5rem,calc(env(safe-area-inset-bottom)+5rem))] z-[80] flex justify-center px-4 sm:bottom-8">
         {message ? (
-          <div className="pointer-events-auto max-w-md rounded-lg bg-foreground px-4 py-2 text-sm text-background shadow-lg">
+          <div className="pointer-events-auto max-w-md rounded-full bg-primary px-4 py-2.5 text-[13px] font-medium text-primary-foreground shadow-xl animate-in fade-in-0 slide-in-from-bottom-2 duration-200">
             {message}
           </div>
         ) : null}

@@ -37,9 +37,9 @@ export function ChecklistQuickAdd({
   };
 
   return (
-    <div className="shrink-0 border-t border-border px-3 py-2.5">
+    <div className="shrink-0 border-t border-border px-3 py-3">
       <form
-        className="flex items-center gap-1"
+        className="flex h-10 items-center gap-1 rounded-lg border border-border bg-muted/50 pr-1 transition-[border-color,box-shadow,background-color] focus-within:border-ring focus-within:bg-card focus-within:ring-[3px] focus-within:ring-ring/15 touch:h-12"
         onSubmit={(event) => {
           event.preventDefault();
           submit();
@@ -49,7 +49,7 @@ export function ChecklistQuickAdd({
           value={emoji}
           onChange={setEmoji}
           label="Pick emoji"
-          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-base transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none touch:h-11 touch:w-11 touch:text-lg"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-l-lg text-base transition-colors hover:bg-foreground/[0.05] focus-visible:bg-foreground/[0.05] focus-visible:outline-none touch:h-11 touch:w-11 touch:text-lg"
         />
 
         <input
@@ -61,7 +61,7 @@ export function ChecklistQuickAdd({
           aria-label="New checklist item"
           placeholder="Add a habit…"
           maxLength={100}
-          className="h-9 min-w-0 flex-1 bg-transparent px-1 text-sm placeholder:text-muted-foreground focus-visible:outline-none touch:h-11"
+          className="h-full min-w-0 flex-1 bg-transparent px-1 text-sm placeholder:text-muted-foreground/75 focus-visible:outline-none"
         />
 
         {/* Shown once there is something to add */}
@@ -69,7 +69,7 @@ export function ChecklistQuickAdd({
           <button
             type="submit"
             disabled={adding}
-            className="flex h-9 shrink-0 cursor-pointer items-center rounded-lg bg-primary px-3 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40 touch:h-11 touch:px-4 touch:text-sm"
+            className="btn btn-primary btn-xs h-7 px-3 touch:h-9 touch:px-4 touch:text-sm"
           >
             {adding ? "Adding…" : "Add"}
           </button>
@@ -77,7 +77,7 @@ export function ChecklistQuickAdd({
       </form>
 
       <div
-        className="mt-2 grid grid-cols-2 rounded-lg bg-muted p-0.5 text-xs touch:text-sm"
+        className="segmented mt-2 grid w-full grid-cols-2 touch:text-sm"
         role="group"
         aria-label="Where to add the item"
       >
@@ -88,10 +88,7 @@ export function ChecklistQuickAdd({
                 type="button"
                 aria-pressed={everyDay === option.everyDay}
                 className={[
-                  "inline-flex h-7 w-full cursor-pointer items-center justify-center rounded-md font-medium transition-colors touch:h-10",
-                  everyDay === option.everyDay
-                    ? "bg-background text-foreground shadow-xs"
-                    : "text-muted-foreground hover:text-foreground",
+                  "segmented-item h-7 w-full text-xs touch:h-10 touch:text-sm",
                 ].join(" ")}
                 onClick={() => setEveryDay(option.everyDay)}
               >

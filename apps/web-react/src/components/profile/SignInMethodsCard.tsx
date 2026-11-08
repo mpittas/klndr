@@ -38,10 +38,10 @@ export function SignInMethodsCard({
   );
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 shadow-xs sm:p-6">
-      <div className="border-b border-border pb-3">
-        <h2 className="text-sm font-semibold text-foreground sm:text-base">Sign-in methods</h2>
-        <p className="text-xs text-muted-foreground sm:text-sm">
+    <div className="card p-5 sm:p-7">
+      <div className="border-b border-border pb-4">
+        <h2 className="text-base font-semibold tracking-[-0.015em] text-foreground">Sign-in methods</h2>
+        <p className="mt-0.5 text-[13px] text-muted-foreground">
           Connect more than one, and each of them opens this same account and calendar. If you use Apple with &ldquo;Hide
           My Email&rdquo;, connect it here — otherwise it starts a separate, empty account.
         </p>
@@ -63,7 +63,7 @@ export function SignInMethodsCard({
                 {row.label}
               </span>
               {connected ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground sm:text-sm">
+                <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-success">
                   <Check className="h-4 w-4" aria-hidden="true" />
                   Connected
                 </span>
@@ -72,7 +72,7 @@ export function SignInMethodsCard({
                   type="button"
                   disabled={busy}
                   onClick={() => onConnect(row.linkable as LinkableProvider)}
-                  className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-4 text-xs font-medium text-foreground shadow-2xs transition hover:bg-accent disabled:opacity-50 sm:h-9 sm:text-sm"
+                  className="btn btn-secondary btn-sm h-11 px-4 sm:h-8"
                 >
                   {busy ? "Connecting..." : "Connect"}
                 </button>

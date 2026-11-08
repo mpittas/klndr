@@ -126,7 +126,7 @@ export function LandingFeatures() {
                   {WEEKDAY_INITIALS.map((label) => (
                     <span
                       key={label}
-                      className="py-2 text-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
+                      className="py-2 text-center text-[11px] font-semibold text-muted-foreground"
                     >
                       {label}
                     </span>
@@ -187,7 +187,7 @@ export function LandingFeatures() {
           {/* Activity library */}
           <article
             data-reveal
-            className="lift-card flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xs [--reveal-delay:80ms] [--tint:#8b5cf6]"
+            className="lift-card flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xs [--reveal-delay:80ms] [--tint:var(--cat-violet)]"
           >
             <div className="px-6 pt-6 sm:px-7 sm:pt-7">
               <h3 className="text-lg font-semibold tracking-tight text-foreground">Activities you reuse</h3>
@@ -242,7 +242,7 @@ export function LandingFeatures() {
                 <div className="flex items-center justify-between rounded-md border border-border bg-muted/40 px-2.5 py-1.5 text-xs">
                   <span className="text-muted-foreground">Category</span>
                   <span className="flex items-center gap-1.5 font-medium text-foreground">
-                    <span className="h-2 w-2 rounded-full bg-rose-500" /> Growth
+                    <span className="tone-rose tone-solid h-2 w-2 rounded-full" /> Growth
                   </span>
                 </div>
               </div>
@@ -252,7 +252,7 @@ export function LandingFeatures() {
           {/* Routines */}
           <article
             data-reveal
-            className="lift-card flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xs [--tint:#10b981]"
+            className="lift-card flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xs [--tint:var(--cat-emerald)]"
           >
             <div aria-hidden="true" className="stage m-2 flex h-52 items-center justify-center rounded-xl px-4">
               <div className="scene flex max-w-[17rem] flex-wrap justify-center gap-1.5">
@@ -270,7 +270,7 @@ export function LandingFeatures() {
                       className={[
                         "flex h-3.5 w-3.5 items-center justify-center rounded-full border text-[9px]",
                         routine.done
-                          ? "border-emerald-600 bg-emerald-600 font-bold text-white"
+                          ? "border-success bg-success font-bold text-success-foreground"
                           : "border-muted-foreground/40 text-transparent",
                       ].join(" ")}
                     >
@@ -296,7 +296,7 @@ export function LandingFeatures() {
           {/* Notes */}
           <article
             data-reveal
-            className="lift-card flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xs [--reveal-delay:80ms] [--tint:#f59e0b]"
+            className="lift-card flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xs [--reveal-delay:80ms] [--tint:var(--cat-amber)]"
           >
             <div aria-hidden="true" className="stage m-2 flex h-52 items-center justify-center rounded-xl px-4">
               <div className="scene w-full max-w-[16rem] -rotate-1 rounded-xl border border-border bg-card p-4 text-[13px] leading-relaxed text-foreground shadow-sm">
@@ -332,7 +332,7 @@ export function LandingFeatures() {
           {/* Phone */}
           <article
             data-reveal
-            className="lift-card flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xs [--reveal-delay:160ms] [--tint:#0ea5e9]"
+            className="lift-card flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xs [--reveal-delay:160ms] [--tint:var(--cat-sky)]"
           >
             <div aria-hidden="true" className="stage m-2 flex h-52 justify-center overflow-hidden rounded-xl">
               <div className="scene mt-5 h-[19rem] w-44 shrink-0 origin-top rounded-[1.9rem] border-[5px] border-zinc-900 bg-background shadow-lg dark:border-zinc-950">

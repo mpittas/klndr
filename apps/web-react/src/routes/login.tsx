@@ -132,7 +132,7 @@ function LoginPage() {
             <button
               type="button"
               onClick={() => setShowForgot((shown) => !shown)}
-              className="-my-2.5 -mr-2 cursor-pointer px-2 py-2.5 text-xs text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline"
+              className="-my-2.5 -mr-2 cursor-pointer rounded-md px-2 py-2.5 text-xs font-medium text-muted-foreground transition hover:text-foreground"
             >
               Forgot password?
             </button>
@@ -140,16 +140,16 @@ function LoginPage() {
         />
 
         {showForgot ? (
-          <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">
+          <div className="space-y-2.5 rounded-xl bg-muted/70 p-3">
             <p className="text-xs text-muted-foreground">
               Send password reset link to <span className="font-medium text-foreground">{email || "entered email"}</span>?
             </p>
             <button
               type="button"
               onClick={() => void sendReset()}
-              className="h-11 w-full cursor-pointer rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground shadow-2xs transition hover:bg-accent sm:h-9 sm:text-xs"
+              className="btn btn-secondary btn-md w-full"
             >
-              Send Reset Email
+              Send reset email
             </button>
           </div>
         ) : null}
@@ -157,22 +157,19 @@ function LoginPage() {
         <button
           type="submit"
           disabled={busy}
-          className="flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:opacity-50 sm:h-9"
+          className="btn btn-primary btn-lg w-full"
         >
-          {busy ? "Signing in..." : "Sign In"}
+          {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
 
-      <div className="relative my-3">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-card px-2 text-muted-foreground">or</span>
-        </div>
+      <div className="flex items-center gap-3 text-xs text-muted-foreground" role="separator">
+        <span className="h-px flex-1 bg-border" />
+        or
+        <span className="h-px flex-1 bg-border" />
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {isAppleSignInEnabled ? (
           <ProviderButton
             icon={<AppleIcon className="h-4 w-4" />}
@@ -193,11 +190,11 @@ function LoginPage() {
 
       <ContinueAsGuest disabled={busy} onContinue={auth.continueAsGuest} />
 
-      <p className="text-center text-xs text-muted-foreground sm:text-sm">
+      <p className="text-center text-[13px] text-muted-foreground">
         Don't have an account?{" "}
         <Link
           to="/signup"
-          className="-my-2 inline-block py-2 font-medium text-foreground underline underline-offset-4 transition hover:text-primary"
+          className="-my-2 inline-block rounded-sm py-2 font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:decoration-foreground"
         >
           Sign up
         </Link>

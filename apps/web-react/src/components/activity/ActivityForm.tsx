@@ -92,13 +92,13 @@ export function ActivityForm({
     >
       {/* Name + emoji */}
       <div>
-        <label htmlFor="activity-name" className="text-xs font-medium text-foreground">
+        <label htmlFor="activity-name" className="field-label">
           Name
         </label>
         <div
           className={[
-            "mt-1 flex h-11 w-full items-center rounded-md border bg-background shadow-xs transition-colors focus-within:ring-1 focus-within:ring-ring sm:h-9",
-            nameError ? "border-destructive" : "border-input",
+            "mt-1.5 flex h-11 w-full items-center rounded-lg border bg-muted/50 transition-[border-color,box-shadow,background-color] focus-within:border-ring focus-within:bg-card focus-within:ring-[3px] focus-within:ring-ring/15 sm:h-10 dark:bg-muted/60",
+            nameError ? "border-destructive" : "border-border",
           ].join(" ")}
         >
           <EmojiPicker
@@ -118,7 +118,7 @@ export function ActivityForm({
             maxLength={80}
             autoComplete="off"
             placeholder="e.g. Deep work, Gym, Read"
-            className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none"
+            className="h-full min-w-0 flex-1 bg-transparent px-3 text-sm placeholder:text-muted-foreground/75 focus-visible:outline-none"
             onChange={(event) => {
               const name = event.target.value;
               setNameError(false);
@@ -136,19 +136,19 @@ export function ActivityForm({
 
       {/* Category */}
       <div>
-        <span className="text-xs font-medium text-foreground">Category</span>
+        <span className="field-label">Category</span>
         <CategorySelect
           value={draft.category}
           templates={templates}
-          className="mt-1"
+          className="mt-1.5"
           onChange={(category) => setDraft((d) => ({ ...d, category }))}
         />
       </div>
 
       {/* Duration */}
       <div>
-        <span className="text-xs font-medium text-foreground">Default length</span>
-        <div role="radiogroup" aria-label="Default length" className="mt-1 flex flex-wrap gap-2 sm:gap-1.5">
+        <span className="field-label">Default length</span>
+        <div role="radiogroup" aria-label="Default length" className="mt-1.5 flex flex-wrap gap-2 sm:gap-1.5">
           {DURATION_CHOICES.map((minutes) => (
             <button
               key={minutes}
@@ -156,10 +156,10 @@ export function ActivityForm({
               role="radio"
               aria-checked={draft.defaultDuration === minutes}
               className={[
-                "h-10 min-w-14 cursor-pointer rounded-md border px-3 text-sm font-medium tabular-nums transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-7 sm:min-w-11 sm:px-2 sm:text-xs",
+                "h-10 min-w-14 cursor-pointer rounded-full px-3 text-sm font-semibold tabular-nums transition-colors duration-150 sm:h-8 sm:min-w-12 sm:px-2.5 sm:text-xs",
                 draft.defaultDuration === minutes
-                  ? "border-primary bg-primary text-primary-foreground shadow-xs"
-                  : "border-input bg-background text-foreground hover:bg-accent",
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-foreground/[0.05] text-muted-foreground hover:bg-foreground/[0.09] hover:text-foreground",
               ].join(" ")}
               onClick={() => setDraft((d) => ({ ...d, defaultDuration: minutes }))}
             >
@@ -171,7 +171,7 @@ export function ActivityForm({
 
       {/* Notes */}
       <div>
-        <label htmlFor="activity-notes" className="text-xs font-medium text-foreground">
+        <label htmlFor="activity-notes" className="field-label">
           Notes <span className="font-normal text-muted-foreground">(optional)</span>
         </label>
         <textarea
@@ -180,7 +180,7 @@ export function ActivityForm({
           rows={1}
           maxLength={500}
           placeholder="A short description or intention"
-          className="mt-1 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:py-1.5"
+          className="field mt-1.5 h-auto resize-none py-2"
           onChange={(event) => {
             const notes = event.target.value;
             setDraft((d) => ({ ...d, notes }));
@@ -190,7 +190,7 @@ export function ActivityForm({
 
       {error ? (
         <p
-          className="rounded-md border border-destructive/20 bg-destructive/10 p-2.5 text-xs font-medium text-destructive"
+          className="rounded-lg border border-destructive/20 bg-destructive/[0.06] px-3 py-2.5 text-[13px] font-medium text-destructive"
           role="alert"
         >
           {error}
@@ -200,7 +200,7 @@ export function ActivityForm({
       <div className="sticky -bottom-[max(1rem,env(safe-area-inset-bottom))] -mx-4 -mb-[max(1rem,env(safe-area-inset-bottom))] flex gap-2 border-t border-border bg-background px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 sm:static sm:mx-0 sm:mb-0 sm:justify-end sm:border-t-0 sm:px-0 sm:pb-0 sm:pt-1">
         <button
           type="button"
-          className="inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium text-foreground shadow-xs transition hover:bg-accent sm:h-8 sm:flex-none"
+          className="btn btn-soft btn-sm h-11 flex-1 px-4 sm:h-8 sm:flex-none"
           onClick={onCancel}
         >
           Cancel
@@ -208,7 +208,7 @@ export function ActivityForm({
         <button
           type="submit"
           disabled={busy}
-          className="inline-flex h-11 flex-[1.6] cursor-pointer items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 sm:h-8 sm:flex-none"
+          className="btn btn-primary btn-sm h-11 flex-[1.6] px-4 sm:h-8 sm:flex-none"
         >
           {busy ? "Saving…" : submitLabel}
         </button>

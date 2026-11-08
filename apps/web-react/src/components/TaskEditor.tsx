@@ -1,24 +1,32 @@
 import {
+  DAY_MINUTES,
   DURATION_CHOICES,
+  addDaysISO,
   formatDuration,
   formatTime,
   fromTimeInput,
+  longDate,
+  mediumDate,
+  nowMinutes,
   timeInputValue,
+  todayISO,
   type ActivityTemplate,
   type ScheduledTask,
   type TaskDraft,
 } from "@klndr/core";
 import { useCategoryColor } from "@klndr/data";
-import { ArrowRight, CalendarDays, CheckCircle2, Clock, Folder, StickyNote, Timer, Trash2, type LucideIcon } from "lucide-react";
-import { useId, useState, type CSSProperties, type ReactNode } from "react";
+import { ArrowRight, CalendarDays, CheckCircle2, ChevronDown, Folder, StickyNote, Timer, Trash2, type LucideIcon } from "lucide-react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 
 import { ActivityPicker } from "@/components/ActivityPicker";
 import { CategorySelect } from "@/components/category/CategorySelect";
+import { DatePickerModal } from "@/components/DatePickerModal";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { Modal } from "@/components/Modal";
 import { NotesEditor } from "@/components/NotesEditor";
-import { TimePicker } from "@/components/TimePicker";
+import { TimeSelect, type TimeOption } from "@/components/TimeSelect";
 import { useEmojiField } from "@/hooks/useEmojiField";
+import { toneClassOf } from "@/lib/colors";
 
 /** What the editor was opened for. */
 export type EditorRequest = {
@@ -41,9 +49,8 @@ type TaskEditorProps = {
 };
 
 const GENERAL = "General";
-
-const CONTROL_CLASS =
-  "mt-1.5 flex h-11 w-full min-w-0 rounded-xl border border-transparent bg-muted/60 px-3 py-1 text-sm transition-colors hover:bg-muted focus-visible:border-ring focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 sm:h-10";
+/** The step of the time lists. */
+const SLOT = 15;
 
 /** A small label with its icon, shared by every field so the form reads as one list. */
 function FieldLabel({ icon: Icon, children, id }: { icon: LucideIcon; children: ReactNode; id?: string }) {
@@ -126,8 +133,8 @@ function TaskEditorDialog({
   onDeleteTemplate,
 }: Omit<TaskEditorProps, "request"> & { open: boolean; request: EditorRequest }) {
   const colorOf = useCategoryColor();
-  const startLabelId = useId();
   const durationLabelId = useId();
+  const [pickingDate, setPickingDate] = useState(false);
 
   const [initial] = useState(() => draftFrom(request));
   const [draft, setDraft] = useState(initial);
@@ -155,11 +162,48 @@ function TaskEditorDialog({
   const category = draft.category.trim() || GENERAL;
   // Blocks take their category's color; there is no separate color to pick.
   const color = colorOf({ category });
+  // The category's hue (`--tone`) and its ink (`--tone-ink`), for the tints of the dialog.
+  const tone = toneClassOf(color);
 
-  const durationOptions = [...new Set([...DURATION_CHOICES, draft.duration])].sort((a, b) => a - b);
   const startMinutes = fromTimeInput(draft.start);
-  const endLabel = formatTime(startMinutes + draft.duration);
-  const startLabel = formatTime(startMinutes);
+  const endMinutes = startMinutes + draft.duration;
+  const today = todayISO();
+  const tomorrow = addDaysISO(today, 1);
+  // The year only when it is not this one.
+  const yearSuffix = draft.day.slice(0, 4) === today.slice(0, 4) ? "" : `, ${draft.day.slice(0, 4)}`;
+
+  // Start times every quarter hour (plus the block's own, if it is off the grid), with "Now" on today's slot.
+  const startOptions = useMemo<TimeOption[]>(() => {
+    const now = draft.day === today ? Math.floor(nowMinutes() / SLOT) * SLOT : null;
+    const values = new Set<number>([startMinutes]);
+    for (let minute = 0; minute < DAY_MINUTES; minute += SLOT) values.add(minute);
+    return [...values]
+      .sort((a, b) => a - b)
+      .map((value) => ({
+        value,
+        label: formatTime(value),
+        hint: value === now ? "Now" : undefined,
+        accent: value === now,
+      }));
+  }, [startMinutes, draft.day, today]);
+
+  // End times from a quarter hour after the start to midnight, each with the length it gives.
+  const endOptions = useMemo<TimeOption[]>(() => {
+    const values = new Set<number>([endMinutes]);
+    for (let end = startMinutes + SLOT; end <= DAY_MINUTES; end += SLOT) values.add(end);
+    return [...values]
+      .filter((end) => end > startMinutes)
+      .sort((a, b) => a - b)
+      .map((value) => ({ value, label: formatTime(value), hint: formatDuration(value - startMinutes) }));
+  }, [startMinutes, endMinutes]);
+
+  // A new start keeps the length, cut short where it would run past midnight.
+  const changeStart = (minutes: number) =>
+    patch({ start: timeInputValue(minutes), duration: Math.max(SLOT, Math.min(draft.duration, DAY_MINUTES - minutes)) });
+  const changeEnd = (minutes: number) => patch({ duration: Math.max(SLOT, minutes - startMinutes) });
+
+  const timeTrigger =
+    "group -mx-1.5 flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[1.375rem] font-semibold leading-tight tabular-nums tracking-[-0.025em] transition-colors hover:bg-card/60 aria-expanded:bg-card/80 cursor-pointer sm:text-[1.625rem]";
 
   const applyTemplate = (id: string | null) => {
     const template = templates.find((item) => item.id === id);
@@ -239,30 +283,30 @@ function TaskEditorDialog({
   };
 
   return (
+    <>
     <Modal
       open={open}
       title={isEdit ? "Edit block" : "New block"}
       hideTitle
-      accent={color}
       onClose={onClose}
       onBackdropClick={dismiss}
       footer={
         <div className="space-y-3">
           {error ? (
-            <p role="alert" className="rounded-md border border-destructive/20 bg-destructive/10 p-2.5 text-xs text-destructive">
+            <p role="alert" className="rounded-lg border border-destructive/20 bg-destructive/[0.06] px-3 py-2.5 text-[13px] font-medium text-destructive">
               {error}
             </p>
           ) : null}
 
           {confirmingTemplateDelete && sourceTemplate ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-destructive/20 bg-destructive/[0.05] px-3 py-2.5">
               <p className="text-xs text-foreground">
                 Delete the activity “{sourceTemplate.name}”? Blocks already on your calendar stay.
               </p>
               <div className="flex w-full justify-end gap-2 sm:w-auto">
                 <button
                   type="button"
-                  className="h-10 cursor-pointer rounded-lg bg-foreground/5 px-4 text-xs font-medium text-foreground transition hover:bg-foreground/10 sm:h-8"
+                  className="btn btn-soft btn-sm h-10 sm:h-8"
                   onClick={() => setConfirmingTemplateDelete(false)}
                 >
                   Keep it
@@ -270,7 +314,7 @@ function TaskEditorDialog({
                 <button
                   type="button"
                   disabled={busy}
-                  className="h-10 cursor-pointer rounded-lg bg-destructive px-4 text-xs font-medium text-destructive-foreground transition hover:bg-destructive/90 disabled:opacity-50 sm:h-8"
+                  className="btn btn-danger btn-sm h-10 sm:h-8"
                   onClick={removeTemplate}
                 >
                   {busy ? "Deleting…" : "Delete activity"}
@@ -286,16 +330,16 @@ function TaskEditorDialog({
                 type="button"
                 disabled={busy}
                 aria-label={sourceTemplate ? "Delete activity" : "Delete block"}
-                className="mr-auto inline-flex h-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-destructive/10 px-4 text-sm font-medium text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50 sm:h-10"
+                className="btn btn-danger-soft btn-md mr-auto h-11 px-4 sm:h-10"
                 onClick={() => (sourceTemplate ? setConfirmingTemplateDelete((value) => !value) : removeBlock())}
               >
-                <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                <Trash2 aria-hidden="true" />
                 <span className="truncate">Delete</span>
               </button>
             ) : null}
             <button
               type="button"
-              className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-foreground/5 px-5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 sm:h-10"
+              className="btn btn-soft btn-md h-11 px-5 sm:h-10"
               onClick={onClose}
             >
               Cancel
@@ -304,7 +348,7 @@ function TaskEditorDialog({
               type="submit"
               form="task-editor-form"
               disabled={busy}
-              className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 active:scale-[0.98] disabled:opacity-50 sm:h-10"
+              className="btn btn-primary btn-md h-11 px-5 sm:h-10"
             >
               {busy ? "Saving…" : isEdit ? "Save" : "Add block"}
             </button>
@@ -314,8 +358,7 @@ function TaskEditorDialog({
     >
       <form
         id="task-editor-form"
-        className="space-y-5 pb-1"
-        style={{ "--cat": color } as CSSProperties}
+        className={["space-y-5 pb-1", tone].join(" ")}
         onSubmit={(event) => {
           event.preventDefault();
           submit();
@@ -331,9 +374,9 @@ function TaskEditorDialog({
             hint={emoji.hint}
             onChange={emoji.choose}
             onAuto={emoji.auto}
-            className="flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-[color-mix(in_oklab,var(--cat)_22%,var(--background))] text-3xl ring-1 ring-inset ring-[color-mix(in_oklab,var(--cat)_35%,transparent)] transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+            className="tone-icon flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center rounded-2xl text-3xl transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
           />
-          <div className="min-w-0 flex-1 border-b-2 border-transparent transition-colors focus-within:border-[color-mix(in_oklab,var(--cat)_70%,transparent)]">
+          <div className="min-w-0 flex-1 border-b-2 border-transparent transition-colors focus-within:border-[var(--tone)]">
             <label htmlFor="task-title" className="sr-only">
               Name
             </label>
@@ -344,7 +387,7 @@ function TaskEditorDialog({
               autoComplete="off"
               enterKeyHint="done"
               placeholder="Name this block"
-              className="h-12 w-full min-w-0 bg-transparent text-xl font-semibold tracking-tight placeholder:font-medium placeholder:text-muted-foreground/60 focus-visible:outline-none"
+              className="h-12 w-full min-w-0 bg-transparent text-[1.375rem] font-semibold tracking-[-0.02em] placeholder:font-medium placeholder:text-muted-foreground/55 focus-visible:outline-none"
               onChange={(event) => patch({ title: event.target.value })}
               onBlur={emoji.settle}
             />
@@ -356,41 +399,69 @@ function TaskEditorDialog({
           <ActivityPicker value={draft.templateId} templates={templates} onChange={applyTemplate} />
         ) : null}
 
-        {/* When: the span it covers up front, then the date and start, then the length as one-tap chips */}
-        <section className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xs">
-          <div className="flex items-center justify-between gap-3 bg-[color-mix(in_oklab,var(--cat)_10%,transparent)] px-4 py-3.5">
-            <div className="flex min-w-0 items-center gap-2 text-xl font-semibold tabular-nums tracking-tight text-foreground">
-              <span>{startLabel}</span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <span className="text-muted-foreground">{endLabel}</span>
+        {/* When: the span up front on a band of the category's color (each end opens a list of times), then the
+            day and the length */}
+        <section className="card overflow-hidden">
+          <div className="border-b border-[color-mix(in_oklab,var(--tone)_30%,var(--card))] bg-[color-mix(in_oklab,var(--tone)_20%,var(--card))] px-4 pb-3.5 pt-3 text-[var(--tone-ink)] dark:bg-[color-mix(in_oklab,var(--tone)_24%,var(--card))]">
+            <div className="flex items-end gap-3">
+              <div className="min-w-0">
+                <span className="block text-xs font-medium opacity-70">Starts</span>
+                <TimeSelect value={startMinutes} options={startOptions} onChange={changeStart} label="Start time" className={timeTrigger}>
+                  {formatTime(startMinutes)}
+                  <ChevronDown className="h-4 w-4 shrink-0 opacity-40 transition-opacity group-hover:opacity-80" aria-hidden="true" />
+                </TimeSelect>
+              </div>
+
+              {/* The length, on the line between the two ends */}
+              <div className="mb-[0.7rem] flex min-w-6 flex-1 items-center" aria-hidden="true">
+                <span className="h-px flex-1 bg-current opacity-20" />
+                <span className="mx-1.5 shrink-0 rounded-full bg-card px-2 py-0.5 text-[11px] font-semibold tabular-nums text-foreground shadow-xs">
+                  {formatDuration(draft.duration)}
+                </span>
+                <span className="h-px flex-1 bg-current opacity-20" />
+                <ArrowRight className="-ml-1 h-3.5 w-3.5 shrink-0 opacity-40" />
+              </div>
+
+              <div className="min-w-0 text-right">
+                <span className="block text-xs font-medium opacity-70">Ends</span>
+                <TimeSelect value={endMinutes} options={endOptions} onChange={changeEnd} label="End time" align="end" className={timeTrigger}>
+                  {formatTime(endMinutes)}
+                  <ChevronDown className="h-4 w-4 shrink-0 opacity-40 transition-opacity group-hover:opacity-80" aria-hidden="true" />
+                </TimeSelect>
+              </div>
             </div>
-            <span className="shrink-0 rounded-full bg-background/80 px-2.5 py-1 text-xs font-semibold tabular-nums text-foreground ring-1 ring-inset ring-border/70">
-              {formatDuration(draft.duration)}
-            </span>
           </div>
 
           <div className="space-y-4 p-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-              <label className="block min-w-0">
-                <FieldLabel icon={CalendarDays}>Date</FieldLabel>
-                <input
-                  value={draft.day}
-                  type="date"
-                  className={CONTROL_CLASS}
-                  onChange={(event) => patch({ day: event.target.value })}
-                />
-              </label>
-              <div className="block min-w-0">
-                <FieldLabel icon={Clock} id={startLabelId}>
-                  Starts
-                </FieldLabel>
-                <div className="mt-1.5">
-                  <TimePicker
-                    value={draft.start}
-                    labelledBy={startLabelId}
-                    className={CONTROL_CLASS.replace("mt-1.5 ", "").replace("px-3", "px-1.5 sm:px-2")}
-                    onChange={(start) => patch({ start })}
-                  />
+            <div>
+              <FieldLabel icon={CalendarDays}>Date</FieldLabel>
+              <div className="mt-1.5 flex gap-2">
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-label={`Date: ${longDate(draft.day)}${yearSuffix}`}
+                  className="field h-11 min-w-0 flex-1 cursor-pointer items-center justify-between gap-2 text-left sm:h-10"
+                  onClick={() => setPickingDate(true)}
+                >
+                  <span className="min-w-0 truncate font-medium">
+                    <span className="sm:hidden">{mediumDate(draft.day)}</span>
+                    <span className="hidden sm:inline">{longDate(draft.day)}</span>
+                    {yearSuffix}
+                  </span>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                </button>
+                <div className="segmented h-11 shrink-0 sm:h-10" role="group" aria-label="Quick dates">
+                  <button type="button" aria-pressed={draft.day === today} className="segmented-item px-3" onClick={() => patch({ day: today })}>
+                    Today
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={draft.day === tomorrow}
+                    className="segmented-item px-3"
+                    onClick={() => patch({ day: tomorrow })}
+                  >
+                    Tomorrow
+                  </button>
                 </div>
               </div>
             </div>
@@ -399,30 +470,25 @@ function TaskEditorDialog({
               <FieldLabel icon={Timer} id={durationLabelId}>
                 Duration
               </FieldLabel>
-              <div role="radiogroup" aria-labelledby={durationLabelId} className="mt-2 grid grid-cols-4 gap-1.5">
-                {durationOptions.map((value) => {
-                  const selected = value === draft.duration;
-                  return (
-                    <button
-                      key={value}
-                      type="button"
-                      role="radio"
-                      aria-checked={selected}
-                      className={`h-9 min-w-0 cursor-pointer rounded-full px-2 text-xs font-semibold tabular-nums transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring touch:h-11 ${
-                        selected
-                          ? "bg-foreground text-background shadow-sm"
-                          : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground"
-                      }`}
-                      onClick={() => patch({ duration: value })}
-                    >
-                      {formatDuration(value)}
-                    </button>
-                  );
-                })}
+              <div role="radiogroup" aria-labelledby={durationLabelId} className="segmented mt-1.5 grid w-full grid-cols-4 gap-1 p-1">
+                {DURATION_CHOICES.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    role="radio"
+                    aria-checked={value === draft.duration}
+                    disabled={startMinutes + value > DAY_MINUTES}
+                    className="segmented-item h-8 px-1 text-xs font-semibold tabular-nums disabled:cursor-not-allowed disabled:opacity-35 touch:h-10"
+                    onClick={() => patch({ duration: value })}
+                  >
+                    {formatDuration(value)}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         </section>
+
 
         <div className="block">
           <FieldLabel icon={Folder}>Category</FieldLabel>
@@ -444,10 +510,10 @@ function TaskEditorDialog({
         </div>
 
         {/* A switch rather than a checkbox: it reads as a state of the block, not a form option */}
-        <label className="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-2xl border border-border/70 bg-card px-4 text-sm font-medium text-foreground shadow-xs transition-colors hover:bg-muted/40">
+        <label className="card flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 text-sm font-medium text-foreground transition-colors hover:bg-muted/40">
           <span className="flex items-center gap-2.5">
             <CheckCircle2
-              className={`h-4.5 w-4.5 transition-colors ${draft.completed ? "text-emerald-500" : "text-muted-foreground"}`}
+              className={`h-4.5 w-4.5 transition-colors ${draft.completed ? "text-success" : "text-muted-foreground"}`}
               aria-hidden="true"
             />
             Mark as completed
@@ -461,10 +527,23 @@ function TaskEditorDialog({
           />
           <span
             aria-hidden="true"
-            className="relative h-6 w-10 shrink-0 rounded-full bg-border transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-background after:shadow-xs after:transition-transform peer-checked:bg-primary peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2"
+            className="relative h-6 w-10 shrink-0 rounded-full bg-foreground/15 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-transform peer-checked:bg-success peer-checked:after:translate-x-4 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background"
           />
         </label>
       </form>
     </Modal>
+
+    {/* Beside the dialog, not in it, so its keys and focus stay its own. */}
+    <DatePickerModal
+      open={pickingDate}
+      initial={draft.day}
+      selected={draft.day}
+      today={today}
+      title="Choose a date"
+      subtitle="The day this block happens on"
+      onClose={() => setPickingDate(false)}
+      onPick={(day) => patch({ day })}
+    />
+    </>
   );
 }

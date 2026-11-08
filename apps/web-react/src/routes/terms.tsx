@@ -117,24 +117,24 @@ function TermsPage() {
   useDocumentTitle("Terms · klndr.");
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-5 py-10 sm:px-8 sm:py-14">
-      <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Terms of use</h1>
-      <p className="mt-2 text-xs text-muted-foreground sm:text-sm">Last updated {POLICY_UPDATED}.</p>
+    <div className="mx-auto my-6 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-border bg-card px-6 py-9 shadow-xs sm:my-12 sm:px-12 sm:py-14">
+      <h1 className="text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-[2.25rem]">Terms of use</h1>
+      <p className="mt-2 text-[13px] text-muted-foreground">Last updated {POLICY_UPDATED}.</p>
 
-      <div className="mt-8 space-y-8">
+      <div className="mt-10 space-y-9">
         {sections.map((section) => (
-          <section key={section.heading} className="space-y-2">
-            <h2 className="text-base font-semibold text-foreground sm:text-lg">{section.heading}</h2>
+          <section key={section.heading} className="space-y-3">
+            <h2 className="text-[17px] font-semibold tracking-[-0.015em] text-foreground">{section.heading}</h2>
             {section.body?.map((paragraph, index) => (
-              <p key={index} className="text-xs leading-relaxed text-muted-foreground sm:text-sm">
+              <p key={index} className="text-[15px] leading-7 text-foreground/75">
                 {paragraph}
               </p>
             ))}
             {section.items && (
               <ul className="space-y-2">
                 {section.items.map((item) => (
-                  <li key={item} className="flex gap-2.5 text-xs leading-relaxed text-muted-foreground sm:text-sm">
-                    <span aria-hidden="true" className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-foreground/40" />
+                  <li key={item} className="flex gap-2.5 text-[15px] leading-7 text-foreground/75">
+                    <span aria-hidden="true" className="mt-[11px] h-1.5 w-1.5 shrink-0 rounded-full bg-brand/60" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -144,11 +144,11 @@ function TermsPage() {
         ))}
       </div>
 
-      <div className="mt-10 flex flex-wrap gap-x-4 gap-y-2 border-t border-border pt-6 text-xs sm:text-sm">
-        <Link to="/privacy" className="font-medium text-foreground underline underline-offset-4">
+      <div className="mt-12 flex flex-wrap gap-x-5 gap-y-2 border-t border-border pt-6 text-sm">
+        <Link to="/privacy" className="rounded-sm font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:decoration-foreground">
           Privacy policy
         </Link>
-        <Link to="/" className="text-muted-foreground underline underline-offset-4">
+        <Link to="/" className="rounded-sm text-muted-foreground transition hover:text-foreground">
           Back to klndr.
         </Link>
       </div>

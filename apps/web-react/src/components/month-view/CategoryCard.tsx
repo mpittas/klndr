@@ -25,19 +25,19 @@ export function CategoryCard({
   const isOn = (category: string) => selected.length === 0 || selected.includes(category);
 
   return (
-    <section className="rounded-xl border border-border bg-card p-3 shadow-xs">
+    <section className="card p-4">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
-          Categories{" "}
-          <span className="ml-1 font-medium normal-case tracking-normal text-muted-foreground">
-            {selected.length ? `${selected.length} of ${shares.length} shown` : "tap to filter"}
+        <h2 className="card-title">
+          Categories
+          <span className="card-meta ml-1.5">
+            {selected.length ? `${selected.length} of ${shares.length} shown` : "This month"}
           </span>
         </h2>
         {selected.length > 0 && (
           <button
             type="button"
             onClick={onClear}
-            className="inline-flex h-6 cursor-pointer items-center gap-1 rounded-full px-1.5 text-[11px] font-medium text-muted-foreground transition hover:text-foreground"
+            className="btn btn-ghost btn-xs -mr-1.5 h-6 px-1.5"
           >
             <X className="h-3 w-3" aria-hidden="true" />
             Clear
@@ -46,20 +46,20 @@ export function CategoryCard({
       </div>
 
       {shares.length === 0 ? (
-        <p className="mt-2 text-xs text-muted-foreground">Nothing planned this month yet.</p>
+        <p className="mt-3 text-[13px] text-muted-foreground">Nothing planned this month yet.</p>
       ) : (
         <>
-          <div className="mt-2 flex h-1.5 gap-px overflow-hidden rounded-full" aria-hidden="true">
+          <div className="mt-3 flex h-2 gap-0.5 overflow-hidden rounded-full" aria-hidden="true">
             {shares.map((share) => (
               <span
                 key={share.category}
-                className={["h-full transition-opacity", paletteOf(colorOf(share.sample)).accent, isOn(share.category) ? "" : "opacity-25"].join(" ")}
+                className={["h-full rounded-[2px] transition-opacity first:rounded-l-full last:rounded-r-full", paletteOf(colorOf(share.sample)).accent, isOn(share.category) ? "" : "opacity-25"].join(" ")}
                 style={{ width: `${(share.minutes / total) * 100}%` }}
               />
             ))}
           </div>
 
-          <ul className="mt-1.5">
+          <ul className="-mx-1.5 mt-2.5">
             {shares.map((share) => {
               const tone = paletteOf(colorOf(share.sample));
               const on = selected.includes(share.category);
@@ -71,17 +71,17 @@ export function CategoryCard({
                     onClick={() => onToggle(share.category)}
                     title={`${share.done} of ${share.count} done`}
                     className={[
-                      "flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      on ? "bg-muted" : "hover:bg-muted/60",
+                      "flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-lg px-1.5 text-left transition-colors",
+                      on ? "bg-muted" : "hover:bg-muted/70",
                       isOn(share.category) ? "" : "opacity-50",
                     ].join(" ")}
                   >
                     <span className={["h-2 w-2 shrink-0 rounded-full", tone.dot].join(" ")} aria-hidden="true" />
                     <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">{share.category}</span>
-                    <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                       {share.done}/{share.count}
                     </span>
-                    <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-foreground">
+                    <span className="w-10 shrink-0 text-right text-xs font-semibold tabular-nums text-foreground">
                       {hoursLabel(share.minutes)}
                     </span>
                   </button>

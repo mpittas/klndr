@@ -94,7 +94,7 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
   };
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col">
       {stats.total > 0 && (
         <ChecklistHeader
           completedCount={stats.done}
@@ -143,7 +143,7 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
 
         {/* Default items skipped on this day only */}
         {skipped.length > 0 && (
-          <details className="group/skipped mt-3 border-t border-border/60 pt-1">
+          <details className="group/skipped mt-3 border-t border-border/70 pt-1">
             <summary className="flex min-h-10 cursor-pointer list-none select-none items-center gap-1.5 px-2 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground touch:min-h-11 touch:text-sm [&::-webkit-details-marker]:hidden">
               <ChevronRight
                 className="h-3.5 w-3.5 transition-transform group-open/skipped:rotate-90"
@@ -164,7 +164,7 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
                   <span className="min-w-0 flex-1 break-words leading-snug">{item.title}</span>
                   <button
                     type="button"
-                    className="inline-flex h-8 shrink-0 cursor-pointer items-center rounded-md px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-accent touch:h-11 touch:px-4 touch:text-sm"
+                    className="btn btn-ghost btn-xs text-foreground touch:h-11 touch:px-4 touch:text-sm"
                     onClick={() => void skip(item, false)}
                   >
                     Restore
@@ -190,7 +190,7 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
             <button
               type="button"
               onClick={() => setEditing(null)}
-              className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-foreground/5 px-5 text-sm font-medium text-foreground transition-colors hover:bg-foreground/10 sm:h-10"
+              className="btn btn-soft btn-md h-11 px-5 sm:h-10"
             >
               Cancel
             </button>
@@ -198,7 +198,7 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
               type="submit"
               form="checklist-edit-form"
               disabled={!editTitle.trim() || saving}
-              className="inline-flex h-11 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:opacity-40 sm:h-10"
+              className="btn btn-primary btn-md h-11 px-5 sm:h-10"
             >
               {saving ? "Saving…" : "Save"}
             </button>
@@ -214,19 +214,19 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
           }}
         >
           <div>
-            <span className="block text-xs font-medium text-foreground">Emoji</span>
+            <span className="field-label">Emoji</span>
             <div className="mt-1.5">
               <EmojiPicker
                 value={editEmoji}
                 onChange={setEditEmoji}
                 label="Change emoji"
-                className="flex h-11 w-14 cursor-pointer items-center justify-center rounded-md border border-input bg-background text-2xl shadow-xs transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9 sm:w-12 sm:text-xl"
+                className="field h-11 w-14 cursor-pointer items-center justify-center px-0 text-2xl sm:h-10 sm:w-12 sm:text-xl"
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="checklist-edit-title" className="block text-xs font-medium text-foreground">
+            <label htmlFor="checklist-edit-title" className="field-label">
               Title
             </label>
             <input
@@ -238,7 +238,7 @@ export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof use
               maxLength={100}
               autoComplete="off"
               enterKeyHint="done"
-              className="mt-1.5 flex h-11 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring sm:h-9"
+              className="field mt-1.5 h-11 sm:h-10"
             />
           </div>
         </form>

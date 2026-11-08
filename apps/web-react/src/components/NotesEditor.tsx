@@ -149,7 +149,7 @@ export function NotesEditor({
     <>
       {/* The grip at the corner drags it taller; the box scrolls once its text outgrows it. */}
       <div
-        className="mt-1.5 flex h-32 min-h-20 max-h-[70dvh] cursor-text flex-col resize-y overflow-y-auto overscroll-contain rounded-xl border border-transparent bg-muted/60 transition-colors hover:bg-muted focus-within:border-ring focus-within:bg-background focus-within:ring-2 focus-within:ring-ring/25"
+        className="mt-1.5 flex h-32 min-h-20 max-h-[70dvh] cursor-text flex-col resize-y overflow-y-auto overscroll-contain rounded-lg border border-border bg-muted/50 transition-[background-color,border-color,box-shadow] duration-150 hover:bg-muted focus-within:border-ring focus-within:bg-card focus-within:ring-[3px] focus-within:ring-ring/15 dark:bg-muted/60"
         onClickCapture={(event) => {
           // Ctrl/Cmd+click anywhere on a to-do row ticks it, so the row is as easy to hit as the box.
           if (!(event.ctrlKey || event.metaKey) || !(event.target instanceof Element)) return;
@@ -191,7 +191,7 @@ function SlashMenu({ menu, selected, onHover }: { menu: Menu; selected: number; 
       role="listbox"
       aria-label="Insert"
       style={style}
-      className="fixed z-[70] w-48 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg animate-in fade-in-0 duration-100"
+      className="menu fixed z-[70] w-52 animate-in fade-in-0 zoom-in-95 duration-100"
       onMouseDown={(event) => event.preventDefault()}
     >
       {items.map((item, index) => {
@@ -202,11 +202,11 @@ function SlashMenu({ menu, selected, onHover }: { menu: Menu; selected: number; 
             type="button"
             role="option"
             aria-selected={index === selected}
-            className="flex h-8 w-full cursor-pointer items-center gap-2 rounded-md px-2 text-left text-[13px] aria-selected:bg-accent"
+            className="flex h-8 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left text-[13px] aria-selected:bg-accent"
             onMouseMove={() => onHover(index)}
             onClick={() => command(item)}
           >
-            <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
+            <Icon className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.75} aria-hidden="true" />
             {item.label}
           </button>
         );

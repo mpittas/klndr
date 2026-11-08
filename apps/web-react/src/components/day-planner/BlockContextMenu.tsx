@@ -87,12 +87,12 @@ const clamp = (value: number, min: number, max: number) => Math.max(min, Math.mi
 // `transition-none`: `duration-100` (for the zoom-in) also sets a transition on every property, so a panel
 // measured at top/left 0 would slide to its place instead of opening there.
 const panelClass =
-  "fixed transition-none flex max-h-[calc(100dvh-16px)] flex-col overflow-y-auto overscroll-contain rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg outline-none";
+  "menu fixed transition-none flex max-h-[calc(100dvh-16px)] flex-col overflow-y-auto overscroll-contain outline-none";
 const rowClass =
-  "flex h-7 w-full shrink-0 cursor-pointer select-none items-center gap-2 rounded-md px-2 text-left text-[13px] outline-none touch:h-10";
+  "flex h-8 w-full shrink-0 cursor-pointer select-none items-center gap-2.5 rounded-lg px-2.5 text-left text-[13px] outline-none touch:h-11";
 const toneClass = "text-foreground focus:bg-accent aria-expanded:bg-accent";
 const dangerClass = "text-destructive focus:bg-destructive/10";
-const iconClass = "h-3.5 w-3.5 shrink-0";
+const iconClass = "h-4 w-4 shrink-0";
 const hintClass = "max-w-20 shrink-0 truncate text-xs tabular-nums text-muted-foreground";
 
 /** Placed once measured; until then it is laid out, so it can be measured, but not seen or hit. */
@@ -150,7 +150,7 @@ function Item({
   );
 }
 
-const Separator = () => <div role="separator" className="-mx-1 my-1 h-px shrink-0 bg-border" />;
+const Separator = () => <div role="separator" className="-mx-1 my-1 h-px shrink-0 bg-border/80" />;
 
 /**
  * The menu a right click (or the context-menu key) opens on a timeline block: everything that can be done to
@@ -429,14 +429,14 @@ export function BlockContextMenu({
         role="menu"
         tabIndex={-1}
         aria-label={`${task.title} actions`}
-        className={[panelClass, "w-52", placement ? "animate-in fade-in-0 zoom-in-95 duration-100" : ""].join(" ")}
+        className={[panelClass, "w-56", placement ? "animate-in fade-in-0 zoom-in-95 duration-100" : ""].join(" ")}
         style={placedStyle(placement)}
         onClick={keepInside}
         onContextMenu={noBrowserMenu}
         onPointerLeave={(event) => unlight(panelRef.current, event)}
       >
         {/* Which block this is about, so a menu opened from the keyboard is never a guess */}
-        <p className="flex h-6 shrink-0 items-center gap-1.5 px-2 text-xs font-medium text-muted-foreground" aria-hidden="true">
+        <p className="menu-label" aria-hidden="true">
           {task.emoji ? <span className="shrink-0 leading-none">{task.emoji}</span> : null}
           <span className="min-w-0 truncate">{task.title}</span>
         </p>
@@ -526,7 +526,7 @@ export function BlockContextMenu({
                 ),
               )}
           {sub === "category" && !categories.length ? (
-            <p className="px-2 py-3 text-center text-xs text-muted-foreground">No categories yet</p>
+            <p className="px-2.5 py-3 text-center text-xs text-muted-foreground">No categories yet</p>
           ) : null}
         </div>
       ) : null}

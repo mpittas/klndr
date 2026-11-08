@@ -33,18 +33,18 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
           <h1 className="hero-rise text-balance text-[2.75rem] font-semibold leading-[1.04] tracking-[-0.045em] text-foreground sm:text-6xl lg:text-[5rem]">
             Plan your day,{" "}
             <span className="whitespace-nowrap">
-              <span className="word-block hero-drop border-indigo-200 bg-indigo-50 dark:border-indigo-400/30 dark:bg-indigo-500/15">
+              <span className="word-block hero-drop tone-indigo tone-block text-foreground">
                 <span
                   aria-hidden="true"
-                  className="absolute inset-y-[0.2em] left-[0.14em] w-[0.06em] min-w-[3px] rounded-full bg-indigo-500"
+                  className="absolute inset-y-[0.2em] left-[0.14em] w-[0.06em] min-w-[3px] rounded-full bg-[var(--tone)]"
                 />
                 block
               </span>
               {" by "}
-              <span className="word-block hero-drop border-emerald-200 bg-emerald-50 [--d:180ms] dark:border-emerald-400/30 dark:bg-emerald-500/15">
+              <span className="word-block hero-drop tone-emerald tone-block text-foreground [--d:180ms]">
                 <span
                   aria-hidden="true"
-                  className="absolute inset-y-[0.2em] left-[0.14em] w-[0.06em] min-w-[3px] rounded-full bg-emerald-500"
+                  className="absolute inset-y-[0.2em] left-[0.14em] w-[0.06em] min-w-[3px] rounded-full bg-[var(--tone)]"
                 />
                 block
               </span>
@@ -94,7 +94,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
             {perks.map((perk) => (
               <li key={perk} className="flex items-center gap-1.5">
                 <Check
-                  className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400"
+                  className="h-3.5 w-3.5 text-success"
                   aria-hidden="true"
                   strokeWidth={3}
                 />
@@ -107,15 +107,15 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
         <div className="hero-rise relative mx-auto mt-14 max-w-5xl [--d:380ms] sm:mt-20">
           {/* A soft wash of the activity colors behind the product */}
           <div aria-hidden="true" className="pointer-events-none absolute -inset-x-16 -top-16 bottom-0 -z-10">
-            <div className="absolute left-0 top-[8%] h-[55%] w-[42%] rounded-full bg-indigo-400/15 blur-3xl dark:bg-indigo-500/15" />
-            <div className="absolute right-0 top-[4%] h-1/2 w-[40%] rounded-full bg-emerald-300/20 blur-3xl dark:bg-emerald-500/10" />
-            <div className="absolute left-[30%] top-0 h-[38%] w-[40%] rounded-full bg-amber-200/30 blur-3xl dark:bg-amber-400/[0.07]" />
-            <div className="absolute bottom-0 left-[8%] h-[45%] w-[40%] rounded-full bg-sky-300/15 blur-3xl dark:bg-sky-500/[0.07]" />
-            <div className="absolute bottom-[4%] right-[6%] h-[45%] w-[38%] rounded-full bg-rose-300/15 blur-3xl dark:bg-rose-500/[0.07]" />
+            <div className="absolute left-0 top-[8%] h-[55%] w-[42%] rounded-full bg-[color-mix(in_oklab,var(--cat-indigo)_14%,transparent)] blur-3xl" />
+            <div className="absolute right-0 top-[4%] h-1/2 w-[40%] rounded-full bg-[color-mix(in_oklab,var(--cat-emerald)_14%,transparent)] blur-3xl" />
+            <div className="absolute left-[30%] top-0 h-[38%] w-[40%] rounded-full bg-[color-mix(in_oklab,var(--cat-amber)_18%,transparent)] blur-3xl" />
+            <div className="absolute bottom-0 left-[8%] h-[45%] w-[40%] rounded-full bg-[color-mix(in_oklab,var(--cat-sky)_10%,transparent)] blur-3xl" />
+            <div className="absolute bottom-[4%] right-[6%] h-[45%] w-[38%] rounded-full bg-[color-mix(in_oklab,var(--cat-rose)_10%,transparent)] blur-3xl" />
           </div>
 
           <div className="hero-tilt">
-            <div className="rounded-[1.375rem] bg-white/55 p-1.5 shadow-[0_1px_2px_rgb(15_23_42/0.04),0_40px_80px_-36px_rgb(15_23_42/0.4)] ring-1 ring-slate-900/[0.07] sm:p-2 dark:bg-white/[0.04] dark:shadow-[0_40px_80px_-36px_rgb(0_0_0/0.75)] dark:ring-white/10">
+            <div className="rounded-[1.375rem] bg-white/55 p-1.5 shadow-[0_1px_2px_rgb(52_36_20/0.04),0_40px_80px_-36px_rgb(52_36_20/0.4)] ring-1 ring-foreground/[0.07] sm:p-2 dark:bg-white/[0.04] dark:shadow-[0_40px_80px_-36px_rgb(0_0_0/0.75)] dark:ring-white/10">
               <PlannerMock />
             </div>
           </div>
@@ -123,7 +123,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
           {/* Floating details on wide screens */}
           <div
             aria-hidden="true"
-            className="hero-float absolute -left-20 -bottom-8 z-10 hidden w-56 items-center gap-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-[0_24px_48px_-20px_rgb(15_23_42/0.35)] backdrop-blur-md xl:flex dark:shadow-[0_24px_48px_-20px_rgb(0_0_0/0.7)]"
+            className="hero-float absolute -left-20 -bottom-8 z-10 hidden w-56 items-center gap-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-[0_24px_48px_-20px_rgb(52_36_20/0.35)] backdrop-blur-md xl:flex dark:shadow-[0_24px_48px_-20px_rgb(0_0_0/0.7)]"
           >
             <svg viewBox="0 0 36 36" className="h-11 w-11 shrink-0 -rotate-90">
               <circle cx="18" cy="18" r="15" fill="none" className="stroke-muted" strokeWidth={4} />
@@ -132,7 +132,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
                 cy="18"
                 r="15"
                 fill="none"
-                className="stroke-emerald-500"
+                className="stroke-success"
                 strokeWidth={4}
                 strokeLinecap="round"
                 strokeDasharray={`${(RING * ROUTINES_DONE) / ROUTINES_TOTAL} ${RING}`}
@@ -148,7 +148,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
 
           <div
             aria-hidden="true"
-            className="hero-float absolute -right-20 top-[46%] z-10 hidden w-60 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-[0_24px_48px_-20px_rgb(15_23_42/0.35)] backdrop-blur-md [--float-delay:-3s] xl:block dark:shadow-[0_24px_48px_-20px_rgb(0_0_0/0.7)]"
+            className="hero-float absolute -right-20 top-[46%] z-10 hidden w-60 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-[0_24px_48px_-20px_rgb(52_36_20/0.35)] backdrop-blur-md [--float-delay:-3s] xl:block dark:shadow-[0_24px_48px_-20px_rgb(0_0_0/0.7)]"
           >
             <div className="flex items-center gap-1.5">
               <span className="keycap">

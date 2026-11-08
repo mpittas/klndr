@@ -1,7 +1,187 @@
-@import "@fontsource-variable/inter";
+@import "@fontsource-variable/instrument-sans";
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
 @import "@klndr/tokens/theme.css";
+
+/*
+ * ---------------------------------------------------------------------------------------------
+ * klndr. on the web: a warm paper planner.
+ *
+ * These sit after the shared tokens so they win; the mobile app keeps its own palette. The rules of the look:
+ *
+ * - One typeface (Instrument Sans) at every size. Tabular figures for every time and count.
+ * - Warm neutrals: paper (`background`), a brighter sheet for cards (`card`) and a desk under the pages
+ *   (`canvas`). Ink (`primary`) for the one main action on a screen.
+ * - One accent, terracotta (`brand`): today, the "now" line, focus and selection. Nothing else is orange.
+ * - `success` (sage) for anything done. Category colors are reserved for what the person made (see `.tone-*`).
+ * - Corners: 6px tiny marks, 8px small controls and blocks, 10px buttons and fields, 14px cards and menus,
+ *   18px dialogs and large panels. Shadows are tinted brown, never grey.
+ * - Build screens from the shared parts below (`btn`, `card`, `field`, `segmented`, `menu`, `count`, `kbd`,
+ *   `progress`, `tick`, `avatar`) instead of restyling a control in place.
+ * ---------------------------------------------------------------------------------------------
+ */
+:root {
+  --background: #fbf8f3;
+  --foreground: #231e18;
+  --card: #fffefb;
+  --card-foreground: #231e18;
+  --popover: #fffefb;
+  --popover-foreground: #231e18;
+  --primary: #2a231c;
+  --primary-foreground: #fbf8f3;
+  --secondary: #f4efe7;
+  --secondary-foreground: #2a231c;
+  --muted: #f4efe7;
+  --muted-foreground: #74695c;
+  --accent: #efe8dd;
+  --accent-foreground: #2a231c;
+  --destructive: #c8402c;
+  --destructive-foreground: #fffaf5;
+  --border: #e9e2d6;
+  --input: #ddd3c4;
+  --ring: #c4553a;
+  --canvas: #f4efe7;
+
+  --brand: #c4553a;
+  --brand-foreground: #fffaf5;
+  --success: #3f8a5c;
+  --success-foreground: #f6fbf7;
+  --warning: #b7791f;
+
+  /* What sits behind a dialog. */
+  --scrim: rgb(28 20 12 / 0.36);
+}
+
+.dark {
+  --background: #1a1714;
+  --foreground: #f3ede4;
+  --card: #221e1a;
+  --card-foreground: #f3ede4;
+  --popover: #27221e;
+  --popover-foreground: #f3ede4;
+  --primary: #f3ede4;
+  --primary-foreground: #1a1714;
+  --secondary: #2a2520;
+  --secondary-foreground: #f3ede4;
+  --muted: #2a2520;
+  --muted-foreground: #a89c8d;
+  --accent: #332d27;
+  --accent-foreground: #f3ede4;
+  --destructive: #e5604a;
+  --destructive-foreground: #1a1714;
+  --border: #36302a;
+  --input: #463e35;
+  --ring: #e9876b;
+  --canvas: #151210;
+
+  --brand: #e9876b;
+  --brand-foreground: #1a1714;
+  --success: #74bf8f;
+  --success-foreground: #102016;
+  --warning: #e0b15a;
+
+  --scrim: rgb(0 0 0 / 0.55);
+}
+
+/*
+ * Category colors: one hue per key `@klndr/core` stores, tuned to sit on warm paper. `--cat-*` is the color itself
+ * (dots, swatches, solid marks); `--cat-*-ink` is the text drawn on its tints. Everything else is mixed from these
+ * two in `.tone-*` below, so a block, a chip and an icon of one category always agree.
+ */
+:root {
+  --cat-indigo: oklch(0.58 0.15 274);
+  --cat-indigo-ink: oklch(0.38 0.11 274);
+  --cat-violet: oklch(0.6 0.15 293);
+  --cat-violet-ink: oklch(0.38 0.11 293);
+  --cat-purple: oklch(0.58 0.16 310);
+  --cat-purple-ink: oklch(0.37 0.12 310);
+  --cat-fuchsia: oklch(0.62 0.18 330);
+  --cat-fuchsia-ink: oklch(0.38 0.12 330);
+  --cat-pink: oklch(0.66 0.15 357);
+  --cat-pink-ink: oklch(0.4 0.11 357);
+  --cat-rose: oklch(0.63 0.16 12);
+  --cat-rose-ink: oklch(0.4 0.12 12);
+  --cat-red: oklch(0.6 0.17 28);
+  --cat-red-ink: oklch(0.4 0.13 28);
+  --cat-orange: oklch(0.69 0.15 52);
+  --cat-orange-ink: oklch(0.42 0.1 52);
+  --cat-amber: oklch(0.76 0.14 72);
+  --cat-amber-ink: oklch(0.44 0.09 72);
+  --cat-yellow: oklch(0.82 0.14 92);
+  --cat-yellow-ink: oklch(0.45 0.09 92);
+  --cat-lime: oklch(0.75 0.15 128);
+  --cat-lime-ink: oklch(0.42 0.1 128);
+  --cat-emerald: oklch(0.65 0.12 158);
+  --cat-emerald-ink: oklch(0.4 0.08 158);
+  --cat-teal: oklch(0.65 0.1 185);
+  --cat-teal-ink: oklch(0.4 0.07 185);
+  --cat-cyan: oklch(0.68 0.11 212);
+  --cat-cyan-ink: oklch(0.41 0.08 212);
+  --cat-sky: oklch(0.65 0.12 238);
+  --cat-sky-ink: oklch(0.4 0.09 238);
+  --cat-slate: oklch(0.6 0.02 70);
+  --cat-slate-ink: oklch(0.36 0.015 70);
+}
+
+.dark {
+  --cat-indigo: oklch(0.68 0.13 274);
+  --cat-indigo-ink: oklch(0.9 0.05 274);
+  --cat-violet: oklch(0.7 0.13 293);
+  --cat-violet-ink: oklch(0.9 0.05 293);
+  --cat-purple: oklch(0.69 0.14 310);
+  --cat-purple-ink: oklch(0.9 0.05 310);
+  --cat-fuchsia: oklch(0.71 0.16 330);
+  --cat-fuchsia-ink: oklch(0.91 0.05 330);
+  --cat-pink: oklch(0.73 0.13 357);
+  --cat-pink-ink: oklch(0.91 0.05 357);
+  --cat-rose: oklch(0.71 0.14 12);
+  --cat-rose-ink: oklch(0.91 0.05 12);
+  --cat-red: oklch(0.69 0.15 28);
+  --cat-red-ink: oklch(0.91 0.05 28);
+  --cat-orange: oklch(0.74 0.13 52);
+  --cat-orange-ink: oklch(0.92 0.05 52);
+  --cat-amber: oklch(0.79 0.12 72);
+  --cat-amber-ink: oklch(0.93 0.05 72);
+  --cat-yellow: oklch(0.84 0.12 92);
+  --cat-yellow-ink: oklch(0.94 0.05 92);
+  --cat-lime: oklch(0.79 0.13 128);
+  --cat-lime-ink: oklch(0.93 0.05 128);
+  --cat-emerald: oklch(0.73 0.11 158);
+  --cat-emerald-ink: oklch(0.92 0.04 158);
+  --cat-teal: oklch(0.73 0.09 185);
+  --cat-teal-ink: oklch(0.92 0.04 185);
+  --cat-cyan: oklch(0.75 0.1 212);
+  --cat-cyan-ink: oklch(0.92 0.04 212);
+  --cat-sky: oklch(0.73 0.11 238);
+  --cat-sky-ink: oklch(0.92 0.04 238);
+  --cat-slate: oklch(0.68 0.02 70);
+  --cat-slate-ink: oklch(0.9 0.01 70);
+}
+
+@theme inline {
+  --font-sans: "Instrument Sans Variable", "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1.125rem;
+  --radius-3xl: 1.5rem;
+
+  --shadow-2xs: 0 1px 0 rgb(60 40 20 / 0.03);
+  --shadow-xs: 0 1px 2px rgb(60 40 20 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(60 40 20 / 0.05), 0 2px 8px -2px rgb(60 40 20 / 0.08);
+  --shadow-md: 0 1px 3px rgb(60 40 20 / 0.05), 0 8px 20px -6px rgb(60 40 20 / 0.12);
+  --shadow-lg: 0 2px 6px rgb(60 40 20 / 0.05), 0 16px 36px -10px rgb(60 40 20 / 0.18);
+  --shadow-xl: 0 4px 10px rgb(60 40 20 / 0.06), 0 28px 64px -18px rgb(60 40 20 / 0.3);
+}
 
 /*
  * Scan this app only. Automatic detection would start at the repo root and read every app; the shared
@@ -29,8 +209,11 @@
   body {
     font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
-    caret-color: var(--foreground);
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    caret-color: var(--brand);
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   /* One typeface everywhere: Tailwind's reset would otherwise set these to a monospace stack. */
@@ -41,8 +224,14 @@
     font-family: var(--font-sans);
   }
 
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
   ::selection {
-    background-color: rgb(99 102 241 / 0.25);
+    background-color: color-mix(in oklab, var(--brand) 24%, transparent);
     color: inherit;
   }
 
@@ -51,22 +240,252 @@
     outline-offset: 2px;
   }
 
-  /* Refined, low-profile custom scrollbars */
+  /* Low-profile scrollbars, tinted like the ink. */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(148 163 184 / 0.35);
+    background-color: color-mix(in oklab, var(--foreground) 16%, transparent);
     border-radius: 9999px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(100 116 139 / 0.55);
+    background-color: color-mix(in oklab, var(--foreground) 30%, transparent);
   }
   ::-webkit-scrollbar-track {
     background: transparent;
+  }
+}
+
+/*
+ * ---------------------------------------------------------------------------------------------
+ * The shared parts. Every screen builds from these, so a button, a card or a field looks the same wherever it
+ * is. They live in the `components` layer, so a utility on the same element still wins (`btn btn-md w-full`).
+ * ---------------------------------------------------------------------------------------------
+ */
+@layer components {
+  /* Buttons: `btn` + a size (`btn-xs` 28, `btn-sm` 32, `btn-md` 36, `btn-lg` 44) + a variant. `btn-icon` makes it square. */
+  .btn {
+    @apply inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg border border-transparent font-medium select-none transition-[background-color,border-color,color,box-shadow,opacity,scale] duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50 enabled:active:scale-[0.97];
+  }
+  .btn :where(svg) {
+    @apply size-4 shrink-0;
+  }
+  .btn-xs {
+    @apply h-7 gap-1 rounded-md px-2 text-xs;
+  }
+  .btn-xs :where(svg) {
+    @apply size-3.5;
+  }
+  .btn-sm {
+    @apply h-8 gap-1.5 px-3 text-[13px];
+  }
+  .btn-sm :where(svg) {
+    @apply size-3.5;
+  }
+  .btn-md {
+    @apply h-9 px-3.5 text-sm;
+  }
+  .btn-lg {
+    @apply h-11 rounded-xl px-5 text-[15px];
+  }
+  .btn-icon {
+    @apply aspect-square px-0;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/88;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      0 1px 2px rgb(52 36 20 / 0.16),
+      0 4px 12px -6px rgb(52 36 20 / 0.4);
+  }
+  .dark .btn-primary {
+    box-shadow:
+      inset 0 -1px 0 rgb(0 0 0 / 0.12),
+      0 4px 14px -6px rgb(0 0 0 / 0.6);
+  }
+  .btn-secondary {
+    @apply border-border bg-card text-foreground shadow-xs hover:border-input hover:bg-accent/50 dark:bg-accent/40 dark:hover:bg-accent;
+  }
+  .btn-soft {
+    @apply bg-foreground/[0.055] text-foreground hover:bg-foreground/[0.09];
+  }
+  .btn-ghost {
+    @apply text-muted-foreground hover:bg-foreground/[0.055] hover:text-foreground;
+  }
+  .btn-danger {
+    @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+  }
+  .btn-danger-soft {
+    @apply bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground;
+  }
+
+  /* Surfaces */
+  .card {
+    @apply rounded-xl border border-border bg-card text-card-foreground shadow-xs;
+  }
+  .card-title {
+    @apply text-[13px] font-semibold tracking-[-0.005em] text-foreground;
+  }
+  .card-meta {
+    @apply text-xs font-normal text-muted-foreground;
+  }
+  /* Floating panels: menus, popovers, pickers. */
+  .menu {
+    @apply rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg;
+  }
+  .menu-item {
+    @apply flex h-8 w-full shrink-0 cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-left text-[13px] text-foreground outline-none select-none transition-colors hover:bg-accent focus-visible:bg-accent touch:h-11 touch:text-sm;
+  }
+  .menu-label {
+    @apply flex h-7 shrink-0 items-center gap-1.5 px-2.5 text-xs font-medium text-muted-foreground;
+  }
+
+  /* Fields: one look for every text input, select and textarea. */
+  .field {
+    @apply flex h-10 w-full min-w-0 rounded-lg border border-border bg-muted/50 px-3 text-sm text-foreground transition-[background-color,border-color,box-shadow] duration-150 placeholder:text-muted-foreground/75 hover:bg-muted focus-visible:border-ring focus-visible:bg-card focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/15 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-muted/60;
+  }
+  .field-label {
+    @apply flex items-center gap-1.5 text-[13px] font-medium text-foreground;
+  }
+
+  /* Segmented control: a tray with one raised choice (`aria-pressed`, `aria-checked`, `aria-current` or `data-active`). */
+  .segmented {
+    @apply inline-flex items-center gap-0.5 rounded-[11px] bg-foreground/[0.055] p-[3px] dark:bg-foreground/[0.07];
+  }
+  .segmented-item {
+    @apply inline-flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-[13px] font-medium text-muted-foreground transition-[color,background-color,box-shadow] duration-150 hover:text-foreground;
+  }
+  .segmented-item:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"], [data-active="true"]) {
+    @apply bg-card text-foreground shadow-[0_1px_2px_rgb(60_40_20/0.1),0_0_0_0.5px_rgb(60_40_20/0.08)] dark:bg-accent dark:shadow-[0_1px_2px_rgb(0_0_0/0.4)];
+  }
+
+  /* Small things */
+  .count {
+    @apply inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-foreground/[0.07] px-1.5 text-[11px] font-semibold leading-none tabular-nums text-muted-foreground;
+  }
+  .kbd {
+    @apply inline-flex h-5 min-w-5 items-center justify-center rounded-md border border-border bg-card px-1 text-[11px] font-medium leading-none text-muted-foreground shadow-[inset_0_-1px_0_var(--border)];
+  }
+  .progress {
+    @apply h-1.5 overflow-hidden rounded-full bg-foreground/[0.07];
+  }
+  .progress-bar {
+    @apply block h-full rounded-full bg-success transition-[width] duration-500 ease-out;
+  }
+  /* A round tick: the done-control the lists share (blocks draw theirs in their category's tone). */
+  .tick {
+    @apply flex shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-foreground/25 text-transparent transition-[background-color,border-color,color] duration-150 hover:border-success hover:text-success/70;
+  }
+  .tick:is([aria-checked="true"], [aria-pressed="true"], [data-done="true"]) {
+    @apply border-success bg-success text-success-foreground hover:text-success-foreground;
+  }
+  .avatar {
+    @apply flex shrink-0 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--brand)_15%,var(--card))] font-semibold text-[color-mix(in_oklab,var(--brand)_68%,var(--foreground))] ring-1 ring-inset ring-[color-mix(in_oklab,var(--brand)_22%,transparent)];
+  }
+
+  /*
+   * Category tones. `tone-<key>` picks the hue, a role class draws with it. `@/lib/colors` hands out the pairs.
+   */
+  .tone-indigo { --tone: var(--cat-indigo); --tone-ink: var(--cat-indigo-ink); }
+  .tone-violet { --tone: var(--cat-violet); --tone-ink: var(--cat-violet-ink); }
+  .tone-purple { --tone: var(--cat-purple); --tone-ink: var(--cat-purple-ink); }
+  .tone-fuchsia { --tone: var(--cat-fuchsia); --tone-ink: var(--cat-fuchsia-ink); }
+  .tone-pink { --tone: var(--cat-pink); --tone-ink: var(--cat-pink-ink); }
+  .tone-rose { --tone: var(--cat-rose); --tone-ink: var(--cat-rose-ink); }
+  .tone-red { --tone: var(--cat-red); --tone-ink: var(--cat-red-ink); }
+  .tone-orange { --tone: var(--cat-orange); --tone-ink: var(--cat-orange-ink); }
+  .tone-amber { --tone: var(--cat-amber); --tone-ink: var(--cat-amber-ink); --tone-on: var(--cat-amber-ink); }
+  .tone-yellow { --tone: var(--cat-yellow); --tone-ink: var(--cat-yellow-ink); --tone-on: var(--cat-yellow-ink); }
+  .tone-lime { --tone: var(--cat-lime); --tone-ink: var(--cat-lime-ink); --tone-on: var(--cat-lime-ink); }
+  .tone-emerald { --tone: var(--cat-emerald); --tone-ink: var(--cat-emerald-ink); }
+  .tone-teal { --tone: var(--cat-teal); --tone-ink: var(--cat-teal-ink); }
+  .tone-cyan { --tone: var(--cat-cyan); --tone-ink: var(--cat-cyan-ink); }
+  .tone-sky { --tone: var(--cat-sky); --tone-ink: var(--cat-sky-ink); }
+  .tone-slate { --tone: var(--cat-slate); --tone-ink: var(--cat-slate-ink); }
+
+  /* A timeline block: a tint of the hue, a hairline of it, and ink of it. */
+  .tone-block {
+    background-color: color-mix(in oklab, var(--tone) 15%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 34%, var(--card));
+    color: var(--tone-ink);
+  }
+  .tone-block:hover {
+    background-color: color-mix(in oklab, var(--tone) 21%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 48%, var(--card));
+  }
+  .dark .tone-block {
+    background-color: color-mix(in oklab, var(--tone) 19%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 32%, var(--card));
+  }
+  .dark .tone-block:hover {
+    background-color: color-mix(in oklab, var(--tone) 25%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 46%, var(--card));
+  }
+  /* Done: the same hue, faded back into the paper. */
+  .tone-block-done {
+    background-color: color-mix(in oklab, var(--tone) 6%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 18%, var(--card));
+    color: color-mix(in oklab, var(--tone-ink) 50%, transparent);
+  }
+  .tone-block-done:hover {
+    border-color: color-mix(in oklab, var(--tone) 32%, var(--card));
+  }
+  .dark .tone-block-done {
+    background-color: color-mix(in oklab, var(--tone) 8%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 16%, var(--card));
+  }
+  /* The block's second line (its time). */
+  .tone-meta {
+    color: color-mix(in oklab, var(--tone-ink) 76%, transparent);
+  }
+  /* A small label of a block, e.g. in a month cell. */
+  .tone-chip {
+    background-color: color-mix(in oklab, var(--tone) 13%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 28%, var(--card));
+    color: var(--tone-ink);
+  }
+  .dark .tone-chip {
+    background-color: color-mix(in oklab, var(--tone) 18%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 28%, var(--card));
+  }
+  /* The emoji tile of an activity. */
+  .tone-icon {
+    background-color: color-mix(in oklab, var(--tone) 18%, var(--card));
+    color: var(--tone-ink);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tone) 22%, transparent);
+  }
+  .dark .tone-icon {
+    background-color: color-mix(in oklab, var(--tone) 24%, var(--card));
+  }
+  /* A drop target in the hue. */
+  .tone-ghost {
+    background-color: color-mix(in oklab, var(--tone) 10%, var(--card));
+    border-color: color-mix(in oklab, var(--tone) 50%, var(--card));
+  }
+  /* The hue itself: dots, bars, swatches and filled marks. */
+  .tone-solid {
+    background-color: var(--tone);
+    color: var(--tone-on, #fff);
+  }
+  .dark .tone-solid {
+    color: #1a1714;
+  }
+  .tone-selected {
+    background-color: var(--tone);
+    border-color: var(--tone);
+    color: var(--tone-on, #fff);
+  }
+  /* The ring a block is ticked off with, before it is done. */
+  .tone-check {
+    border-color: color-mix(in oklab, var(--tone) 72%, transparent);
+  }
+  .tone-check:hover {
+    border-color: var(--tone);
+    color: color-mix(in oklab, var(--tone) 80%, transparent);
   }
 }
 
@@ -173,19 +592,6 @@ html:has([data-landing]) {
   filter: blur(6px);
 }
 
-/* The primary button's raised edge: a hairline of light along the top. */
-[data-landing] .btn-primary {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.16),
-    0 1px 2px rgb(15 23 42 / 0.14),
-    0 6px 16px -6px rgb(15 23 42 / 0.35);
-}
-.dark [data-landing] .btn-primary {
-  box-shadow:
-    inset 0 -1px 0 rgb(0 0 0 / 0.12),
-    0 6px 16px -6px rgb(0 0 0 / 0.5);
-}
-
 /* Backdrop for the small product scenes: a faint dot grid with a glow in the scene's color (--tint). */
 [data-landing] .stage {
   background-color: var(--canvas);
@@ -200,7 +606,7 @@ html:has([data-landing]) {
 /* Cards whose scene comes forward a little on hover. */
 [data-landing] .lift-card:hover {
   border-color: color-mix(in oklab, var(--foreground) 16%, var(--border));
-  box-shadow: 0 18px 40px -22px rgb(15 23 42 / 0.3);
+  box-shadow: 0 18px 40px -22px rgb(52 36 20 / 0.3);
 }
 .dark [data-landing] .lift-card:hover {
   box-shadow: 0 18px 40px -22px rgb(0 0 0 / 0.7);
@@ -230,8 +636,8 @@ html:has([data-landing]) {
   padding: 0 0.16em 0.04em 0.3em;
   line-height: 1.02;
   box-shadow:
-    0 1px 2px rgb(15 23 42 / 0.04),
-    0 8px 20px -12px rgb(15 23 42 / 0.25);
+    0 1px 2px rgb(52 36 20 / 0.04),
+    0 8px 20px -12px rgb(52 36 20 / 0.25);
 }
 
 /* The product leans back at first and straightens as it scrolls into view. */

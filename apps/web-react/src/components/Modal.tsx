@@ -171,7 +171,7 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
   const closeButton = (
     <button
       type="button"
-      className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-foreground/5 text-muted-foreground transition hover:bg-foreground/10 hover:text-foreground sm:h-8 sm:w-8"
+      className="btn btn-soft btn-icon h-10 rounded-full text-muted-foreground hover:text-foreground sm:h-8"
       aria-label="Close"
       onClick={onClose}
     >
@@ -183,7 +183,7 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
     // In <body>, so a modal opened from inside another one is a sibling, not a descendant (focus trap, stacking).
     <div
       data-state={state}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 backdrop-blur-sm sm:items-center sm:p-6"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-[var(--scrim)] backdrop-blur-[3px] transition-opacity duration-200 sm:items-center sm:p-6"
     >
       <div aria-hidden="true" className="modal-overlay absolute inset-0" onClick={onBackdropClick ?? onClose} />
       <div
@@ -194,7 +194,7 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
         tabIndex={-1}
         style={dragY ? { transform: `translateY(${dragY}px)`, transition: "none" } : undefined}
         className={[
-          "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border/60 bg-background shadow-[0_28px_70px_-18px_rgb(0_0_0/0.45),0_2px_6px_rgb(0_0_0/0.06)] focus:outline-none sm:max-h-[88dvh] sm:rounded-2xl",
+          "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border/70 bg-background shadow-xl focus:outline-none dark:shadow-[0_28px_70px_-18px_rgb(0_0_0/0.75)] sm:max-h-[88dvh] sm:rounded-2xl",
           wide ? "sm:max-w-2xl" : lg ? "sm:max-w-xl" : "sm:max-w-md",
           dragY ? "" : "transition-transform duration-200",
         ].join(" ")}
@@ -216,7 +216,7 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
           onPointerUp={onSheetPointerUp}
           onPointerCancel={onSheetPointerUp}
         >
-          <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-muted-foreground/25 sm:hidden" />
+          <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-foreground/15 sm:hidden" />
           {hideTitle ? (
             // Still the dialog's accessible name, just not shown: the content says what is being edited.
             <h2 id={titleId} className="sr-only">
@@ -225,10 +225,10 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
           ) : (
             <header className="flex items-start justify-between gap-3 py-3 pl-5 pr-3 sm:px-7 sm:pb-2 sm:pt-5">
               <div className="min-w-0 self-center">
-                <h2 id={titleId} className="text-lg font-semibold leading-tight tracking-tight text-foreground">
+                <h2 id={titleId} className="text-lg font-semibold leading-tight tracking-[-0.02em] text-foreground">
                   {title}
                 </h2>
-                {subtitle ? <p className="mt-1 text-[13px] tabular-nums text-muted-foreground">{subtitle}</p> : null}
+                {subtitle ? <p className="mt-1 text-[13px] leading-snug tabular-nums text-muted-foreground">{subtitle}</p> : null}
               </div>
               {closeButton}
             </header>
@@ -252,7 +252,7 @@ export function Modal({ open, title, subtitle, wide, lg, flush, accent, hideTitl
 
         {/* Pinned below the scrolling body so the primary action never scrolls out of reach */}
         {footer ? (
-          <div className="relative shrink-0 border-t border-border/60 bg-muted/40 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-4">
+          <div className="relative shrink-0 border-t border-border/70 bg-muted/50 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-7 sm:pb-4 sm:pt-4">
             {footer}
           </div>
         ) : null}

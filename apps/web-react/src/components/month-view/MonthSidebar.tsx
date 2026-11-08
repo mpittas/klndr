@@ -54,7 +54,7 @@ export function MonthSidebar({
   const shares = useMemo(() => categoryBreakdown(monthTasks), [monthTasks]);
 
   return (
-    <aside className="space-y-3 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-width:thin]">
+    <aside className="space-y-3 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-width:thin]">
       <TodayCard today={today} tasks={todays} onAddBlock={onAddBlock} />
       <AgendaCard
         today={today}

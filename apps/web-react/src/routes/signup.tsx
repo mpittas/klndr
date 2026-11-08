@@ -118,7 +118,7 @@ function SignUpPage() {
 
         <TextField
           id="confirm-password"
-          label="Confirm Password"
+          label="Confirm password"
           type="password"
           value={confirmPassword}
           onChange={setConfirmPassword}
@@ -130,22 +130,19 @@ function SignUpPage() {
         <button
           type="submit"
           disabled={busy}
-          className="flex h-11 w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-xs transition hover:bg-primary/90 disabled:opacity-50 sm:h-9"
+          className="btn btn-primary btn-lg w-full"
         >
-          {busy ? "Creating account..." : "Create Account"}
+          {busy ? "Creating account…" : "Create account"}
         </button>
       </form>
 
-      <div className="relative my-3">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-card px-2 text-muted-foreground">or</span>
-        </div>
+      <div className="flex items-center gap-3 text-xs text-muted-foreground" role="separator">
+        <span className="h-px flex-1 bg-border" />
+        or
+        <span className="h-px flex-1 bg-border" />
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         {isAppleSignInEnabled ? (
           <ProviderButton
             icon={<AppleIcon className="h-4 w-4" />}
@@ -166,11 +163,11 @@ function SignUpPage() {
 
       <ContinueAsGuest disabled={busy} onContinue={auth.continueAsGuest} />
 
-      <p className="text-center text-xs text-muted-foreground sm:text-sm">
+      <p className="text-center text-[13px] text-muted-foreground">
         Already have an account?{" "}
         <Link
           to="/login"
-          className="-my-2 inline-block py-2 font-medium text-foreground underline underline-offset-4 transition hover:text-primary"
+          className="-my-2 inline-block rounded-sm py-2 font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:decoration-foreground"
         >
           Sign in
         </Link>

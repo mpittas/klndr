@@ -1,8 +1,7 @@
 import type { DayChecklistItem } from "@klndr/core";
 import { Check, Ellipsis } from "lucide-react";
 
-const MENU_ITEM_CLASS =
-  "flex min-h-9 w-full cursor-pointer items-center rounded-md px-2.5 text-left text-sm transition-colors touch:min-h-11";
+const MENU_ITEM_CLASS = "menu-item";
 
 /** One routine on the day's checklist, with its actions behind the "…" button. */
 export function ChecklistItemRow({
@@ -34,8 +33,8 @@ export function ChecklistItemRow({
   return (
     <div
       className={[
-        "group relative flex items-center rounded-lg transition-colors hover:bg-accent/60",
-        expanded ? "bg-accent/60" : "",
+        "group relative flex items-center rounded-lg transition-colors hover:bg-foreground/[0.045]",
+        expanded ? "bg-foreground/[0.045]" : "",
       ].join(" ")}
       onKeyDown={(event) => {
         if (event.key === "Escape" && expanded) onToggleActions(item.id);
@@ -49,11 +48,10 @@ export function ChecklistItemRow({
       >
         <span
           className={[
-            "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border transition-colors touch:h-5 touch:w-5",
-            completed
-              ? "border-foreground bg-foreground text-background"
-              : "border-foreground/30 text-transparent group-hover:border-foreground/60",
+            "tick pointer-events-none h-[18px] w-[18px] touch:h-5 touch:w-5",
+            completed ? "" : "group-hover:border-success",
           ].join(" ")}
+          data-done={completed}
           aria-hidden="true"
         >
           <Check className="h-2.5 w-2.5" strokeWidth={3} />
@@ -62,14 +60,14 @@ export function ChecklistItemRow({
         <span
           className={[
             "min-w-0 flex-1 text-sm leading-snug transition-colors",
-            completed ? "text-muted-foreground line-through decoration-muted-foreground/40" : "text-foreground",
+            completed ? "text-muted-foreground line-through decoration-foreground/25" : "text-foreground",
           ].join(" ")}
         >
           <span className={["mr-1.5 select-none", completed ? "opacity-50" : ""].join(" ")} aria-hidden="true">
             {item.emoji}
           </span>
           {item.title}
-          {item.scope === "day" && <span className="ml-1 text-[11px] text-muted-foreground">· this day only</span>}
+          {item.scope === "day" && <span className="ml-1.5 text-xs text-muted-foreground">· this day only</span>}
         </span>
       </button>
 
@@ -77,7 +75,7 @@ export function ChecklistItemRow({
       <button
         type="button"
         className={[
-          "mr-1 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition hover:bg-background hover:text-foreground touch:h-11 touch:w-11",
+          "btn btn-ghost btn-icon mr-1 h-7 rounded-md hover:bg-foreground/[0.07] touch:h-11",
           expanded
             ? "text-foreground"
             : "[@media(hover:hover)]:lg:opacity-0 group-focus-within:opacity-100 group-hover:opacity-100",
@@ -92,19 +90,19 @@ export function ChecklistItemRow({
       {expanded && (
         <>
           <div className="fixed inset-0 z-30" aria-hidden="true" onClick={() => onToggleActions(item.id)} />
-          <div className="absolute right-1 top-full z-40 mt-1 w-40 rounded-lg border border-border bg-popover p-1 shadow-lg touch:w-48">
+          <div className="menu absolute right-1 top-full z-40 mt-1 w-44 animate-in fade-in-0 zoom-in-95 duration-100 touch:w-52">
             {item.scope === "default" && (
               <>
                 <button
                   type="button"
-                  className={`${MENU_ITEM_CLASS} text-foreground hover:bg-accent`}
+                  className={MENU_ITEM_CLASS}
                   onClick={() => run(() => onEdit(item))}
                 >
                   Edit
                 </button>
                 <button
                   type="button"
-                  className={`${MENU_ITEM_CLASS} text-foreground hover:bg-accent`}
+                  className={MENU_ITEM_CLASS}
                   onClick={() => run(() => onSkip(item, true))}
                 >
                   Skip this day
@@ -113,7 +111,7 @@ export function ChecklistItemRow({
             )}
             <button
               type="button"
-              className={`${MENU_ITEM_CLASS} text-destructive hover:bg-destructive/10`}
+              className={`${MENU_ITEM_CLASS} text-destructive hover:bg-destructive/10 focus-visible:bg-destructive/10`}
               onClick={() => run(() => onRemove(item))}
             >
               {item.scope === "day" ? "Remove" : "Delete"}

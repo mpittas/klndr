@@ -1,8 +1,7 @@
 import type { InputHTMLAttributes, ReactNode } from "react";
 
 /** The field styling the sign-in, sign-up and profile forms share. */
-export const FIELD_CLASS =
-  "h-11 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-2xs transition-colors placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:outline-none sm:h-9";
+export const FIELD_CLASS = "field h-11";
 
 type TextFieldProps = {
   id: string;
@@ -29,9 +28,9 @@ type TextFieldProps = {
  */
 export function TextField({ id, label, value, onChange, labelAccessory, ...input }: TextFieldProps) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label htmlFor={id} className="block text-xs font-medium text-foreground sm:text-sm">
+        <label htmlFor={id} className="field-label">
           {label}
         </label>
         {labelAccessory}

@@ -26,16 +26,16 @@ export function DeleteAccountCard({
   const ready = confirmed && (!needsPassword || password.length > 0) && !busy;
 
   return (
-    <section className="rounded-xl border border-destructive/30 bg-destructive/5 p-5 shadow-xs sm:p-6">
-      <h3 className="text-sm font-semibold text-foreground">Delete account</h3>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+    <section className="rounded-xl border border-destructive/25 bg-destructive/[0.035] p-5 sm:p-7">
+      <h3 className="text-base font-semibold tracking-[-0.015em] text-destructive">Delete account</h3>
+      <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
         This erases your activities, categories, timeline blocks, checklist, notes and profile for good. There is no
         way to undo it.
       </p>
 
       <div className="mt-4 space-y-3">
-        <label className="block space-y-1.5">
-          <span className="block text-xs font-medium text-foreground">
+        <label className="block space-y-2">
+          <span className="field-label">
             Type <span className="font-semibold">{CONFIRMATION}</span> to confirm
           </span>
           <input
@@ -50,8 +50,8 @@ export function DeleteAccountCard({
         </label>
 
         {needsPassword ? (
-          <label className="block space-y-1.5">
-            <span className="block text-xs font-medium text-foreground">Your password</span>
+          <label className="block space-y-2">
+            <span className="field-label">Your password</span>
             <input
               type="password"
               autoComplete="current-password"
@@ -77,7 +77,7 @@ export function DeleteAccountCard({
           onClick={() => {
             if (ready) onDelete(needsPassword ? { password } : {});
           }}
-          className="inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-md border border-destructive/30 bg-destructive/5 px-4 text-xs font-medium text-destructive transition hover:bg-destructive hover:text-destructive-foreground disabled:cursor-not-allowed disabled:opacity-50 sm:h-9 sm:w-auto sm:text-sm"
+          className="btn btn-danger btn-md h-11 w-full sm:h-9 sm:w-auto"
         >
           <Trash2 className="h-4 w-4" aria-hidden="true" />
           <span>{busy ? "Deleting…" : "Delete my account"}</span>

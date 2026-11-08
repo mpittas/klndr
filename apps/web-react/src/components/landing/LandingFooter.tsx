@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 
-import { LandingLogo } from "@/components/landing/LandingLogo";
+import { Wordmark } from "@/components/Wordmark";
 import type { LandingStart } from "@/components/landing/types";
 
 /** The two in-page anchors; the rest of the footer's links are real routes. */
@@ -17,7 +17,7 @@ export function LandingFooter({ start, signedIn }: { start: LandingStart; signed
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <div>
           <Link to="/" className="text-lg text-foreground transition hover:opacity-80" aria-label="klndr. home">
-            <LandingLogo />
+            <Wordmark />
           </Link>
           <p className="mt-2 text-sm text-muted-foreground">A tactile planner for people who time-block.</p>
         </div>

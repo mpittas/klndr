@@ -17,7 +17,7 @@ export function ChecklistHeader({
       <p className="flex items-center gap-1.5 text-sm font-medium tabular-nums text-foreground">
         {allDone ? (
           <>
-            <Check className="h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+            <Check className="h-4 w-4 shrink-0 text-success" aria-hidden="true" />
             All done
           </>
         ) : (
@@ -28,20 +28,14 @@ export function ChecklistHeader({
         )}
       </p>
       <div
-        className="mt-2 h-1 w-full overflow-hidden rounded-full bg-muted"
+        className="progress mt-2.5 w-full"
         role="progressbar"
         aria-label="Checklist progress"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percentage}
       >
-        <div
-          className={[
-            "h-full rounded-full transition-[width] duration-300",
-            allDone ? "bg-emerald-500" : "bg-foreground/80",
-          ].join(" ")}
-          style={{ width: `${percentage}%` }}
-        />
+        <span className="progress-bar" style={{ width: `${percentage}%` }} />
       </div>
     </div>
   );

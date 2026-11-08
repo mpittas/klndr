@@ -55,11 +55,11 @@ export function DayNotes({ notes }: { notes: ReturnType<typeof useNotesEditor> }
   );
 
   return (
-    <div className="relative flex h-full min-h-0 flex-1 flex-col bg-background">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col">
       {notes.state === "loading" && (
         <div className="space-y-2 p-4" aria-busy="true">
-          <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
-          <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-2/3 animate-pulse rounded-md bg-muted" />
+          <div className="h-4 w-1/2 animate-pulse rounded-md bg-muted" />
         </div>
       )}
 
@@ -68,7 +68,7 @@ export function DayNotes({ notes }: { notes: ReturnType<typeof useNotesEditor> }
           <p>Couldn't load the notes for this day.</p>
           <button
             type="button"
-            className="mt-2 cursor-pointer rounded-md border border-input bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-xs hover:bg-accent"
+            className="btn btn-secondary btn-xs mt-3"
             onClick={() => notes.retryLoad()}
           >
             Try again
@@ -86,7 +86,7 @@ export function DayNotes({ notes }: { notes: ReturnType<typeof useNotesEditor> }
             aria-label="Notes for this day"
             placeholder={"Jot something down…\n\n# Heading   - list   - [ ] task   **bold**   `code`"}
             className={[
-              "min-h-0 w-full flex-1 resize-none bg-transparent px-4 py-3 pb-8 text-[13px] leading-relaxed text-foreground placeholder:text-muted-foreground focus-visible:outline-none",
+              "min-h-0 w-full flex-1 resize-none bg-transparent px-4 py-3 pb-8 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none",
               isEditing ? "" : "hidden",
             ].join(" ")}
             onChange={(event) => notes.edit(event.target.value)}
@@ -100,14 +100,14 @@ export function DayNotes({ notes }: { notes: ReturnType<typeof useNotesEditor> }
           />
           {!isEditing && (
             <div
-              className="notes-prose min-h-0 flex-1 cursor-text overflow-y-auto px-4 py-3 pb-8 text-sm text-foreground"
+              className="notes-prose min-h-0 flex-1 cursor-text overflow-y-auto px-4 py-3 pb-8 text-sm leading-relaxed text-foreground"
               onClick={onPreviewClick}
               dangerouslySetInnerHTML={{ __html: html }}
             />
           )}
 
           <p
-            className="pointer-events-none absolute bottom-2 right-3 text-[11px] text-muted-foreground"
+            className="pointer-events-none absolute bottom-2.5 right-3 text-xs text-muted-foreground"
             role="status"
             aria-live="polite"
           >

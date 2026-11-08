@@ -93,7 +93,7 @@ export function TooltipContent({
       role="tooltip"
       data-side={side}
       className={[
-        "pointer-events-none absolute left-1/2 z-50 w-max max-w-56 -translate-x-1/2 text-balance rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground shadow-md",
+        "pointer-events-none absolute left-1/2 z-50 w-max max-w-56 -translate-x-1/2 text-balance rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-lg",
         "animate-in fade-in-0 zoom-in-95",
         side === "top" ? "bottom-full mb-2 slide-in-from-bottom-2" : "top-full mt-2 slide-in-from-top-2",
       ].join(" ")}

@@ -10,18 +10,17 @@ export function ShortcutsCard() {
   return (
     <section
       aria-label="Keyboard shortcuts"
-      className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-xl border border-border bg-card px-3 py-2 shadow-xs touch:hidden"
+      className="flex flex-wrap items-center gap-x-4 gap-y-2 px-1 py-1 touch:hidden"
     >
       {SHORTCUTS.map(({ keys, label }) => (
-        <span key={label} className="flex items-center gap-1 text-[11px] text-muted-foreground">
-          {keys.map((key) => (
-            <kbd
-              key={key}
-              className="inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted/60 px-1 text-[11px] font-semibold text-foreground"
-            >
-              {key}
-            </kbd>
-          ))}
+        <span key={label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="flex gap-0.5">
+            {keys.map((key) => (
+              <kbd key={key} className="kbd">
+                {key}
+              </kbd>
+            ))}
+          </span>
           {label}
         </span>
       ))}

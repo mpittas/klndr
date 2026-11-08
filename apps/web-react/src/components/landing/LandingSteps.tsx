@@ -56,7 +56,7 @@ function MonthScene() {
           <ChevronRight className="h-3.5 w-3.5" />
         </span>
       </div>
-      <div className="mt-2 grid grid-cols-7 text-center text-[9px] font-semibold uppercase text-muted-foreground">
+      <div className="mt-2 grid grid-cols-7 text-center text-[9px] font-semibold text-muted-foreground">
         {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
           <span key={i}>{d}</span>
         ))}
@@ -152,7 +152,7 @@ function TickScene() {
         <span className="text-[10px] tabular-nums text-muted-foreground">3/4 done</span>
       </div>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-        <div className="h-full w-3/4 rounded-full bg-emerald-500" />
+        <div className="h-full w-3/4 rounded-full bg-success" />
       </div>
       <div className="mt-3 space-y-1.5">
         <div className="h-8">
@@ -165,8 +165,8 @@ function TickScene() {
           <MockBlock compact done emoji="🏋️" title="Workout" color="emerald" />
         </div>
         <div className="relative flex items-center py-0.5">
-          <span className="absolute -left-1 h-2 w-2 rounded-full bg-rose-500" />
-          <span className="h-[1.5px] w-full bg-rose-500/80" />
+          <span className="absolute -left-1 h-2 w-2 rounded-full bg-brand ring-2 ring-background" />
+          <span className="h-[1.5px] w-full bg-brand" />
         </div>
         <div className="h-8">
           <MockBlock compact emoji="📚" title="Study / learning" color="rose" />
@@ -179,17 +179,17 @@ function TickScene() {
 // Each step's scene is tinted with the color of what it shows.
 const steps = [
   {
-    tint: "#6366f1",
+    tint: "var(--cat-indigo)",
     title: "Pick a day",
     text: "Open the month view and choose any date. Every day shows what's planned, so busy and open days stand out.",
   },
   {
-    tint: "#10b981",
+    tint: "var(--cat-emerald)",
     title: "Drag in activities",
     text: "Drop deep work, workouts or chores onto the timeline. Blocks snap to the quarter hour and stretch to fit.",
   },
   {
-    tint: "#f59e0b",
+    tint: "var(--cat-amber)",
     title: "Tick them off",
     text: "Check blocks off as you go. A live now-line shows where you are, with your daily routines up top.",
   },

@@ -450,11 +450,17 @@ export function DayTimelineGrid({
     <>
     <div className="mx-auto flex max-w-4xl pb-8 pt-4 sm:pb-12 sm:pt-6">
       {/* Hour gutter */}
-      <div className="relative w-14 shrink-0 select-none border-r border-border bg-background pr-1.5 sm:w-16 sm:pr-2.5">
+      <div className="relative w-14 shrink-0 select-none border-r border-border/80 bg-background pr-1.5 sm:w-16 sm:pr-2.5">
         {HOUR_OPTIONS.map((minute) => (
           <div key={minute} style={{ height: `${SLOT_HEIGHT}px` }} className="relative">
             {gutterLabel(minute) ? (
-              <span className="absolute -top-2.5 right-1.5 text-[11px] font-medium tracking-tight text-muted-foreground sm:right-2 sm:text-xs">
+              <span
+                className={[
+                  "absolute -top-2 right-1.5 text-[11px] font-medium tabular-nums text-muted-foreground/90 transition-opacity sm:right-2",
+                  // The live time pill sits on the gutter; the hour it would cover steps aside.
+                  nowMinute !== null && Math.abs(minute - nowMinute) < 14 ? "opacity-0" : "",
+                ].join(" ")}
+              >
                 {gutterLabel(minute)}
               </span>
             ) : null}
@@ -466,7 +472,7 @@ export function DayTimelineGrid({
           ? guideMinutes.map((minute) => (
               <div
                 key={`edge-${minute}`}
-                className="pointer-events-none absolute right-0.5 z-20 -translate-y-1/2 whitespace-nowrap rounded-md border border-border bg-muted px-1 py-0.5 text-[10px] font-medium leading-none text-foreground/70 sm:right-1 sm:px-1.5"
+                className="pointer-events-none absolute right-0.5 z-20 -translate-y-1/2 whitespace-nowrap rounded-full border border-border bg-card px-1.5 py-[3px] text-[10px] font-semibold leading-none tabular-nums text-foreground/80 shadow-xs sm:right-1"
                 style={{ top: `${minutesToPx(minute)}px` }}
               >
                 {formatTime(minute)}
@@ -477,7 +483,7 @@ export function DayTimelineGrid({
         {/* Live time pill in gutter */}
         {nowMinute !== null ? (
           <div
-            className="pointer-events-none absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-md bg-rose-500 px-1 py-0.5 text-[10px] font-bold leading-none text-white shadow-xs sm:right-1 sm:px-1.5"
+            className="pointer-events-none absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-full bg-brand px-1.5 py-[3px] text-[10px] font-semibold leading-none tabular-nums text-brand-foreground shadow-[0_1px_3px_rgb(120_40_20/0.35)] sm:right-1"
             style={{ top: `${minutesToPx(nowMinute)}px` }}
           >
             {formatTime(nowMinute)}
@@ -504,7 +510,7 @@ export function DayTimelineGrid({
             style={{ height: `${SLOT_HEIGHT}px` }}
             className={[
               "border-b",
-              (minute + 30) % 60 === 0 ? "border-border/70" : "border-dashed border-border/30",
+              (minute + 30) % 60 === 0 ? "border-border/80" : "border-dashed border-border/45",
             ].join(" ")}
           />
         ))}
@@ -528,10 +534,10 @@ export function DayTimelineGrid({
           >
             <div className="relative flex w-full items-center">
               <span className="absolute -left-1 flex h-2 w-2 items-center justify-center">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-rose-500" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-50" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-brand ring-2 ring-background" />
               </span>
-              <span className="h-[1.5px] w-full bg-rose-500/80" />
+              <span className="h-[1.5px] w-full bg-brand" />
             </div>
           </div>
         ) : null}
@@ -540,7 +546,7 @@ export function DayTimelineGrid({
         {hoverMinutes !== null && !preview && !resizing ? (
           <div
             className={[
-              "pointer-events-none absolute z-20 flex gap-1 overflow-hidden rounded-md border border-dashed border-foreground/20 pl-2 text-xs leading-4 tabular-nums text-muted-foreground",
+              "pointer-events-none absolute z-20 flex gap-1 overflow-hidden rounded-md border border-dashed border-foreground/25 bg-foreground/[0.025] pl-2 text-xs font-medium leading-4 tabular-nums text-muted-foreground",
               isShortBlock(hoverDuration) ? "items-center" : "items-start pt-1",
             ].join(" ")}
             style={{
@@ -577,7 +583,7 @@ export function DayTimelineGrid({
         {/* Landing slot while moving a block; its times show in the gutter */}
         {drag ? (
           <div
-            className="pointer-events-none absolute z-30 rounded-md border border-dashed border-foreground/30 bg-foreground/[0.03]"
+            className="pointer-events-none absolute z-30 rounded-md border border-dashed border-foreground/30 bg-foreground/[0.035]"
             style={dragGhostStyle}
           />
         ) : null}
@@ -595,7 +601,7 @@ export function DayTimelineGrid({
               )}. Press Enter to edit.`}
               className={[
                 "group absolute cursor-grab select-none transition-[color,background-color,border-color,scale,box-shadow,left,width] duration-150 [-webkit-touch-callout:none]",
-                isDragged ? "z-40 scale-[1.02] cursor-grabbing opacity-95 shadow-xl" : "z-10 hover:z-20",
+                isDragged ? "z-40 scale-[1.02] cursor-grabbing rounded-md opacity-95 shadow-xl" : "z-10 hover:z-20",
               ].join(" ")}
               style={{
                 top: `${blockTop(task.startMinutes)}px`,
@@ -637,7 +643,7 @@ export function DayTimelineGrid({
                       "relative z-[1] hidden h-3.5 w-3.5 shrink-0 cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-colors after:absolute after:-inset-1.5 touch:after:-inset-2.5 @[8rem]:flex",
                       !isShortBlock(task.durationMinutes) ? "mt-px" : "",
                       task.completed
-                        ? `${toneOf(task).accent} border-transparent text-white`
+                        ? `${toneOf(task).accent} border-transparent`
                         : `${toneOf(task).check} text-transparent`,
                     ].join(" ")}
                     onClick={(event) => {
@@ -651,7 +657,7 @@ export function DayTimelineGrid({
               >
                 {/* Length while resizing, beside the title */}
                 {resizing === task.id ? (
-                  <span className="shrink-0 rounded bg-primary px-1.5 text-[11px] font-medium leading-4 tabular-nums text-primary-foreground">
+                  <span className="shrink-0 rounded-full bg-primary px-1.5 text-[11px] font-semibold leading-4 tabular-nums text-primary-foreground">
                     {formatDuration(task.durationMinutes)}
                   </span>
                 ) : null}
@@ -662,7 +668,7 @@ export function DayTimelineGrid({
                   aria-label={`Delete ${task.title}`}
                   title="Delete"
                   className={[
-                    "absolute right-1 z-[2] flex h-5 w-5 cursor-pointer items-center justify-center rounded-md bg-black/5 text-current opacity-0 transition hover:bg-black/15 hover:!opacity-100 focus-visible:opacity-100 group-hover:opacity-70 touch:hidden max-sm:hidden dark:bg-white/10 dark:hover:bg-white/20",
+                    "absolute right-1 z-[2] flex h-5 w-5 cursor-pointer items-center justify-center rounded-md bg-current/[0.08] text-current opacity-0 transition hover:bg-current/[0.16] hover:!opacity-100 focus-visible:opacity-100 group-hover:opacity-70 touch:hidden max-sm:hidden",
                     isShortBlock(task.durationMinutes) ? "top-1/2 -translate-y-1/2" : "top-0.5",
                   ].join(" ")}
                   onPointerDown={(event) => event.stopPropagation()}

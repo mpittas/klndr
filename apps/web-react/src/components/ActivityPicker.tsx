@@ -136,7 +136,7 @@ export function ActivityPicker({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-labelledby="task-activity-label task-activity-value"
-        className="mt-1.5 flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-xl border border-transparent bg-muted/60 px-2.5 text-left text-sm transition-colors hover:bg-muted focus-visible:border-ring focus-visible:bg-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 sm:h-10"
+        className="mt-1.5 flex h-11 w-full cursor-pointer items-center gap-2.5 rounded-lg border border-border bg-muted/50 px-2.5 text-left text-sm transition-[background-color,border-color,box-shadow] hover:bg-muted focus-visible:border-ring focus-visible:bg-card focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/15 dark:bg-muted/60 sm:h-10"
         onClick={() => (open ? hide() : show())}
       >
         <span className="flex w-5 shrink-0 items-center justify-center text-base leading-none" aria-hidden="true">
@@ -156,13 +156,13 @@ export function ActivityPicker({
 
       {open
         ? createPortal(
-            <div className={["fixed inset-0 z-[60]", isSheet ? "bg-black/40" : ""].join(" ")} onClick={hide}>
+            <div className={["fixed inset-0 z-[60]", isSheet ? "bg-[var(--scrim)]" : ""].join(" ")} onClick={hide}>
               <div
                 ref={panelRef}
                 className={[
-                  "fixed flex flex-col overflow-hidden border border-border bg-popover text-popover-foreground shadow-lg",
+                  "fixed flex flex-col overflow-hidden border border-border bg-popover text-popover-foreground shadow-xl",
                   isSheet
-                    ? "inset-x-0 rounded-t-2xl border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)]"
+                    ? "inset-x-0 rounded-t-3xl border-x-0 border-b-0 pb-[env(safe-area-inset-bottom)]"
                     : "rounded-xl",
                 ].join(" ")}
                 style={
@@ -180,14 +180,14 @@ export function ActivityPicker({
               >
                 {isSheet ? (
                   <div className="shrink-0 px-4 pb-1 pt-2.5">
-                    <div className="mx-auto h-1.5 w-10 rounded-full bg-muted-foreground/30" />
+                    <div className="mx-auto h-1.5 w-10 rounded-full bg-foreground/15" />
                     <p className="mt-2 text-sm font-semibold text-foreground">Start from an activity</p>
                   </div>
                 ) : null}
 
                 {searchable ? (
                   <div className="shrink-0 border-b border-border p-2">
-                    <label className="flex h-11 items-center gap-2 rounded-md border border-input bg-background px-2.5 focus-within:ring-1 focus-within:ring-ring sm:h-9">
+                    <label className="flex h-11 items-center gap-2 rounded-lg border border-border bg-muted/50 px-2.5 transition-[border-color,box-shadow,background-color] focus-within:border-ring focus-within:bg-card focus-within:ring-[3px] focus-within:ring-ring/15 sm:h-9">
                       <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                       <input
                         ref={searchRef}
@@ -214,7 +214,7 @@ export function ActivityPicker({
                         className={optionClass}
                         onClick={() => choose(null)}
                       >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-dashed border-border text-muted-foreground">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-dashed border-foreground/20 text-muted-foreground">
                           <PencilLine className="h-4 w-4" aria-hidden="true" />
                         </span>
                         <span className="min-w-0 flex-1">

@@ -40,11 +40,11 @@ function DayPage() {
     return (
       <div className="mx-auto mt-16 max-w-sm px-4 text-center">
         <p className="text-sm font-medium text-foreground">We couldn't load this day.</p>
-        <p className="mt-1 text-xs text-muted-foreground">Check your connection and try again.</p>
+        <p className="mt-1 text-[13px] text-muted-foreground">Check your connection and try again.</p>
         <button
           type="button"
           onClick={retry}
-          className="mt-4 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+          className="btn btn-primary btn-sm mt-4"
         >
           Try again
         </button>
