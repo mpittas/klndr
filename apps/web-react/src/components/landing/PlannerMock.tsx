@@ -160,7 +160,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
           <span className="text-[15px] font-bold tracking-[-0.045em] text-foreground">klndr<span className="text-brand">.</span></span>
           <span className="hidden h-7 items-center rounded-[9px] bg-foreground/[0.055] p-0.5 text-[11px] font-medium text-muted-foreground sm:inline-flex">
             <span className="px-2.5 py-1">Calendar</span>
-            <span className="rounded-[7px] bg-card px-2.5 py-1 text-foreground shadow-[0_1px_2px_rgb(60_40_20/0.1),0_0_0_0.5px_rgb(60_40_20/0.08)] dark:bg-accent">
+            <span className="rounded-[7px] bg-card px-2.5 py-1 text-foreground shadow-[inset_0_0_0_1px_rgb(60_40_20/0.13)] dark:bg-foreground/[0.16] dark:shadow-none">
               Day
             </span>
           </span>
@@ -183,7 +183,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
         <aside className="hidden flex-col border-r border-border bg-card md:flex">
           <div className="px-2.5 pb-2 pt-2.5">
             <div className="flex h-7 items-center gap-0.5 whitespace-nowrap rounded-[9px] bg-foreground/[0.055] p-0.5 text-[11px] font-medium text-muted-foreground">
-              <span className="flex h-full flex-1 items-center justify-center gap-1 rounded-[7px] bg-card text-foreground shadow-[0_1px_2px_rgb(60_40_20/0.1),0_0_0_0.5px_rgb(60_40_20/0.08)] dark:bg-accent">
+              <span className="flex h-full flex-1 items-center justify-center gap-1 rounded-[7px] bg-card text-foreground shadow-[inset_0_0_0_1px_rgb(60_40_20/0.13)] dark:bg-foreground/[0.16] dark:shadow-none">
                 Activities <span className="count h-4 min-w-4 px-1 text-[10px]">12</span>
               </span>
               <span className="flex flex-1 items-center justify-center gap-1">

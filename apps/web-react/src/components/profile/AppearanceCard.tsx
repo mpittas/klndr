@@ -1,4 +1,4 @@
-import { Monitor, Moon, Sun, type LucideIcon } from "lucide-react";
+import { Check, Monitor, Moon, Sun, type LucideIcon } from "lucide-react";
 
 import { useDefaultEditorLayout, type EditorLayout } from "@/hooks/useEditorLayout";
 import { useTheme, type ThemePreference } from "@/theme";
@@ -25,11 +25,18 @@ export function AppearanceCard() {
 
   return (
     <section className="card p-5 sm:p-7" aria-labelledby="appearance-title">
-      <div className="border-b border-border pb-4">
-        <h2 id="appearance-title" className="text-base font-semibold tracking-[-0.015em] text-foreground">
-          Appearance
-        </h2>
-        <p className="mt-0.5 text-[13px] text-muted-foreground">How klndr. looks on this device. Changes apply right away.</p>
+      <div className="flex items-start justify-between gap-3 border-b border-border pb-4">
+        <div>
+          <h2 id="appearance-title" className="text-base font-semibold tracking-[-0.015em] text-foreground">
+            Appearance
+          </h2>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">How klndr. looks on this device.</p>
+        </div>
+        {/* Unlike the profile above, nothing here waits for a save button */}
+        <span className="inline-flex h-6 shrink-0 items-center gap-1 rounded-full bg-success/10 px-2.5 text-xs font-medium text-success">
+          <Check className="h-3.5 w-3.5" aria-hidden="true" />
+          Saves automatically
+        </span>
       </div>
 
       {/* Theme */}

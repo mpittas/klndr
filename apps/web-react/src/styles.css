@@ -352,18 +352,22 @@
     @apply flex items-center gap-1.5 text-[13px] font-medium text-foreground;
   }
 
-  /* Segmented control: a tray with one raised choice (`aria-pressed`, `aria-checked`, `aria-current` or `data-active`). */
+  /*
+   * Segmented control: a tray with one chosen option (`aria-pressed`, `aria-checked`, `aria-current` or `data-active`).
+   * The choice is a flat chip with a hairline edge, no shadow, and its corners follow the tray's (11px tray, 3px
+   * padding, 8px chip), so the two curves run parallel.
+   */
   .segmented {
-    @apply inline-flex items-center gap-0.5 rounded-[11px] bg-foreground/[0.055] p-[3px] dark:bg-foreground/[0.07];
+    @apply inline-flex items-center gap-[3px] rounded-[11px] bg-foreground/[0.055] p-[3px] dark:bg-foreground/[0.06];
   }
   .segmented-item {
-    @apply inline-flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-[13px] font-medium text-muted-foreground transition-[color,background-color,box-shadow] duration-150 hover:text-foreground;
+    @apply inline-flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-[8px] px-3 text-[13px] font-medium text-muted-foreground transition-[color,background-color,box-shadow] duration-150 hover:bg-foreground/[0.04] hover:text-foreground;
   }
   .segmented-item :where(svg) {
     @apply shrink-0;
   }
   .segmented-item:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"], [data-active="true"]) {
-    @apply bg-card text-foreground shadow-[0_1px_2px_rgb(60_40_20/0.1),0_0_0_0.5px_rgb(60_40_20/0.08)] dark:bg-accent dark:shadow-[0_1px_2px_rgb(0_0_0/0.4)];
+    @apply bg-card text-foreground shadow-[inset_0_0_0_1px_rgb(60_40_20/0.13)] hover:bg-card dark:bg-foreground/[0.16] dark:shadow-none dark:hover:bg-foreground/[0.16];
   }
 
   /* Small things */

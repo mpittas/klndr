@@ -70,7 +70,7 @@ All web values live in `apps/web-react/src/styles.css` (they override the shared
 - **Ink**: `foreground` for text, `muted-foreground` for secondary text, `primary` (ink) for the one main action on a screen.
 - **One accent**: `brand` (terracotta) marks *today* and *now* only: today's date disc, the "Today" labels, the now line and its pill, focus rings, selection, the wordmark's full stop. Nothing else is orange.
 - **Done is sage**: `success` for every completed state (ticks, progress bars, "all done").
-- **Activity Categories**: one hue per stored key (`--cat-<key>`) plus its ink (`--cat-<key>-ink`). Every role is mixed from those two against the paper by the `.tone-*` classes, handed out by `paletteOf()` in `src/lib/colors.ts`. Need the hue for a one-off mix (e.g. the block editor's time band)? Put `toneClassOf(color)` on the element and use `var(--tone)` / `var(--tone-ink)`, never the key itself: keys like `emerald` are not CSS colors. Avoid heavy single-side saturated border bars.
+- **Activity Categories**: one hue per stored key (`--cat-<key>`) plus its ink (`--cat-<key>-ink`). Every role is mixed from those two against the paper by the `.tone-*` classes, handed out by `paletteOf()` in `src/lib/colors.ts`. Keys like `emerald` are not CSS colors: always go through `.tone-*` (or `var(--cat-<key>)`). Dialogs and editors stay neutral; a category shows its color on the timeline, in chips and as the dot beside its name, not across a form. Avoid heavy single-side saturated border bars.
 - **Shadows** are tinted brown (`rgb(60 40 20 / …)`), never slate or black, in light mode.
 
 ## Typography
@@ -117,7 +117,8 @@ Build screens from the classes in `styles.css` (`@layer components`, so a utilit
 - **Fields**: `field` for every input, select and textarea (filled paper, hairline border, terracotta focus ring); `field-label` above it.
 - **Small things**: `segmented`/`segmented-item` (header nav, sidebar tabs, scope toggles: the chosen item is a raised sheet), `count`, `kbd`, `progress`/`progress-bar`, `tick` (round done-control), `avatar`.
 - **Wordmark**: `<Wordmark />` everywhere the logo appears.
-- **Dialogs**: `Modal` is a bottom sheet on phones and a centred dialog from `sm`; with `side` it is a full-height drawer on the right with a lighter veil (Notion's side peek). The block editor opens in the default chosen under Profile & settings > Appearance (`useDefaultEditorLayout`, kept per browser); the Center / Side switch beside its close button changes only the editor that is open.
+- **Dialogs**: `Modal` is a bottom sheet on phones and a centred dialog from `sm`; `compactHeader` swaps the big title for a slim toolbar row (small label left, actions and close right) for content that brings its own headline; headers get a hairline once the body scrolls under them. With `side` it is a full-height drawer on the right with a lighter veil (Notion's side peek). The block editor opens in the default chosen under Profile & settings > Appearance (`useDefaultEditorLayout`, kept per browser); the Center / Side switch beside its close button changes only the editor that is open.
+- **Settings that save**: account data (the profile form) has no inline save button; a bar pinned to the bottom of the screen appears only while there are unsaved changes (Discard / Save changes), says "Changes saved" after, and leaving the page first asks to keep editing or discard. Settings kept on the device (Appearance) apply at once and say "Saves automatically".
 - **Times**: `TimeSelect` (a list of quarter-hour slots: popover on desktop, sheet on phones) instead of native time inputs; dates through `DatePickerModal` with `onPick`.
 
 ## Components

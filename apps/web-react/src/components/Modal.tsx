@@ -70,8 +70,11 @@ export type ModalProps = {
   side?: boolean;
   /** Small controls shown beside the close button (e.g. a switch between the dialog and the drawer). */
   actions?: ReactNode;
-  /** Keep `title` as the dialog's accessible name but don't show it (or the subtitle): the content already says what it is. */
-  hideTitle?: boolean;
+  /**
+   * A slim toolbar header instead of the big title: `title` becomes a small label on the left, the actions and the
+   * close button sit on the right, and the content (which brings its own headline) starts right under it.
+   */
+  compactHeader?: boolean;
   onClose: () => void;
   /** A click on the dimmed area outside the dialog. Defaults to `onClose`; a form can save here instead. */
   onBackdropClick?: () => void;
@@ -88,7 +91,7 @@ export function Modal({
   flush,
   side = false,
   actions,
-  hideTitle,
+  compactHeader,
   onClose,
   onBackdropClick,
   children,
@@ -100,6 +103,14 @@ export function Modal({
   const returnFocusTo = useRef<HTMLElement | null>(null);
 
   const { mounted, state } = usePresence(open);
+
+  // A hairline under the header once the content has scrolled beneath it.
+  const [scrolled, setScrolled] = useState(false);
+  const [openedAt, setOpenedAt] = useState(open);
+  if (open !== openedAt) {
+    setOpenedAt(open);
+    if (open) setScrolled(false);
+  }
 
   // Switching between the dialog and the drawer while open: the panel arrives in its new place with a short
   // settle, instead of jumping there.
@@ -246,7 +257,7 @@ export function Modal({
         className={[
           "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border/70 bg-background shadow-xl focus:outline-none dark:shadow-[0_28px_70px_-18px_rgb(0_0_0/0.75)] sm:rounded-2xl",
           side
-            ? "sm:h-full sm:max-h-full sm:max-w-[30rem] sm:shadow-[0_0_0_1px_rgb(60_40_20/0.03),-24px_0_60px_-24px_rgb(60_40_20/0.35)]"
+            ? "sm:h-full sm:max-h-full sm:max-w-[34rem] sm:shadow-[0_0_0_1px_rgb(60_40_20/0.03),-24px_0_60px_-24px_rgb(60_40_20/0.35)]"
             : ["sm:max-h-[88dvh]", wide ? "sm:max-w-2xl" : lg ? "sm:max-w-xl" : "sm:max-w-md"].join(" "),
           dragY ? "" : "transition-transform duration-200",
         ].join(" ")}
@@ -261,13 +272,28 @@ export function Modal({
           onPointerCancel={onSheetPointerUp}
         >
           <div className="mx-auto mt-2.5 h-1.5 w-10 rounded-full bg-foreground/15 sm:hidden" />
-          {hideTitle ? (
-            // Still the dialog's accessible name, just not shown: the content says what is being edited.
-            <h2 id={titleId} className="sr-only">
-              {title}
-            </h2>
+          {compactHeader ? (
+            <header
+              className={[
+                "flex items-center justify-between gap-3 border-b py-2.5 pl-5 pr-3 transition-colors duration-150 sm:py-3 sm:pl-7 sm:pr-4",
+                scrolled ? "border-border/80" : "border-transparent",
+              ].join(" ")}
+            >
+              <h2 id={titleId} className="min-w-0 truncate text-[13px] font-medium text-muted-foreground">
+                {title}
+              </h2>
+              <div className="flex shrink-0 items-center gap-1.5">
+                {actions}
+                {closeButton}
+              </div>
+            </header>
           ) : (
-            <header className="flex items-start justify-between gap-3 py-3 pl-5 pr-3 sm:px-7 sm:pb-2 sm:pt-5">
+            <header
+              className={[
+                "flex items-start justify-between gap-3 border-b py-3 pl-5 pr-3 transition-colors duration-150 sm:px-7 sm:pb-3 sm:pt-5",
+                scrolled ? "border-border/80" : "border-transparent",
+              ].join(" ")}
+            >
               <div className="min-w-0 self-center">
                 <h2 id={titleId} className="text-lg font-semibold leading-tight tracking-[-0.02em] text-foreground">
                   {title}
@@ -281,23 +307,17 @@ export function Modal({
             </header>
           )}
         </div>
-        {hideTitle ? (
-          <div className="absolute right-3 top-3 z-20 flex items-center gap-1.5 sm:right-4 sm:top-4">
-            {actions}
-            {closeButton}
-          </div>
-        ) : null}
-
         <div
           className={[
             "relative min-h-0 flex-1 overscroll-contain",
             flush
               ? "flex flex-col overflow-hidden pb-[env(safe-area-inset-bottom)]"
-              : hideTitle
-                ? "overflow-y-auto px-5 pb-3 pt-5 sm:px-7 sm:pb-4 sm:pt-7"
+              : compactHeader
+                ? "overflow-y-auto px-5 pb-4 pt-2 sm:px-7 sm:pb-5 sm:pt-3"
                 : "overflow-y-auto px-5 py-3 sm:px-7 sm:py-4",
             !flush && !footer ? "pb-[max(1rem,env(safe-area-inset-bottom))]" : "",
           ].join(" ")}
+          onScroll={(event) => setScrolled(event.currentTarget.scrollTop > 2)}
         >
           {children}
         </div>

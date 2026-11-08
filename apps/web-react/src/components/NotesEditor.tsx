@@ -2,10 +2,10 @@ import { Extension, type Editor, type Range } from "@tiptap/core";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
 import { Markdown } from "@tiptap/markdown";
 import { Placeholder } from "@tiptap/extension-placeholder";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from "@tiptap/suggestion";
 import StarterKit from "@tiptap/starter-kit";
-import { Heading1, Heading2, List, ListChecks, ListOrdered, type LucideIcon } from "lucide-react";
+import { Bold, Heading1, Heading2, Italic, List, ListChecks, ListOrdered, type LucideIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -27,10 +27,27 @@ const matching = (query: string) => {
 
 type Menu = { items: Command[]; command: (item: Command) => void; rect: DOMRect | null };
 
+/** The toolbar under the text: two inline styles, then the blocks. `active` names what `isActive` checks. */
+type Tool = { label: string; shortcut?: string; icon: LucideIcon; active: [string, Record<string, unknown>?]; run: (editor: Editor) => void };
+
+const TOOLS: Tool[][] = [
+  [
+    { label: "Bold", shortcut: "Ctrl+B", icon: Bold, active: ["bold"], run: (e) => void e.chain().focus().toggleBold().run() },
+    { label: "Italic", shortcut: "Ctrl+I", icon: Italic, active: ["italic"], run: (e) => void e.chain().focus().toggleItalic().run() },
+  ],
+  [
+    { label: "Heading", icon: Heading2, active: ["heading", { level: 2 }], run: (e) => void e.chain().focus().toggleHeading({ level: 2 }).run() },
+    { label: "Bulleted list", icon: List, active: ["bulletList"], run: (e) => void e.chain().focus().toggleBulletList().run() },
+    { label: "Numbered list", icon: ListOrdered, active: ["orderedList"], run: (e) => void e.chain().focus().toggleOrderedList().run() },
+    { label: "To-do list", icon: ListChecks, active: ["taskList"], run: (e) => void e.chain().focus().toggleTaskList().run() },
+  ],
+];
+
 /**
  * The note field of a block: plain text that turns into a Notion-style page when asked. Type "/" for a
  * title, a to-do list or a numbered list (typing `- `, `1. `, `[ ] ` or `## ` works too). It is stored as
- * markdown, so a note stays readable text everywhere else, and the field can be dragged taller.
+ * markdown, so a note stays readable text everywhere else. The box grows with its text (then scrolls), and a
+ * small toolbar under it offers the same blocks plus bold and italic, for those who would rather click.
  */
 export function NotesEditor({
   value,
@@ -129,13 +146,20 @@ export function NotesEditor({
     contentType: "markdown",
     immediatelyRender: false,
     editorProps: {
-      attributes: { class: "notes-editor min-h-full px-3 py-2 text-sm outline-none", "aria-label": "Notes" },
+      attributes: { class: "notes-editor min-h-full px-3.5 py-3 text-sm leading-relaxed outline-none", "aria-label": "Notes" },
     },
     onUpdate: ({ editor: current }) => {
       const markdown = current.getMarkdown();
       lastValue.current = markdown;
       emit.current(markdown);
     },
+  });
+
+  // Which tools are on where the cursor is. Read through the editor's own state, so only these re-render.
+  const activeTools = useEditorState({
+    editor,
+    selector: ({ editor: current }) =>
+      TOOLS.flat().map((tool) => (current ? current.isActive(tool.active[0], tool.active[1]) : false)),
   });
 
   // A change that did not come from typing here, like an activity filling in its notes.
@@ -147,9 +171,10 @@ export function NotesEditor({
 
   return (
     <>
-      {/* The grip at the corner drags it taller; the box scrolls once its text outgrows it. */}
+      {/* A sheet of paper: the text grows the box up to a point, then scrolls; the toolbar stays under it. */}
+      <div className="mt-1.5 overflow-hidden rounded-xl border border-border bg-card shadow-xs transition-[border-color,box-shadow] duration-150 hover:border-input focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/15 dark:bg-muted/40">
       <div
-        className="mt-1.5 flex h-32 min-h-20 max-h-[70dvh] cursor-text flex-col resize-y overflow-y-auto overscroll-contain rounded-lg border border-border bg-muted/50 transition-[background-color,border-color,box-shadow] duration-150 hover:bg-muted focus-within:border-ring focus-within:bg-card focus-within:ring-[3px] focus-within:ring-ring/15 dark:bg-muted/60"
+        className="flex min-h-[7.5rem] max-h-[min(50dvh,22rem)] cursor-text flex-col overflow-y-auto overscroll-contain"
         onClickCapture={(event) => {
           // Ctrl/Cmd+click anywhere on a to-do row ticks it, so the row is as easy to hit as the box.
           if (!(event.ctrlKey || event.metaKey) || !(event.target instanceof Element)) return;
@@ -165,6 +190,43 @@ export function NotesEditor({
       >
         {/* Fills the box, so a click anywhere in it lands in the text */}
         <EditorContent editor={editor} className="flex flex-1 flex-col [&>.ProseMirror]:flex-1" />
+      </div>
+
+      <div
+        role="toolbar"
+        aria-label="Formatting"
+        className="flex items-center gap-0.5 border-t border-border/70 bg-muted/40 px-1.5 py-1 dark:bg-transparent"
+      >
+        {TOOLS.map((group, groupIndex) => (
+          <div key={groupIndex} className="flex items-center gap-0.5">
+            {groupIndex > 0 ? <span aria-hidden="true" className="mx-1 h-4 w-px bg-border" /> : null}
+            {group.map((tool) => {
+              const index = TOOLS.flat().indexOf(tool);
+              const on = activeTools?.[index] ?? false;
+              const Icon = tool.icon;
+              return (
+                <button
+                  key={tool.label}
+                  type="button"
+                  aria-label={tool.label}
+                  aria-pressed={on}
+                  title={tool.shortcut ? `${tool.label} (${tool.shortcut})` : tool.label}
+                  disabled={!editor}
+                  className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground aria-pressed:bg-foreground/[0.09] aria-pressed:text-foreground disabled:opacity-40 touch:h-9 touch:w-9"
+                  // Keeps the focus (and the selection) in the text while the button is pressed.
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => editor && tool.run(editor)}
+                >
+                  <Icon className="h-3.5 w-3.5" strokeWidth={2.25} aria-hidden="true" />
+                </button>
+              );
+            })}
+          </div>
+        ))}
+        <span className="ml-auto hidden pr-1.5 text-xs text-muted-foreground/80 sm:inline">
+          Type <kbd className="kbd mx-0.5 h-[18px] min-w-[18px] px-1">/</kbd> for more
+        </span>
+      </div>
       </div>
       {menu ? (
         <SlashMenu menu={menu} selected={selected} onHover={setSelected} />

@@ -18,6 +18,8 @@ const ROWS: Row[] = [
  * Apple's "Hide My Email" gives the app a relay address that never matches the Google email, so signing in
  * with Apple alone makes a second, empty account. Connecting it from here — while signed in to the account
  * that already has the data — is how the two are joined.
+ *
+ * An email-and-password account can also ask for a password reset email from its row.
  */
 export function SignInMethodsCard({
   providerIds,
@@ -25,12 +27,15 @@ export function SignInMethodsCard({
   busy,
   error,
   onConnect,
+  onResetPassword,
 }: {
   providerIds: string[];
   appleEnabled: boolean;
   busy: boolean;
   error: string | null;
   onConnect: (provider: LinkableProvider) => void;
+  /** Sends a password reset email; offered on the email-and-password row once it is connected. */
+  onResetPassword?: () => void;
 }) {
   // Apple only shows when it is switched on, unless it is already connected.
   const rows = ROWS.filter(
@@ -63,9 +68,16 @@ export function SignInMethodsCard({
                 {row.label}
               </span>
               {connected ? (
-                <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-success">
-                  <Check className="h-4 w-4" aria-hidden="true" />
-                  Connected
+                <span className="flex items-center gap-3">
+                  {row.id === "password" && onResetPassword ? (
+                    <button type="button" onClick={onResetPassword} className="btn btn-ghost btn-sm h-11 sm:h-8">
+                      Reset password
+                    </button>
+                  ) : null}
+                  <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-success">
+                    <Check className="h-4 w-4" aria-hidden="true" />
+                    Connected
+                  </span>
                 </span>
               ) : row.linkable ? (
                 <button

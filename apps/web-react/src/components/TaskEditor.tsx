@@ -1,7 +1,6 @@
 import {
   DAY_MINUTES,
   DURATION_CHOICES,
-  addDaysISO,
   formatDuration,
   formatTime,
   fromTimeInput,
@@ -39,7 +38,6 @@ import { NotesEditor } from "@/components/NotesEditor";
 import { TimeSelect, type TimeOption } from "@/components/TimeSelect";
 import { useDefaultEditorLayout } from "@/hooks/useEditorLayout";
 import { useEmojiField } from "@/hooks/useEmojiField";
-import { toneClassOf } from "@/lib/colors";
 
 /** What the editor was opened for. */
 export type EditorRequest = {
@@ -176,15 +174,13 @@ function TaskEditorDialog({
   const sourceTemplate = !isEdit ? (request.template ?? null) : null;
 
   const category = draft.category.trim() || GENERAL;
-  // Blocks take their category's color; there is no separate color to pick.
+  // Blocks take their category's color; there is no separate color to pick. The editor itself stays neutral:
+  // the color shows on the timeline and beside the category, not across the dialog.
   const color = colorOf({ category });
-  // The category's hue (`--tone`) and its ink (`--tone-ink`), for the tints of the dialog.
-  const tone = toneClassOf(color);
 
   const startMinutes = fromTimeInput(draft.start);
   const endMinutes = startMinutes + draft.duration;
   const today = todayISO();
-  const tomorrow = addDaysISO(today, 1);
   // The year only when it is not this one.
   const yearSuffix = draft.day.slice(0, 4) === today.slice(0, 4) ? "" : `, ${draft.day.slice(0, 4)}`;
 
@@ -219,7 +215,7 @@ function TaskEditorDialog({
   const changeEnd = (minutes: number) => patch({ duration: Math.max(SLOT, minutes - startMinutes) });
 
   const timeTrigger =
-    "group -mx-1.5 flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[1.375rem] font-semibold leading-tight tabular-nums tracking-[-0.025em] transition-colors hover:bg-card/60 aria-expanded:bg-card/80 cursor-pointer sm:text-[1.625rem]";
+    "group -mx-1.5 flex cursor-pointer items-center gap-1 rounded-lg px-1.5 py-0.5 text-[1.375rem] font-semibold leading-tight tabular-nums tracking-[-0.025em] text-foreground transition-colors hover:bg-foreground/[0.06] aria-expanded:bg-foreground/[0.08] sm:text-[1.5rem]";
 
   const applyTemplate = (id: string | null) => {
     const template = templates.find((item) => item.id === id);
@@ -303,7 +299,8 @@ function TaskEditorDialog({
     <Modal
       open={open}
       title={isEdit ? "Edit block" : "New block"}
-      hideTitle
+      compactHeader
+      lg
       side={layout === "side"}
       actions={
         <div role="radiogroup" aria-label="Open the editor as" className="segmented hidden h-8 sm:inline-flex">
@@ -401,14 +398,14 @@ function TaskEditorDialog({
     >
       <form
         id="task-editor-form"
-        className={["space-y-5 pb-1", tone].join(" ")}
+        className="space-y-5 pb-1"
         onSubmit={(event) => {
           event.preventDefault();
           submit();
         }}
       >
-        {/* The block's identity: a big emoji tile in its category color, and the name as a headline */}
-        <div className="flex items-center gap-3.5 pr-9 sm:pr-28">
+        {/* The block's identity: its emoji on a plain tile, and the name as a headline */}
+        <div className="flex items-center gap-3">
           <EmojiPicker
             value={emoji.emoji}
             busy={emoji.picking}
@@ -417,9 +414,9 @@ function TaskEditorDialog({
             hint={emoji.hint}
             onChange={emoji.choose}
             onAuto={emoji.auto}
-            className="tone-icon flex h-14 w-14 shrink-0 cursor-pointer items-center justify-center rounded-2xl text-3xl transition hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-border bg-muted/60 text-2xl transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:bg-foreground/[0.05] dark:hover:bg-foreground/[0.09]"
           />
-          <div className="min-w-0 flex-1 border-b-2 border-transparent transition-colors focus-within:border-[var(--tone)]">
+          <div className="min-w-0 flex-1 border-b border-border transition-colors focus-within:border-ring">
             <label htmlFor="task-title" className="sr-only">
               Name
             </label>
@@ -430,7 +427,7 @@ function TaskEditorDialog({
               autoComplete="off"
               enterKeyHint="done"
               placeholder="Name this block"
-              className="h-12 w-full min-w-0 bg-transparent text-[1.375rem] font-semibold tracking-[-0.02em] placeholder:font-medium placeholder:text-muted-foreground/55 focus-visible:outline-none"
+              className="h-11 w-full min-w-0 bg-transparent text-xl font-semibold tracking-[-0.02em] placeholder:font-medium placeholder:text-muted-foreground/55 focus-visible:outline-none"
               onChange={(event) => patch({ title: event.target.value })}
               onBlur={emoji.settle}
             />
@@ -442,78 +439,69 @@ function TaskEditorDialog({
           <ActivityPicker value={draft.templateId} templates={templates} onChange={applyTemplate} />
         ) : null}
 
-        {/* When: the span up front on a band of the category's color (each end opens a list of times), then the
-            day and the length */}
+        {/* When, as one statement on a slightly lifted band: the day (opens the calendar), then the span (each end
+            opens a list of times). The length presets follow. */}
         <section className="card overflow-hidden">
-          <div className="border-b border-[color-mix(in_oklab,var(--tone)_30%,var(--card))] bg-[color-mix(in_oklab,var(--tone)_20%,var(--card))] px-4 pb-3.5 pt-3 text-[var(--tone-ink)] dark:bg-[color-mix(in_oklab,var(--tone)_24%,var(--card))]">
-            <div className="flex items-end gap-3">
+          <div className="border-b border-border bg-muted/60 px-4 pb-3.5 pt-2.5 dark:bg-foreground/[0.045]">
+            <div className="flex items-center justify-between gap-2">
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                aria-label={`Date: ${longDate(draft.day)}${yearSuffix}. Change the date`}
+                className="group -ml-2 inline-flex h-9 min-w-0 cursor-pointer items-center gap-2 rounded-lg px-2 text-sm font-medium text-foreground transition-colors hover:bg-foreground/[0.06] sm:h-8"
+                onClick={() => setPickingDate(true)}
+              >
+                <CalendarDays className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <span className="min-w-0 truncate">
+                  <span className="sm:hidden">{mediumDate(draft.day)}</span>
+                  <span className="hidden sm:inline">{longDate(draft.day)}</span>
+                  {yearSuffix}
+                </span>
+                <ChevronDown
+                  className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground"
+                  aria-hidden="true"
+                />
+              </button>
+              {draft.day === today ? (
+                <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-semibold text-brand">Today</span>
+              ) : null}
+            </div>
+
+            <div className="mt-2 flex items-end gap-3">
               <div className="min-w-0">
-                <span className="block text-xs font-medium opacity-70">Starts</span>
+                <span className="block text-xs font-medium text-muted-foreground">Starts</span>
                 <TimeSelect value={startMinutes} options={startOptions} onChange={changeStart} label="Start time" className={timeTrigger}>
                   {formatTime(startMinutes)}
-                  <ChevronDown className="h-4 w-4 shrink-0 opacity-40 transition-opacity group-hover:opacity-80" aria-hidden="true" />
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" aria-hidden="true" />
                 </TimeSelect>
               </div>
 
               {/* The length, on the line between the two ends */}
-              <div className="mb-[0.7rem] flex min-w-6 flex-1 items-center" aria-hidden="true">
-                <span className="h-px flex-1 bg-current opacity-20" />
-                <span className="mx-1.5 shrink-0 rounded-full bg-card px-2 py-0.5 text-[11px] font-semibold tabular-nums text-foreground shadow-xs">
+              <div className="mb-[0.7rem] flex min-w-6 flex-1 items-center text-muted-foreground" aria-hidden="true">
+                <span className="h-px flex-1 bg-border" />
+                <span className="mx-1.5 shrink-0 rounded-full bg-card px-2 py-0.5 text-[11px] font-semibold tabular-nums text-foreground ring-1 ring-inset ring-border">
                   {formatDuration(draft.duration)}
                 </span>
-                <span className="h-px flex-1 bg-current opacity-20" />
-                <ArrowRight className="-ml-1 h-3.5 w-3.5 shrink-0 opacity-40" />
+                <span className="h-px flex-1 bg-border" />
+                <ArrowRight className="-ml-1 h-3.5 w-3.5 shrink-0 opacity-60" />
               </div>
 
               <div className="min-w-0 text-right">
-                <span className="block text-xs font-medium opacity-70">Ends</span>
+                <span className="block text-xs font-medium text-muted-foreground">Ends</span>
                 <TimeSelect value={endMinutes} options={endOptions} onChange={changeEnd} label="End time" align="end" className={timeTrigger}>
                   {formatTime(endMinutes)}
-                  <ChevronDown className="h-4 w-4 shrink-0 opacity-40 transition-opacity group-hover:opacity-80" aria-hidden="true" />
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" aria-hidden="true" />
                 </TimeSelect>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 p-4">
-            <div>
-              <FieldLabel icon={CalendarDays}>Date</FieldLabel>
-              <div className="mt-1.5 flex gap-2">
-                <button
-                  type="button"
-                  aria-haspopup="dialog"
-                  aria-label={`Date: ${longDate(draft.day)}${yearSuffix}`}
-                  className="field h-11 min-w-0 flex-1 cursor-pointer items-center justify-between gap-2 text-left sm:h-10"
-                  onClick={() => setPickingDate(true)}
-                >
-                  <span className="min-w-0 truncate font-medium">
-                    <span className="sm:hidden">{mediumDate(draft.day)}</span>
-                    <span className="hidden sm:inline">{longDate(draft.day)}</span>
-                    {yearSuffix}
-                  </span>
-                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                </button>
-                <div className="segmented h-11 shrink-0 sm:h-10" role="group" aria-label="Quick dates">
-                  <button type="button" aria-pressed={draft.day === today} className="segmented-item px-3" onClick={() => patch({ day: today })}>
-                    Today
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={draft.day === tomorrow}
-                    className="segmented-item px-3"
-                    onClick={() => patch({ day: tomorrow })}
-                  >
-                    Tomorrow
-                  </button>
-                </div>
-              </div>
-            </div>
-
+          <div className="p-4">
             <div>
               <FieldLabel icon={Timer} id={durationLabelId}>
                 Duration
               </FieldLabel>
-              <div role="radiogroup" aria-labelledby={durationLabelId} className="segmented mt-1.5 grid w-full grid-cols-4 gap-1 p-1">
+              <div role="radiogroup" aria-labelledby={durationLabelId} className="segmented mt-1.5 grid w-full grid-cols-4">
                 {DURATION_CHOICES.map((value) => (
                   <button
                     key={value}

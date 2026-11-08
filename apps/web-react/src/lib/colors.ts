@@ -77,8 +77,4 @@ export function paletteOf(color: string): PaletteEntry {
   return PALETTE[canonicalColor(color)];
 }
 
-/** The hue class alone (`tone-indigo`): sets `--tone` and `--tone-ink` for one-off mixes in a component. */
-export function toneClassOf(color: string): string {
-  return TONE[canonicalColor(color)];
-}
 

@@ -1,11 +1,12 @@
 import { PROFILE_LIMITS, authErrorMessage, type UserProfile } from "@klndr/core";
 import { useProfile, useUpdateProfile } from "@klndr/data";
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Mail } from "lucide-react";
+import { Link, createFileRoute, useBlocker, useNavigate } from "@tanstack/react-router";
+import { Check, Mail } from "lucide-react";
 import { useState, type FormEventHandler } from "react";
 
 import { currentProviderIds, isSignedIn, useAuth, type AuthUser, type LinkableProvider } from "@/auth";
-import { ErrorAlert, SuccessAlert } from "@/components/AuthCard";
+import { ErrorAlert } from "@/components/AuthCard";
+import { Modal } from "@/components/Modal";
 import { TextField } from "@/components/TextField";
 import { AccountActionsCard } from "@/components/profile/AccountActionsCard";
 import { AppearanceCard } from "@/components/profile/AppearanceCard";
@@ -88,9 +89,19 @@ function ProfilePage() {
     setForm(formFromProfile(loaded));
   }
 
-  const saved = useTransientFlag(4000);
+  const saved = useTransientFlag(2600);
   const resetEmailSent = useTransientFlag(5000);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
+
+  // Unsaved: the form differs from the profile it was filled from. Appearance is not part of it: it applies
+  // (and is kept) the moment it changes.
+  const baseline = loaded ? formFromProfile(loaded) : null;
+  const dirty = baseline !== null && (Object.keys(form) as (keyof ProfileForm)[]).some((key) => form[key] !== baseline[key]);
+  const discard = () => {
+    if (baseline) setForm(baseline);
+    setSaveError(null);
+  };
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -103,6 +114,7 @@ function ProfilePage() {
 
   const handleSave: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
+    if (!dirty || update.isPending) return;
     setSaveError(null);
     saved.clear();
 
@@ -118,17 +130,18 @@ function ProfilePage() {
       });
       saved.flash();
     } catch (thrown) {
-      setSaveError((thrown as Error).message || "Failed to save profile changes.");
+      setSaveError((thrown as Error).message || "Couldn't save your changes.");
     }
   };
 
   const handleSendResetEmail = async () => {
     if (!user?.email) return;
+    setResetError(null);
     try {
       await requestPasswordReset(user.email);
       resetEmailSent.flash();
     } catch (thrown) {
-      setSaveError((thrown as Error).message || "Failed to send reset email.");
+      setResetError((thrown as Error).message || "Failed to send reset email.");
     }
   };
 
@@ -171,8 +184,17 @@ function ProfilePage() {
 
   const needsPassword = providerIds.includes("password");
 
+  // Signing out and deleting the account leave on purpose, so they are let through.
+  const blocker = useBlocker({
+    shouldBlockFn: ({ next }) => dirty && !deleting && next.pathname !== "/login",
+    enableBeforeUnload: dirty,
+    withResolver: true,
+  });
+
+  const showBar = dirty || update.isPending || saved.on;
+
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+    <div className="mx-auto w-full max-w-3xl px-4 pb-32 pt-8 sm:px-6 sm:pt-10 lg:px-8">
       {!user ? (
         // Not authenticated. A signed-out visitor never reaches here (the route guard sends them to
         // /login); this is what a build with no Firebase configuration shows.
@@ -222,9 +244,7 @@ function ProfilePage() {
             </div>
           ) : null}
 
-          {saved.on ? <SuccessAlert message="Profile saved successfully." /> : null}
-
-          {saveError ? <ErrorAlert message={saveError} /> : null}
+          {resetError ? <ErrorAlert message={resetError} /> : null}
 
           {resetEmailSent.on ? (
             <div
@@ -236,8 +256,8 @@ function ProfilePage() {
             </div>
           ) : null}
 
-          <div className="card p-5 sm:p-7">
-            <form onSubmit={handleSave} className="space-y-7">
+          <form id="profile-form" onSubmit={handleSave} className="space-y-5">
+            <section className="card space-y-6 p-5 sm:p-7">
               <div className="border-b border-border pb-4">
                 <h2 className="text-base font-semibold tracking-[-0.015em] text-foreground">Personal information</h2>
                 <p className="mt-0.5 text-[13px] text-muted-foreground">Update your details and contact information.</p>
@@ -302,7 +322,10 @@ function ProfilePage() {
                 </div>
               </div>
 
-              <div className="border-b border-border pb-4 pt-2">
+            </section>
+
+            <section className="card space-y-6 p-5 sm:p-7">
+              <div className="border-b border-border pb-4">
                 <h2 className="text-base font-semibold tracking-[-0.015em] text-foreground">Preferences &amp; schedule</h2>
                 <p className="mt-0.5 text-[13px] text-muted-foreground">Configure default planning options.</p>
               </div>
@@ -353,25 +376,8 @@ function ProfilePage() {
                 </div>
               </div>
 
-              <div className="flex flex-col-reverse items-stretch gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <button
-                  type="button"
-                  onClick={() => void handleSendResetEmail()}
-                  className="btn btn-ghost btn-sm h-11 self-start sm:h-8 sm:-ml-3"
-                >
-                  Reset password via email
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={update.isPending || !loaded}
-                  className="btn btn-primary btn-md h-11 px-5 sm:h-9"
-                >
-                  {update.isPending ? "Saving…" : "Save changes"}
-                </button>
-              </div>
-            </form>
-          </div>
+            </section>
+          </form>
 
           <AppearanceCard />
 
@@ -390,6 +396,7 @@ function ProfilePage() {
               busy={linking}
               error={linkError}
               onConnect={(provider) => void handleConnect(provider)}
+              onResetPassword={user.email ? () => void handleSendResetEmail() : undefined}
             />
           )}
 
@@ -401,6 +408,82 @@ function ProfilePage() {
             error={deleteError}
             onDelete={(payload) => void handleDeleteAccount(payload)}
           />
+
+          {/* Unsaved profile changes: one bar at the bottom of the screen, wherever the page is scrolled to */}
+          {showBar ? (
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-6">
+              <div
+                role="region"
+                aria-label="Unsaved changes"
+                aria-live="polite"
+                className="pointer-events-auto flex w-full max-w-xl items-center gap-3 rounded-2xl border border-border bg-popover/95 py-2.5 pl-4 pr-2.5 shadow-xl backdrop-blur-xl animate-in fade-in-0 slide-in-from-bottom-4 duration-200"
+              >
+                {dirty || update.isPending ? (
+                  <>
+                    <span
+                      className={["h-2 w-2 shrink-0 rounded-full", saveError ? "bg-destructive" : "bg-warning"].join(" ")}
+                      aria-hidden="true"
+                    />
+                    <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                      {saveError ? (
+                        <span className="text-destructive">{saveError}</span>
+                      ) : (
+                        <>
+                          <span className="sm:hidden">Unsaved changes</span>
+                          <span className="hidden sm:inline">You have unsaved changes</span>
+                        </>
+                      )}
+                    </p>
+                    <button
+                      type="button"
+                      disabled={update.isPending}
+                      className="btn btn-ghost btn-sm h-10 sm:h-8"
+                      onClick={discard}
+                    >
+                      Discard
+                    </button>
+                    <button
+                      type="submit"
+                      form="profile-form"
+                      disabled={update.isPending}
+                      className="btn btn-primary btn-sm h-10 px-4 sm:h-8"
+                    >
+                      {update.isPending ? "Saving…" : saveError ? "Try again" : (
+                        <>
+                          <span className="sm:hidden">Save</span>
+                          <span className="hidden sm:inline">Save changes</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                ) : (
+                  <p className="flex h-10 flex-1 items-center gap-2 text-sm font-medium text-foreground sm:h-8">
+                    <Check className="h-4 w-4 text-success" aria-hidden="true" />
+                    Changes saved
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : null}
+
+          <Modal
+            open={blocker.status === "blocked"}
+            title="Leave without saving?"
+            subtitle="Your changes to your profile haven't been saved."
+            onClose={() => blocker.reset?.()}
+            footer={
+              <div className="flex justify-end gap-2">
+                <button type="button" className="btn btn-soft btn-md h-11 px-5 sm:h-10" onClick={() => blocker.reset?.()}>
+                  Keep editing
+                </button>
+                <button type="button" className="btn btn-danger btn-md h-11 px-5 sm:h-10" onClick={() => blocker.proceed?.()}>
+                  Discard changes
+                </button>
+              </div>
+            }
+          >
+            <p className="text-sm text-muted-foreground">If you leave now, the edits you made on this page are lost.</p>
+          </Modal>
         </div>
       )}
     </div>
