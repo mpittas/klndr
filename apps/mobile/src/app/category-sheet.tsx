@@ -4,6 +4,7 @@ import {
   MAX_CATEGORY,
   canonicalColor,
   nextCategoryColor,
+  takenColors,
   withImplicitCategories,
   type ActivityTemplate,
   type Category,
@@ -112,6 +113,7 @@ function CategoryForm({
     category || unsaved ? canonicalColor((category ?? unsaved)!.color) : nextCategoryColor(categories),
   );
   const [emoji, setEmoji] = useState(category?.emoji ?? FALLBACK_EMOJI.category);
+  const taken = useMemo(() => takenColors(categories, category?.name ?? unsaved?.name), [categories, category, unsaved]);
   const [byHand, setByHand] = useState(false);
   const [busy, setBusy] = useState(false);
   const submitting = useRef(false);
@@ -240,9 +242,20 @@ function CategoryForm({
 
       <Section title="Colour">
         <View accessibilityRole="radiogroup" className="flex-row flex-wrap justify-between px-sm py-xs">
-          {COLOR_KEYS.map((key) => (
-            <ColorSwatch color={key} key={key} onPress={() => setColor(key)} selected={color === key} />
-          ))}
+          {COLOR_KEYS.map((key) => {
+            // A colour another category has can't be picked, so no two categories look alike.
+            const owner = color === key ? undefined : taken.get(key);
+            return (
+              <ColorSwatch
+                accessibilityHint={owner ? `Used by ${owner}` : undefined}
+                color={key}
+                disabled={owner !== undefined}
+                key={key}
+                onPress={() => setColor(key)}
+                selected={color === key}
+              />
+            );
+          })}
         </View>
       </Section>
 

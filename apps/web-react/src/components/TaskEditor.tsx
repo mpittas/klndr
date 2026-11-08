@@ -13,13 +13,12 @@ import {
   type ScheduledTask,
   type TaskDraft,
 } from "@klndr/core";
-import { useCategoryColor } from "@klndr/data";
+import { useCategoryColor, useCategoryField } from "@klndr/data";
 import {
   ArrowRight,
   CalendarDays,
   CheckCircle2,
   ChevronDown,
-  Folder,
   PanelRight,
   SquareSquare,
   StickyNote,
@@ -30,7 +29,7 @@ import {
 import { useId, useMemo, useState, type ReactNode } from "react";
 
 import { ActivityPicker } from "@/components/ActivityPicker";
-import { CategorySelect } from "@/components/category/CategorySelect";
+import { CategoryChips } from "@/components/category/CategoryChips";
 import { DatePickerModal } from "@/components/DatePickerModal";
 import { EmojiPicker } from "@/components/EmojiPicker";
 import { Modal } from "@/components/Modal";
@@ -59,7 +58,6 @@ type TaskEditorProps = {
   onDeleteTemplate: (id: string) => Promise<unknown>;
 };
 
-const GENERAL = "General";
 /** The step of the time lists. */
 const SLOT = 15;
 
@@ -75,7 +73,6 @@ function FieldLabel({ icon: Icon, children, id }: { icon: LucideIcon; children: 
 
 type Draft = {
   title: string;
-  category: string;
   day: string;
   start: string;
   duration: number;
@@ -90,7 +87,6 @@ function draftFrom(request: EditorRequest): Draft {
     const task = request.task;
     return {
       title: task.title,
-      category: task.category,
       day: task.day,
       start: timeInputValue(task.startMinutes),
       duration: task.durationMinutes,
@@ -102,7 +98,6 @@ function draftFrom(request: EditorRequest): Draft {
   const template = request.template ?? null;
   return {
     title: template?.name ?? "",
-    category: template?.category ?? GENERAL,
     day: request.day,
     start: timeInputValue(request.startMinutes),
     duration: template?.defaultDuration ?? 30,
@@ -163,6 +158,15 @@ function TaskEditorDialog({
     title: draft.title,
     known: templates,
   });
+  // The category is picked from the title as it is typed, unless the block has one of its own or an activity's
+  // (see `useCategoryField`), so a block lands in the right color without a thought.
+  const initialCategory = start ? start.category : (request.template?.category ?? null);
+  const category = useCategoryField({
+    initial: initialCategory,
+    initialTitle: start ? start.title : (request.template?.name ?? ""),
+    initialByHand: !start && !!request.template,
+    title: draft.title,
+  });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmingTemplateDelete, setConfirmingTemplateDelete] = useState(false);
@@ -172,11 +176,6 @@ function TaskEditorDialog({
   const isEdit = request.mode === "edit";
   // When the dialog was opened from an activity in the library, that activity can be deleted here.
   const sourceTemplate = !isEdit ? (request.template ?? null) : null;
-
-  const category = draft.category.trim() || GENERAL;
-  // Blocks take their category's color; there is no separate color to pick. The editor itself stays neutral:
-  // the color shows on the timeline and beside the category, not across the dialog.
-  const color = colorOf({ category });
 
   const startMinutes = fromTimeInput(draft.start);
   const endMinutes = startMinutes + draft.duration;
@@ -224,11 +223,11 @@ function TaskEditorDialog({
       return;
     }
     emoji.choose(template.emoji);
+    category.choose(template.category);
     setDraft((current) => ({
       ...current,
       templateId: id,
       title: template.name,
-      category: template.category,
       duration: template.defaultDuration,
       notes: current.notes || (template.notes ?? ""),
     }));
@@ -256,14 +255,17 @@ function TaskEditorDialog({
     }
     if (busy) return;
     const snapshot = draft;
-    // Saving never waits for the emoji: one still being picked is put on the block once it has been saved.
+    // Saving never waits for the emoji or the category: one still being picked is put on the block once it has
+    // been saved.
     const picked = emoji.forSave();
+    const filed = category.forSave();
     void attempt(async () => {
       const payload: TaskDraft = {
         title: snapshot.title.trim(),
         emoji: picked.emoji,
-        color,
-        category,
+        // Blocks take their category's color; there is no separate color to pick.
+        color: colorOf({ category: filed.category }),
+        category: filed.category,
         day: snapshot.day,
         startMinutes: fromTimeInput(snapshot.start),
         durationMinutes: snapshot.duration,
@@ -273,6 +275,7 @@ function TaskEditorDialog({
       };
       const saved = await onSave({ id: request.task?.id ?? null, payload });
       picked.fill?.({ kind: "task", id: saved.id });
+      filed.fill?.(saved.id);
     }, "Something went wrong");
   };
 
@@ -280,7 +283,9 @@ function TaskEditorDialog({
   // and closes an untouched one. Escape and the close button still discard.
   const dismiss = () => {
     if (busy) return;
-    const changed = (Object.keys(draft) as (keyof Draft)[]).some((key) => draft[key] !== initial[key]);
+    const changed =
+      (Object.keys(draft) as (keyof Draft)[]).some((key) => draft[key] !== initial[key]) ||
+      category.value !== initialCategory;
     if (changed) submit();
     else onClose();
   };
@@ -429,10 +434,24 @@ function TaskEditorDialog({
               placeholder="Name this block"
               className="h-11 w-full min-w-0 bg-transparent text-xl font-semibold tracking-[-0.02em] placeholder:font-medium placeholder:text-muted-foreground/55 focus-visible:outline-none"
               onChange={(event) => patch({ title: event.target.value })}
-              onBlur={emoji.settle}
+              onBlur={() => {
+                emoji.settle();
+                category.settle();
+              }}
             />
           </div>
         </div>
+
+        {/* Right under the name, as one tap: the app fills it in from the name, and a wrong guess shows at once */}
+        <CategoryChips
+          value={category.value}
+          suggested={category.suggested}
+          guessing={category.guessing}
+          ranked={category.ranked}
+          named={draft.title.trim() !== ""}
+          templates={templates}
+          onChange={category.choose}
+        />
 
         {/* Or fill in the name, category and length from an activity; the time is set below */}
         {!isEdit && templates.length > 0 ? (
@@ -520,16 +539,6 @@ function TaskEditorDialog({
           </div>
         </section>
 
-
-        <div className="block">
-          <FieldLabel icon={Folder}>Category</FieldLabel>
-          <CategorySelect
-            value={draft.category}
-            templates={templates}
-            className="mt-1.5 w-full"
-            onChange={(next) => patch({ category: next })}
-          />
-        </div>
 
         <div className="block">
           <FieldLabel icon={StickyNote}>Notes</FieldLabel>

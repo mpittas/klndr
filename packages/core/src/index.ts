@@ -9,6 +9,7 @@ export * from "./layout";
 export * from "./timeline";
 export * from "./colors";
 export * from "./categories";
+export * from "./category-guess";
 export * from "./validation";
 export * from "./profile";
 export * from "./auth";

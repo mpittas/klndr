@@ -142,8 +142,8 @@ describe("categories", () => {
     const { options, queryClient, categories, templates } = await setup();
     const before = templates();
     const work = categories().find((c) => c.name === "Work")!;
-    await run(queryClient, options.updateCategory, { id: work.id, patch: { color: "rose" } });
-    expect(categories().find((c) => c.id === work.id)?.color).toBe("rose");
+    await run(queryClient, options.updateCategory, { id: work.id, patch: { color: "lime" } });
+    expect(categories().find((c) => c.id === work.id)?.color).toBe("lime");
     expect(templates()).toBe(before);
     expect(queryClient.getQueryState(queryKeys.templates)?.isInvalidated).toBe(false); // nothing to fetch again
   });

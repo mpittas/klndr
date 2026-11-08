@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { JWTVerifyGetKey } from "jose";
 import { firebaseKeys, requireSession } from "./auth";
+import { createCategorySuggester, type CategorySuggester } from "./category";
 import { createStoreFactory } from "./db";
 import { createEmojiSuggester, type EmojiSuggester } from "./emoji";
 import type { Env } from "./env";
@@ -13,6 +14,7 @@ import { categories } from "./routes/categories";
 import { checklist } from "./routes/checklist";
 import { emoji } from "./routes/emoji";
 import { notes } from "./routes/notes";
+import { suggestCategory as suggestCategoryRoute } from "./routes/suggest-category";
 import { tasks } from "./routes/tasks";
 import { templates } from "./routes/templates";
 import type { Session } from "./session";
@@ -31,9 +33,14 @@ export type ApiConfig = {
   announce?: Announce;
   /** Picks an emoji for a title. Defaults to OpenAI when `openaiApiKey` is set, and to none otherwise. */
   suggestEmoji?: EmojiSuggester;
-  /** Key for the OpenAI API, which `suggestEmoji` uses. Without one the app falls back to a neutral emoji. */
+  /** Picks a category for a block's title. Defaults to OpenAI when `openaiApiKey` is set, and to none otherwise. */
+  suggestCategory?: CategorySuggester;
+  /**
+   * Key for the OpenAI API, which `suggestEmoji` and `suggestCategory` use. Without one the app falls back to a
+   * neutral emoji, and to what it can tell from the person's past blocks for a category.
+   */
   openaiApiKey?: string;
-  /** The OpenAI model that picks emoji. Defaults to a small, cheap one. */
+  /** The OpenAI model that picks emoji and categories. Defaults to a small, cheap one. */
   emojiModel?: string;
 };
 
@@ -52,6 +59,9 @@ export function createApp(config: ApiConfig) {
   const suggestEmoji =
     config.suggestEmoji ??
     (config.openaiApiKey ? createEmojiSuggester({ apiKey: config.openaiApiKey, model: config.emojiModel }) : null);
+  const suggestCategory =
+    config.suggestCategory ??
+    (config.openaiApiKey ? createCategorySuggester({ apiKey: config.openaiApiKey, model: config.emojiModel }) : null);
 
   const app = new Hono<Env>();
 
@@ -74,6 +84,7 @@ export function createApp(config: ApiConfig) {
     c.set("session", session);
     c.set("store", storeFor(session));
     c.set("suggestEmoji", suggestEmoji);
+    c.set("suggestCategory", suggestCategory);
     await next();
 
     // A saved change is announced so other devices refresh; failing to announce never fails the change.
@@ -88,6 +99,7 @@ export function createApp(config: ApiConfig) {
   api.route("/templates", templates);
   api.route("/categories", categories);
   api.route("/emoji", emoji);
+  api.route("/suggest-category", suggestCategoryRoute);
   api.route("/checklist", checklist);
   api.route("/notes", notes);
   api.route("/account", account);

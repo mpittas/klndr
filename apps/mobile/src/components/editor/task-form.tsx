@@ -8,11 +8,13 @@ import {
   mediumDate,
   parseISODate,
   toISODate,
+  UNSORTED_CATEGORY,
   type ActivityTemplate,
   type Category,
   type ScheduledTask,
   type TaskDraft,
 } from "@klndr/core";
+import { useCategoryField } from "@klndr/data";
 import { useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
@@ -28,10 +30,10 @@ import {
   Text,
   TitleCard,
 } from "@/components/ui";
+import { CategoryChips } from "./category-chips";
 import { CategoryRows, useCategoryChoice } from "./category-rows";
 
 const DEFAULT_EMOJI = "📌";
-const DEFAULT_CATEGORY = "General";
 
 const durationAt = (start: number, duration: number) => Math.min(duration, DAY_MINUTES - start);
 
@@ -44,8 +46,8 @@ export type TaskFormProps = {
   templates: ActivityTemplate[];
   categories: Category[];
   defaultDuration: number;
-  /** Saves and closes; rejects with a message the form shows. */
-  onSave: (payload: Omit<TaskDraft, "color">, newCategory: string | null) => Promise<void>;
+  /** Saves and closes, with the block as saved; rejects with a message the form shows. */
+  onSave: (payload: Omit<TaskDraft, "color">, newCategory: string | null) => Promise<{ id: string }>;
   onDelete?: () => void;
   onClose: () => void;
 };
@@ -64,7 +66,13 @@ export function TaskForm(props: TaskFormProps) {
 
   const [title, setTitle] = useState(task?.title ?? "");
   const [emoji, setEmoji] = useState(task ? task.emoji : DEFAULT_EMOJI);
-  const category = useCategoryChoice(categories, templates, task?.category ?? DEFAULT_CATEGORY);
+  // Picked from the title as it is typed, unless the block already has a category of its own or one is chosen
+  // (see `useCategoryField`). With none, the block is saved as unsorted, in grey.
+  const auto = useCategoryField({ initial: task?.category ?? null, initialTitle: task?.title ?? "", initialByHand: false, title });
+  const category = useCategoryChoice(categories, templates, task?.category ?? UNSORTED_CATEGORY, {
+    value: auto.value ?? UNSORTED_CATEGORY,
+    onChange: auto.choose,
+  });
   const [date, setDate] = useState(task?.day ?? day);
   const [start, setStart] = useState(clampStart(task?.startMinutes ?? startMinutes));
   const [duration, setDuration] = useState(durationAt(clampStart(task?.startMinutes ?? startMinutes), task?.durationMinutes ?? defaultDuration));
@@ -106,13 +114,15 @@ export function TaskForm(props: TaskFormProps) {
     submitting.current = true;
     setBusy(true);
     setError(null);
+    // Saving never waits for the category: one still being picked is put on the block once it has been saved.
+    const filed = category.creating ? null : auto.forSave();
     try {
-      await onSave(
+      const saved = await onSave(
         {
           day: date,
           title: title.trim(),
           emoji,
-          category: category.wanted || DEFAULT_CATEGORY,
+          category: filed ? filed.category : category.wanted || UNSORTED_CATEGORY,
           startMinutes: start,
           durationMinutes: duration,
           notes: notes.trim() || null,
@@ -121,6 +131,7 @@ export function TaskForm(props: TaskFormProps) {
         },
         category.creating && category.wanted ? category.wanted : null,
       );
+      filed?.fill?.(saved.id);
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "Something went wrong");
       submitting.current = false;
@@ -148,6 +159,17 @@ export function TaskForm(props: TaskFormProps) {
         onSubmitEditing={() => void submit()}
         placeholder="Add a title"
         value={title}
+      />
+
+      <CategoryChips
+        categories={categories}
+        guessing={auto.guessing}
+        named={title.trim() !== ""}
+        onChange={category.use}
+        ranked={auto.ranked}
+        suggested={auto.suggested}
+        templates={templates}
+        value={auto.value}
       />
 
       {!editing && templates.length > 0 ? (

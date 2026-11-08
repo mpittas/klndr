@@ -9,9 +9,18 @@ const NEW_CATEGORY = "\u0000new";
 /**
  * Which category a block or an activity belongs to: one of the existing ones, or a new one named on the spot.
  * The new one is only made when the form is saved, so `creating` and `newName` are the form's to read.
+ *
+ * `controlled` hands the chosen category to someone else (a block's form, which picks it from the title).
  */
-export function useCategoryChoice(categories: Category[], templates: ActivityTemplate[], initial: string) {
-  const [category, setCategory] = useState(initial);
+export function useCategoryChoice(
+  categories: Category[],
+  templates: ActivityTemplate[],
+  initial: string,
+  controlled?: { value: string; onChange: (name: string) => void },
+) {
+  const [own, setOwn] = useState(initial);
+  const category = controlled ? controlled.value : own;
+  const setCategory = controlled ? controlled.onChange : setOwn;
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
 

@@ -96,8 +96,9 @@ export default function TaskEditor() {
         if (newCategory && !known) {
           color = (await library.createCategory({ draft: { name: newCategory, color: nextCategoryColor(categories) } })).color;
         }
-        await timeline.saveTask({ id: task?.id ?? null, payload: { ...draft, color } });
+        const saved = await timeline.saveTask({ id: task?.id ?? null, payload: { ...draft, color } });
         close();
+        return saved;
       }}
       startMinutes={clampStart(Number.isFinite(start) ? start : snapMinutes(nowMinutes(), 30))}
       task={task}

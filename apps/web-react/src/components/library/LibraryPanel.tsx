@@ -3,6 +3,7 @@ import {
   nextCategoryColor,
   normalizeEmojiTitle,
   sortCategoriesByName,
+  takenColors,
   withImplicitCategories,
   type ActivityTemplate,
   type CategoryEntry,
@@ -485,7 +486,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
             </button>
           </div>
           <div className="mt-3">
-            <ColorSwatches value={newColor} onChange={setNewColor} />
+            <ColorSwatches value={newColor} taken={takenColors(categories)} onChange={setNewColor} />
           </div>
           {addError ? (
             <p className="mt-2 text-xs font-medium text-destructive" role="alert">
@@ -667,7 +668,11 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
 
             {colorOpen === keyOf(entry) ? (
               <div className="border-b border-border bg-muted/20 py-3 pl-4 pr-3">
-                <ColorSwatches value={entry.color} onChange={(color) => void patchCategory(entry, { color })} />
+                <ColorSwatches
+                  value={entry.color}
+                  taken={takenColors(categories, entry.name)}
+                  onChange={(color) => void patchCategory(entry, { color })}
+                />
               </div>
             ) : null}
 

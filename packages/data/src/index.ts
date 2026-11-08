@@ -44,6 +44,15 @@ export {
   EMOJI_TIMEOUT_MS,
   type EmojiTarget,
 } from "./hooks/emoji";
+export {
+  useCategorySuggester,
+  useCategoryFill,
+  useCategoryField,
+  fillCategory,
+  CATEGORY_TIMEOUT_MS,
+  CATEGORY_TYPING_PAUSE_MS,
+  type CategoryFieldOptions,
+} from "./hooks/category";
 export { useProfile, useUpdateProfile, type ProfileSource } from "./hooks/profile";
 
 // Pure helpers the views share

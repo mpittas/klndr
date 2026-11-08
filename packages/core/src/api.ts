@@ -1,3 +1,4 @@
+import type { CategoryOption } from "./category-guess";
 import type { EmojiKind } from "./emojis";
 import type { ActivityTemplate, Category, ChecklistItem, DayChecklist, DayNotes, ScheduledTask } from "./types";
 
@@ -70,6 +71,11 @@ export type ApiClient = {
    * offer (not set up, too slow, or an answer it can't use). Never a reason to stop what the person is doing.
    */
   suggestEmoji(text: string, kind: EmojiKind): Promise<string | null>;
+  /**
+   * Which of `categories` a block called `text` belongs in, or `null` when none clearly fits (or the server has
+   * no model to ask). Like `suggestEmoji`, never a reason to stop what the person is doing.
+   */
+  suggestCategory(text: string, categories: CategoryOption[]): Promise<string | null>;
   /** Delete every document the caller owns: the data half of deleting an account. */
   deleteAccount(): Promise<void>;
 };
@@ -258,6 +264,13 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
         body: JSON.stringify({ text, kind }),
       });
       return data.emoji;
+    },
+    async suggestCategory(text: string, categories: CategoryOption[]): Promise<string | null> {
+      const data = await request<{ category: string | null }>("/api/suggest-category", {
+        method: "POST",
+        body: JSON.stringify({ text, categories }),
+      });
+      return data.category;
     },
     async deleteAccount(): Promise<void> {
       await request<{ ok: true }>("/api/account", { method: "DELETE" });

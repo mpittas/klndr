@@ -22,6 +22,8 @@ type DataContextValue = {
   histories: HistoryHolder;
   /** The emoji already suggested this session, by title (see `useEmojiSuggester`). Starts empty for a new person. */
   emojiCache: Map<string, string>;
+  /** The categories already suggested this session, by title (see `useCategorySuggester`). Starts empty for a new person. */
+  categoryCache: Map<string, string | null>;
 };
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -89,9 +91,10 @@ export function DataProvider({ api, userId, notify, profile, persister, syncTabs
 
   const histories = useMemo<HistoryHolder>(() => ({ current: null }), [client]);
   const emojiCache = useMemo(() => new Map<string, string>(), [client]);
+  const categoryCache = useMemo(() => new Map<string, string | null>(), [client]);
   const value = useMemo<DataContextValue>(
-    () => ({ api, notify: stableNotify, profile: profile ?? null, histories, emojiCache }),
-    [api, stableNotify, profile, histories, emojiCache],
+    () => ({ api, notify: stableNotify, profile: profile ?? null, histories, emojiCache, categoryCache }),
+    [api, stableNotify, profile, histories, emojiCache, categoryCache],
   );
   const tree = <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 

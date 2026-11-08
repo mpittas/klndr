@@ -1,7 +1,7 @@
 import { MAX_DAY_EXTRAS, MAX_NOTES_LENGTH } from "@klndr/core";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app";
-import { createStoreFactory } from "../src/db";
+import { createStoreFactory, MemoryStore } from "../src/db";
 import { call, devApp } from "./helpers";
 
 // A far-away day, so the demo schedule a fresh in-memory account starts with never gets in the way.
@@ -215,10 +215,46 @@ describe("categories", () => {
     expect(await names()).toEqual(expect.arrayContaining(["Home", "Work", "Health"]));
   });
 
-  it("creates one, with a default color for an unknown one", async () => {
+  it("creates one, with a color no other category has for an unknown one", async () => {
     const res = await post("/api/categories", { name: "  Music ", color: "mystery" });
     expect(res.status).toBe(201);
-    expect(res.body.category).toMatchObject({ name: "Music", color: "indigo" });
+    expect(res.body.category).toMatchObject({ name: "Music", color: "orange" });
+  });
+
+  it("gives a new one a free color in place of one another category has", async () => {
+    // The starter categories have indigo (Work), cyan, emerald, yellow and red.
+    expect((await post("/api/categories", { name: "Music", color: "indigo" })).body.category.color).toBe("orange");
+    expect((await post("/api/categories", { name: "Art", color: "rose" })).body.category.color).toBe("pink");
+    expect((await post("/api/categories", { name: "Chill", color: "lime" })).body.category.color).toBe("lime");
+  });
+
+  it("refuses a color another category has, while others are free", async () => {
+    const music = (await post("/api/categories", { name: "Music", color: "lime" })).body.category;
+    const res = await patch(`/api/categories/${music.id}`, { color: "indigo" });
+    expect(res.status).toBe(409);
+    expect(res.body.statusMessage).toBe("Another category already has that color");
+    expect((await patch(`/api/categories/${music.id}`, { color: "lime" })).status).toBe(200);
+  });
+
+  it("gives the categories made for a block a free color, and the unsorted one grey", async () => {
+    await newTask({ category: "Zen" });
+    await newTask({ category: "Uncategorized" });
+    const list = (await get("/api/categories")).body.categories as Array<{ name: string; color: string }>;
+    expect(list.find((c) => c.name === "Zen")?.color).toBe("orange");
+    expect(list.find((c) => c.name === "Uncategorized")?.color).toBe("slate");
+  });
+
+  it("gives each of two categories that share a color its own, the first by name keeping it", async () => {
+    const store = new MemoryStore();
+    const app = createApp({ firebaseProjectId: "", allowDevUser: true, storeFor: () => store });
+    const chill = await store.createCategory({ name: "Chill", color: "orange" });
+    const routines = (await store.listCategories()).find((c) => c.name === "Daily routines")!;
+    await store.updateCategory(routines.id, { color: "orange" });
+
+    const list = (await call(app, "GET", "/api/categories")).body.categories as Array<{ id: string; color: string }>;
+    expect(list.find((c) => c.id === chill.id)?.color).toBe("orange");
+    expect(list.find((c) => c.id === routines.id)?.color).toBe("pink");
+    expect((await store.listCategories()).find((c) => c.id === routines.id)?.color).toBe("pink");
   });
 
   it("keeps the emoji it is given, and can change it later", async () => {
@@ -232,7 +268,7 @@ describe("categories", () => {
   it("has no emoji until one is given, and ignores an empty one", async () => {
     const created = await post("/api/categories", { name: "Music", emoji: "  " });
     expect(created.body.category).not.toHaveProperty("emoji");
-    const patched = await patch(`/api/categories/${created.body.category.id}`, { color: "rose", emoji: "" });
+    const patched = await patch(`/api/categories/${created.body.category.id}`, { color: "lime", emoji: "" });
     expect(patched.body.category).not.toHaveProperty("emoji");
   });
 
@@ -251,8 +287,8 @@ describe("categories", () => {
     await post("/api/templates", { name: "Guitar", category: "Music" });
     await newTask({ category: "Music" });
 
-    const res = await patch(`/api/categories/${category.id}`, { name: "Band", color: "rose" });
-    expect(res.body.category).toMatchObject({ name: "Band", color: "rose" });
+    const res = await patch(`/api/categories/${category.id}`, { name: "Band", color: "pink" });
+    expect(res.body.category).toMatchObject({ name: "Band", color: "pink" });
     expect((await get(`/api/tasks?day=${DAY}`)).body.tasks[0].category).toBe("Band");
     const templates = (await get("/api/templates")).body.templates;
     expect(templates.find((t: { name: string }) => t.name === "Guitar").category).toBe("Band");

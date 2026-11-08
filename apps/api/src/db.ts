@@ -8,7 +8,7 @@ import type {
   ScheduledTask,
   Store,
 } from "@klndr/core";
-import { MAX_DAY_EXTRAS, toISODate } from "@klndr/core";
+import { MAX_DAY_EXTRAS, nextCategoryColor, toISODate, UNSORTED_CATEGORY } from "@klndr/core";
 import { HttpError } from "./errors";
 import { Firestore, FirestoreError, type FsDoc } from "./firestore";
 import type { Session } from "./session";
@@ -192,6 +192,10 @@ function demoTasks(
 const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 const byCategoryName = (a: Category, b: Category) => a.name.localeCompare(b.name);
 
+/** The color of a category made because a block or an activity named it: grey for the unsorted one, else a free one. */
+const colorForNew = (name: string, existing: Category[]) =>
+  sameName(name, UNSORTED_CATEGORY) ? "slate" : nextCategoryColor(existing);
+
 const duplicateCategory = () =>
   new HttpError(409, "A category with that name already exists");
 
@@ -363,7 +367,7 @@ export class MemoryStore implements Store {
   async ensureCategory(name: string) {
     const hit = this.categories.find((c) => sameName(c.name, name));
     if (hit) return hit.name;
-    this.categories.push({ id: String(this.seq++), name, color: "slate" });
+    this.categories.push({ id: String(this.seq++), name, color: colorForNew(name, this.categories) });
     return name;
   }
 
@@ -878,10 +882,11 @@ class FirestoreStore implements Store {
   }
 
   async ensureCategory(name: string) {
-    const hit = (await this.listCategories()).find((c) => sameName(c.name, name));
+    const existing = await this.listCategories();
+    const hit = existing.find((c) => sameName(c.name, name));
     if (hit) return hit.name;
     try {
-      await this.createCategory({ name, color: "slate" });
+      await this.createCategory({ name, color: colorForNew(name, existing) });
     } catch (err) {
       if (!(err instanceof HttpError && err.status === 409)) throw err; // lost a race: it exists now
     }

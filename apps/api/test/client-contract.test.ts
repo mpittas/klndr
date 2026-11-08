@@ -63,7 +63,7 @@ describe("the core API client against the API", () => {
   it("works through categories, in all three ways of deleting one", async () => {
     const music = await client.createCategory({ name: "Music", color: "violet" });
     expect(await client.getCategories()).toContainEqual(music);
-    expect(await client.updateCategory(music.id, { color: "rose" })).toMatchObject({ name: "Music", color: "rose" });
+    expect(await client.updateCategory(music.id, { color: "fuchsia" })).toMatchObject({ name: "Music", color: "fuchsia" });
 
     await client.createTemplate({ name: "Guitar", emoji: "🎸", color: "rose", category: "Music", defaultDuration: 60, notes: null });
     await expect(client.deleteCategory(music.id)).rejects.toThrow("Choose a category to move its activities to");

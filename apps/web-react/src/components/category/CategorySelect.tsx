@@ -9,6 +9,7 @@ import { Check, ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 
+import { CATEGORY_CHIP } from "@/components/category/chip";
 import { CategoryMark } from "@/components/category/CategoryMark";
 import { useEmojiPicker } from "@/hooks/useEmojiField";
 import { useKeyboardInset, useMediaQuery } from "@/hooks/useViewport";
@@ -29,11 +30,17 @@ export function CategorySelect({
   templates,
   onChange,
   className,
+  variant = "field",
+  chipLabel = "More",
 }: {
   value: string;
   templates?: ActivityTemplate[];
   onChange: (next: string) => void;
   className?: string;
+  /** `chip`: a small button at the end of a row of category chips, in place of the full-width field. */
+  variant?: "field" | "chip";
+  /** What the `chip` button says, e.g. "3 more". */
+  chipLabel?: string;
 }) {
   const categoriesQuery = useCategories();
   const { createCategory } = useLibraryActions();
@@ -175,23 +182,44 @@ export function CategorySelect({
 
   return (
     <div className={["relative", className ?? ""].join(" ")}>
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        className="flex h-11 w-full cursor-pointer items-center gap-2 rounded-lg border border-border bg-muted/50 px-2.5 text-left text-sm transition-[background-color,border-color,box-shadow] hover:bg-muted focus-visible:border-ring focus-visible:bg-card focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/15 dark:bg-muted/60 sm:h-10 sm:px-2"
-        onClick={() => (open ? hide() : show())}
-      >
-        <span className="flex w-5 shrink-0 items-center justify-center" aria-hidden="true">
-          <CategoryMark emoji={selected?.emoji} color={selected?.color ?? "slate"} size="sm" />
-        </span>
-        <span className="min-w-0 flex-1 truncate text-foreground">{value || "Choose a category"}</span>
-        <ChevronDown
-          className={["h-4 w-4 shrink-0 text-muted-foreground transition-transform", open ? "rotate-180" : ""].join(" ")}
-          aria-hidden="true"
-        />
-      </button>
+      {variant === "chip" ? (
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label={`${chipLabel}: all categories`}
+          className={[
+            CATEGORY_CHIP,
+            "border-transparent font-medium text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground aria-expanded:bg-foreground/[0.08] aria-expanded:text-foreground",
+          ].join(" ")}
+          onClick={() => (open ? hide() : show())}
+        >
+          {chipLabel}
+          <ChevronDown
+            className={["h-3.5 w-3.5 shrink-0 transition-transform", open ? "rotate-180" : ""].join(" ")}
+            aria-hidden="true"
+          />
+        </button>
+      ) : (
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className="flex h-11 w-full cursor-pointer items-center gap-2 rounded-lg border border-border bg-muted/50 px-2.5 text-left text-sm transition-[background-color,border-color,box-shadow] hover:bg-muted focus-visible:border-ring focus-visible:bg-card focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/15 dark:bg-muted/60 sm:h-10 sm:px-2"
+          onClick={() => (open ? hide() : show())}
+        >
+          <span className="flex w-5 shrink-0 items-center justify-center" aria-hidden="true">
+            <CategoryMark emoji={selected?.emoji} color={selected?.color ?? "slate"} size="sm" />
+          </span>
+          <span className="min-w-0 flex-1 truncate text-foreground">{value || "Choose a category"}</span>
+          <ChevronDown
+            className={["h-4 w-4 shrink-0 text-muted-foreground transition-transform", open ? "rotate-180" : ""].join(" ")}
+            aria-hidden="true"
+          />
+        </button>
+      )}
 
       {open
         ? createPortal(
