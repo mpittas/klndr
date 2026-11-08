@@ -1,51 +1,41 @@
-import { TimelineHistory, type ScheduledTask } from "@klndr/core";
-import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useSyncExternalStore } from "react";
-import { queryKeys } from "../keys";
+import type { HistoryDirection } from "@klndr/core";
+import { useMutation, useQueryClient, type Mutation } from "@tanstack/react-query";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
+import { historyStepOptions } from "../mutations/tasks";
 import { useData } from "../provider";
 
-/**
- * Undo and redo of what was done on one day's timeline (the `TimelineHistory` engine of `@klndr/core`,
- * reading and writing the blocks in the query cache). Undo only reaches back over the day on screen: a
- * different day starts a fresh history, as it always has.
- */
-export function useTimelineHistory(day: string) {
-  const { api, notify, histories } = useData();
-  const queryClient = useQueryClient();
+/** A change to blocks still on its way to the server (not an undo or redo step, which never adds a step). */
+const isPendingChange = (mutation: Mutation<unknown, Error, unknown, unknown>) => {
+  const [root, kind] = mutation.options.mutationKey ?? [];
+  return root === "tasks" && kind !== "history";
+};
 
-  // One history per day on screen, kept in the provider rather than in this hook, so a screen opened over the
-  // timeline (the editor) shares it with the timeline. A different day starts a fresh one.
-  if (histories.current?.day !== day) {
-    histories.current = {
-      day,
-      history: new TimelineHistory({
-        api,
-        getTasks: () => queryClient.getQueryData<ScheduledTask[]>(queryKeys.tasks.day(day)) ?? [],
-        setTasks: (tasks) => queryClient.setQueryData(queryKeys.tasks.day(day), tasks),
-        day: () => day,
-        notify,
-      }),
-    };
-  }
-  const history = histories.current.history;
+/**
+ * Undo and redo of what was done to blocks (the `TimelineHistory` engine of `@klndr/core`, over the query
+ * cache). There is one history for the person, kept by the provider, so every screen records into and undoes
+ * from the same one: the day, the week, the month and the editor over them, and moving between days or views
+ * keeps it.
+ */
+export function useTimelineHistory() {
+  const { api, notify, history } = useData();
+  const queryClient = useQueryClient();
 
   const subscribe = useCallback((onChange: () => void) => history.subscribe(() => onChange()), [history]);
   const canUndo = useSyncExternalStore(subscribe, () => history.canUndo, () => false);
   const canRedo = useSyncExternalStore(subscribe, () => history.canRedo, () => false);
 
-  // The engine edits this day's list; month grids that show these blocks are fetched again afterwards.
-  const settle = useCallback(
-    () => void queryClient.invalidateQueries({ queryKey: queryKeys.tasks.ranges }),
-    [queryClient],
-  );
+  const options = useMemo(() => historyStepOptions({ api, queryClient, notify }, history), [api, queryClient, notify, history]);
+  const { mutateAsync: runStep } = useMutation(options);
+
   // A change is put on the history once the server has it, so a quick Ctrl+Z straight after one would miss it
-  // (or undo the step before it). Wait for the saves still in flight; they show on screen at once, so this is short.
+  // (or undo the step before it). Wait for the changes still in flight; they show on screen at once, so this is
+  // short. Undo and redo steps themselves are not waited for: pressing undo three times shows three steps at once.
   const saved = useCallback(
     () =>
       new Promise<void>((resolve) => {
         const cache = queryClient.getMutationCache();
         const check = () => {
-          if (queryClient.isMutating({ mutationKey: ["tasks"] }) > 0) return false;
+          if (queryClient.isMutating({ predicate: isPendingChange }) > 0) return false;
           unsubscribe();
           resolve();
           return true;
@@ -55,8 +45,18 @@ export function useTimelineHistory(day: string) {
       }),
     [queryClient],
   );
-  const undo = useCallback(() => saved().then(() => history.undo()).then(settle), [saved, history, settle]);
-  const redo = useCallback(() => saved().then(() => history.redo()).then(settle), [saved, history, settle]);
+
+  const step = useCallback(
+    async (direction: HistoryDirection) => {
+      await saved();
+      const next = history.take(direction);
+      // A step that fails says so and starts the history afresh (`TimelineHistory.failed`); nothing to throw.
+      if (next) await runStep(next).catch(() => undefined);
+    },
+    [saved, history, runStep],
+  );
+  const undo = useCallback(() => step("undo"), [step]);
+  const redo = useCallback(() => step("redo"), [step]);
 
   return { history, canUndo, canRedo, undo, redo };
 }

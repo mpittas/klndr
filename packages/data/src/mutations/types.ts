@@ -11,5 +11,8 @@ export type MutationDeps = {
   notify: Notify;
 };
 
-/** Where undo steps are remembered; absent when no timeline is on screen to undo on. */
-export type HistoryRecorder = Pick<TimelineHistory, "record">;
+/**
+ * Where undo steps are remembered. `resolve` gives the id a block has now, for a block that undo deleted and
+ * made again (the server gave it a new id) while a change to it was on its way.
+ */
+export type HistoryRecorder = Pick<TimelineHistory, "record"> & Partial<Pick<TimelineHistory, "resolve">>;

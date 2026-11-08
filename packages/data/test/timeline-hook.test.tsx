@@ -1,8 +1,12 @@
 // @vitest-environment happy-dom
+import type { ScheduledTask } from "@klndr/core";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { useTimelineHistory } from "../src/hooks/history";
+import { useTaskActions } from "../src/hooks/tasks";
 import { useDayTimeline } from "../src/hooks/timeline";
 import { useRangeTasks } from "../src/hooks/queries";
+import { queryKeys } from "../src/keys";
 import { harness } from "./harness";
 import { DAY, useServer } from "./world";
 
@@ -127,16 +131,83 @@ describe("useDayTimeline", () => {
     expect(result.current.canUndo).toBe(false);
   });
 
-  it("starts a fresh history for another day", async () => {
-    const { result, rerender } = await mount();
+  it("keeps the history when the day on screen changes, and undoes a change made on the other day", async () => {
+    const { result, rerender, queryClient } = await mount();
     const template = (await server.current.api.getTemplates())[0];
     await act(() => result.current.createFromTemplate(template, 600));
     await waitFor(() => expect(result.current.canUndo).toBe(true));
 
     rerender({ day: NEXT_DAY });
     await waitFor(() => expect(result.current.day).toBe(NEXT_DAY));
-    expect(result.current.canUndo).toBe(false);
+    expect(result.current.canUndo).toBe(true);
+
+    await act(() => result.current.undo());
+    expect(await server.current.api.getTasksForDay(DAY)).toEqual([]);
+    expect(queryClient.getQueryData(queryKeys.tasks.day(DAY))).toEqual([]); // and gone from that day's list too
+    expect(result.current.canRedo).toBe(true);
+  });
+
+  it("brings a block moved to another day back at once, before the server has answered", async () => {
+    const seeded = await server.current.seedTask(DAY, { title: "Later" });
+    const { result } = await mount();
+    await waitFor(() => expect(result.current.tasks).toHaveLength(1));
+    await act(() => result.current.changeTask(seeded, { day: NEXT_DAY }));
     await waitFor(() => expect(result.current.tasks).toEqual([]));
+
+    const release = server.current.hold("PATCH /api/tasks/");
+    let undone!: Promise<void>;
+    act(() => {
+      undone = result.current.undo();
+    });
+    await waitFor(() => expect(result.current.tasks.map((t) => t.title)).toEqual(["Later"]));
+    release();
+    await act(() => undone);
+    expect((await server.current.api.getTasksForDay(DAY)).map((t) => t.title)).toEqual(["Later"]);
+  });
+
+  it("saves a change made straight after an undo after the undo, so the screen and the server agree", async () => {
+    const a = await server.current.seedTask(DAY, { title: "A" });
+    const { result } = await mount();
+    await waitFor(() => expect(result.current.tasks).toHaveLength(1));
+    await act(() => result.current.moveTask(a, 600));
+    await waitFor(() => expect(result.current.canUndo).toBe(true));
+
+    const release = server.current.hold("PATCH /api/tasks/");
+    let undone!: Promise<void>;
+    act(() => {
+      undone = result.current.undo();
+    });
+    await waitFor(() => expect(result.current.tasks[0].startMinutes).toBe(540));
+    let moved!: Promise<void>;
+    act(() => {
+      moved = result.current.moveTask(result.current.tasks[0], 480);
+    });
+    release();
+    await act(() => Promise.all([undone, moved]));
+
+    await waitFor(() => expect(result.current.tasks[0].startMinutes).toBe(480));
+    expect((await server.current.api.getTasksForDay(DAY))[0].startMinutes).toBe(480);
+  });
+
+  it("splits a block in one step, so one undo puts it back together", async () => {
+    const a = await server.current.seedTask(DAY, { title: "Long", durationMinutes: 60 });
+    const { result, messages } = await mount();
+    await waitFor(() => expect(result.current.tasks).toHaveLength(1));
+
+    await act(() => result.current.splitTask(a, 30));
+    await waitFor(() =>
+      expect(result.current.tasks.map((t) => [t.startMinutes, t.durationMinutes])).toEqual([
+        [540, 30],
+        [570, 30],
+      ]),
+    );
+    expect(await server.current.api.getTasksForDay(DAY)).toHaveLength(2);
+
+    await act(() => result.current.undo());
+    await waitFor(() => expect(result.current.tasks.map((t) => t.durationMinutes)).toEqual([60]));
+    expect((await server.current.api.getTasksForDay(DAY)).map((t) => t.durationMinutes)).toEqual([60]);
+    expect(messages.at(-1)).toBe("Undid: Split Long");
+    expect(result.current.canUndo).toBe(false);
   });
 
   it("reports a failed save through notify and leaves the timeline as it was", async () => {
@@ -168,7 +239,7 @@ describe("useDayTimeline", () => {
     expect(result.current.tasks).toHaveLength(1);
   });
 
-  it("fetches a month grid that shows the day's blocks again after an undo", async () => {
+  it("takes an undone block off a month grid that shows the day, without fetching it again", async () => {
     const h = harness(server.current);
     const view = renderHook(
       () => ({ day: useDayTimeline(DAY), month: useRangeTasks("2031-04-01", "2031-04-30") }),
@@ -180,9 +251,11 @@ describe("useDayTimeline", () => {
     await act(() => view.result.current.day.createFromTemplate(template, 600));
     await waitFor(() => expect(view.result.current.month.data).toHaveLength(1)); // the add reached the month too
 
+    const fetches = () => server.current.sent.filter((line) => line.startsWith("GET /api/tasks?from=")).length;
+    const before = fetches();
     await act(() => view.result.current.day.undo());
     await waitFor(() => expect(view.result.current.month.data).toEqual([]));
-    expect(server.current.sent.filter((line) => line.startsWith("GET /api/tasks?from=")).length).toBeGreaterThan(1);
+    expect(fetches()).toBe(before);
   });
 
   it("shares one undo history between every screen that changes the day, like the timeline and the editor over it", async () => {
@@ -202,15 +275,19 @@ describe("useDayTimeline", () => {
     await waitFor(() => expect(view.result.current.editor.canRedo).toBe(true));
   });
 
-  it("starts a fresh history when the day on screen changes", async () => {
-    const { result, rerender } = await mount();
-    const template = (await server.current.api.getTemplates())[0];
-    await act(() => result.current.createFromTemplate(template, 600));
-    await waitFor(() => expect(result.current.canUndo).toBe(true));
+  it("undoes a change made from the week or the month (useTaskActions) too", async () => {
+    const seeded = await server.current.seedTask(DAY, { title: "Stretch" });
+    const h = harness(server.current);
+    const view = renderHook(() => ({ actions: useTaskActions(), history: useTimelineHistory() }), { wrapper: h.wrapper });
+    h.queryClient.setQueryData(queryKeys.tasks.range(DAY, DAY), [seeded]);
 
-    rerender({ day: NEXT_DAY });
-    await waitFor(() => expect(result.current.day).toBe(NEXT_DAY));
-    expect(result.current.canUndo).toBe(false);
+    await act(() => view.result.current.actions.changeTask(seeded, { startMinutes: 600 }));
+    await waitFor(() => expect(view.result.current.history.canUndo).toBe(true));
+    await act(() => view.result.current.history.undo());
+
+    expect((await server.current.api.getTasksForDay(DAY))[0].startMinutes).toBe(540);
+    expect(h.queryClient.getQueryData<ScheduledTask[]>(queryKeys.tasks.range(DAY, DAY))?.[0].startMinutes).toBe(540);
+    expect(h.messages.at(-1)).toBe("Undid: Move Stretch");
   });
 
   it("asks the server again on refresh and says how it went", async () => {

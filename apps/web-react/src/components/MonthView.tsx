@@ -26,6 +26,7 @@ import { PlannerToolbar } from "@/components/planner/PlannerToolbar";
 import { nextFreeStart } from "@/components/planner/planning";
 import { useActivityPlanning } from "@/components/planner/useActivityPlanning";
 import { usePlannerShortcuts } from "@/components/planner/usePlannerShortcuts";
+import { useUndoShortcuts } from "@/components/planner/useUndoShortcuts";
 import { TaskEditor, type EditorRequest } from "@/components/TaskEditor";
 import { useHiddenCategories } from "@/hooks/useHiddenCategories";
 import { useSidebarOpen } from "@/hooks/useSidebarOpen";
@@ -41,7 +42,7 @@ const NO_TEMPLATES: never[] = [];
  * one on a day to plan it), and the Categories control in the toolbar.
  *
  * It owns the block editor (opened from the toolbar, a cell's "+" or an activity), the date picker and the keys
- * (`usePlannerShortcuts`).
+ * (`usePlannerShortcuts`, and `useUndoShortcuts` for undo and redo).
  */
 export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTask[] }) {
   const navigate = useNavigate();
@@ -91,6 +92,7 @@ export function MonthView({ month, tasks }: { month: string; tasks: ScheduledTas
     },
     Boolean(editor || picking || libraryOpen),
   );
+  useUndoShortcuts(Boolean(editor || picking || libraryOpen));
 
   // The month on screen's blocks, before the filter (the Categories control's hours) and after it (the grid and
   // the toolbar's totals).

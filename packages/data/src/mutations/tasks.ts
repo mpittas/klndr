@@ -1,14 +1,14 @@
-import { formatTime, type ScheduledTask, type TaskDraft } from "@klndr/core";
+import { formatTime, type HistoryStep, type ScheduledTask, type TaskDraft, type TimelineHistory } from "@klndr/core";
 import type { MutationOptions } from "@tanstack/react-query";
 import { findTask, patchTask, removeTask, upsertTask } from "../cache";
-import { newTempId, taskFromDraft, type MoveChanges } from "../blocks";
+import { draftFromTask, newTempId, taskFromDraft, type MoveChanges } from "../blocks";
 import { queryKeys } from "../keys";
 import type { HistoryRecorder, MutationDeps } from "./types";
 
 /**
  * Everything that changes a scheduled block.
  *
- * Moving, resizing, ticking, deleting and adding from an activity show on screen at once and are put back
+ * Moving, resizing, ticking, splitting, deleting and adding from an activity show on screen at once and are put back
  * if saving fails; saving from the editor waits for the server, because its form shows the error. All of
  * them share one `scope`, which makes TanStack Query run them one after another: the screen has already
  * moved on, so a quick drag followed by a tick has to reach the server in that order.
@@ -21,6 +21,11 @@ type Options<TData, TVars, TContext = unknown> = MutationOptions<TData, Error, T
 const cancelTaskQueries = (d: TaskMutationDeps) => d.queryClient.cancelQueries({ queryKey: queryKeys.tasks.all });
 /** Part of it may have saved, so ask the server rather than guess. */
 const resync = (d: TaskMutationDeps) => d.queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+/**
+ * The id a block has by the time its change is sent: undo may have brought it back from a delete under a new
+ * id while the change waited its turn.
+ */
+const live = (d: TaskMutationDeps, id: string) => d.history?.resolve?.(id) ?? id;
 
 // ---- Add a block from an activity, a quick add or the clock ----
 
@@ -57,7 +62,7 @@ type Before = Map<string, ScheduledTask | undefined>;
 export const moveTaskOptions = (d: TaskMutationDeps): Options<ScheduledTask[], MoveTaskVars, { before: Before }> => ({
   mutationKey: ["tasks", "move"],
   scope: SCOPE,
-  mutationFn: ({ changes }) => Promise.all([...changes].map(([id, patch]) => d.api.updateTask(id, patch))),
+  mutationFn: ({ changes }) => Promise.all([...changes].map(([id, patch]) => d.api.updateTask(live(d, id), patch))),
   onMutate: async ({ changes }) => {
     await cancelTaskQueries(d);
     const before: Before = new Map();
@@ -90,7 +95,7 @@ export type ResizeTaskVars = { task: ScheduledTask; durationMinutes: number };
 export const resizeTaskOptions = (d: TaskMutationDeps): Options<ScheduledTask, ResizeTaskVars, { before?: ScheduledTask }> => ({
   mutationKey: ["tasks", "resize"],
   scope: SCOPE,
-  mutationFn: ({ task, durationMinutes }) => d.api.updateTask(task.id, { durationMinutes }),
+  mutationFn: ({ task, durationMinutes }) => d.api.updateTask(live(d, task.id), { durationMinutes }),
   onMutate: async ({ task, durationMinutes }) => {
     await cancelTaskQueries(d);
     const before = findTask(d.queryClient, task.id);
@@ -113,7 +118,7 @@ export type ToggleTaskVars = { task: ScheduledTask; completed: boolean };
 export const toggleTaskOptions = (d: TaskMutationDeps): Options<ScheduledTask, ToggleTaskVars, { before?: ScheduledTask }> => ({
   mutationKey: ["tasks", "toggle"],
   scope: SCOPE,
-  mutationFn: ({ task, completed }) => d.api.updateTask(task.id, { completed }),
+  mutationFn: ({ task, completed }) => d.api.updateTask(live(d, task.id), { completed }),
   onMutate: async ({ task, completed }) => {
     await cancelTaskQueries(d);
     const before = findTask(d.queryClient, task.id);
@@ -133,12 +138,20 @@ export const toggleTaskOptions = (d: TaskMutationDeps): Options<ScheduledTask, T
 
 export type ChangeTaskVars = { task: ScheduledTask; changes: Partial<TaskDraft>; message?: string };
 
+/** What undo calls the change: "Move Workout" (another day or time), "Resize Workout" or "Edit Workout". */
+const changeLabel = (changes: Partial<TaskDraft>) =>
+  changes.day !== undefined || changes.startMinutes !== undefined
+    ? "Move"
+    : changes.durationMinutes !== undefined
+      ? "Resize"
+      : "Edit";
+
 export const changeTaskOptions = (
   d: TaskMutationDeps,
 ): Options<ScheduledTask, ChangeTaskVars, { before?: ScheduledTask }> => ({
   mutationKey: ["tasks", "change"],
   scope: SCOPE,
-  mutationFn: ({ task, changes }) => d.api.updateTask(task.id, changes),
+  mutationFn: ({ task, changes }) => d.api.updateTask(live(d, task.id), changes),
   // Shown at once, like a tick or a move: nothing here needs the server's say before the screen moves on.
   onMutate: async ({ task, changes }) => {
     await cancelTaskQueries(d);
@@ -146,14 +159,60 @@ export const changeTaskOptions = (
     patchTask(d.queryClient, task.id, changes);
     return { before };
   },
-  onSuccess: (saved, { task, message }, context) => {
+  onSuccess: (saved, { task, changes, message }, context) => {
     upsertTask(d.queryClient, saved);
-    d.history?.record(`Edit ${task.title}`, [[context?.before ?? task, saved]]);
+    d.history?.record(`${changeLabel(changes)} ${task.title}`, [[context?.before ?? task, saved]]);
     if (message) d.notify(message);
   },
   onError: (_error, _vars, context) => {
     if (context?.before) upsertTask(d.queryClient, context.before);
     d.notify("Could not save that block");
+  },
+});
+
+// ---- Split a block in two: one step, so one undo puts it back together ----
+
+/** `firstMinutes` is how long the first half stays; the second half starts where it ends. */
+export type SplitTaskVars = { task: ScheduledTask; firstMinutes: number };
+
+const secondHalf = (task: ScheduledTask, firstMinutes: number): TaskDraft => ({
+  ...draftFromTask(task),
+  completed: false,
+  startMinutes: task.startMinutes + firstMinutes,
+  durationMinutes: task.durationMinutes - firstMinutes,
+});
+
+export const splitTaskOptions = (
+  d: TaskMutationDeps,
+): Options<ScheduledTask, SplitTaskVars, { before?: ScheduledTask; tempId: string }> => ({
+  mutationKey: ["tasks", "split"],
+  scope: SCOPE,
+  mutationFn: async ({ task, firstMinutes }) => {
+    await d.api.updateTask(live(d, task.id), { durationMinutes: firstMinutes });
+    return d.api.createTask(secondHalf(task, firstMinutes));
+  },
+  onMutate: async ({ task, firstMinutes }) => {
+    await cancelTaskQueries(d);
+    const before = findTask(d.queryClient, task.id);
+    patchTask(d.queryClient, task.id, { durationMinutes: firstMinutes });
+    const tempId = newTempId();
+    upsertTask(d.queryClient, taskFromDraft(secondHalf(task, firstMinutes), tempId));
+    return { before, tempId };
+  },
+  onSuccess: (created, { task, firstMinutes }, context) => {
+    if (context) removeTask(d.queryClient, context.tempId);
+    upsertTask(d.queryClient, created);
+    const was = context?.before ?? task;
+    d.history?.record(`Split ${task.title}`, [
+      [was, { ...was, durationMinutes: firstMinutes }],
+      [null, created],
+    ]);
+  },
+  onError: (_error, _vars, context) => {
+    if (context?.before) upsertTask(d.queryClient, context.before);
+    if (context) removeTask(d.queryClient, context.tempId);
+    d.notify("Could not split that block");
+    void resync(d); // the first half may have been saved
   },
 });
 
@@ -164,7 +223,7 @@ export type DeleteTaskVars = { task: ScheduledTask };
 export const deleteTaskOptions = (d: TaskMutationDeps): Options<void, DeleteTaskVars, { before?: ScheduledTask }> => ({
   mutationKey: ["tasks", "delete"],
   scope: SCOPE,
-  mutationFn: ({ task }) => d.api.deleteTask(task.id),
+  mutationFn: ({ task }) => d.api.deleteTask(live(d, task.id)),
   onMutate: async ({ task }) => {
     await cancelTaskQueries(d);
     const before = findTask(d.queryClient, task.id);
@@ -189,7 +248,7 @@ export type SaveTaskVars = { id: string | null; payload: TaskDraft };
 export const saveTaskOptions = (d: TaskMutationDeps): Options<ScheduledTask, SaveTaskVars> => ({
   mutationKey: ["tasks", "save"],
   scope: SCOPE,
-  mutationFn: ({ id, payload }) => (id ? d.api.updateTask(id, payload) : d.api.createTask(payload)),
+  mutationFn: ({ id, payload }) => (id ? d.api.updateTask(live(d, id), payload) : d.api.createTask(payload)),
   onSuccess: (saved, { id }) => {
     const previous = id ? findTask(d.queryClient, saved.id) : undefined;
     upsertTask(d.queryClient, saved);
@@ -201,12 +260,32 @@ export const saveTaskOptions = (d: TaskMutationDeps): Options<ScheduledTask, Sav
   },
 });
 
+// ---- Undo and redo: a step of the history, saved in turn with every other change to blocks ----
+
+/**
+ * One step of the undo history (see `TimelineHistory`) as a mutation in the same queue as the changes above, so
+ * a step and a change made straight after it reach the server in the order they were made. It shows at once,
+ * once any refetch on its way has been called off (that would bring back what the step just changed).
+ */
+export const historyStepOptions = (d: MutationDeps, history: TimelineHistory): Options<void, HistoryStep> => ({
+  mutationKey: ["tasks", "history"],
+  scope: SCOPE,
+  onMutate: async (step) => {
+    await d.queryClient.cancelQueries({ queryKey: queryKeys.tasks.all });
+    history.preview(step);
+  },
+  mutationFn: (step) => history.save(step),
+  onSuccess: (_void, step) => history.saved(step),
+  onError: (_error, step) => history.failed(step),
+});
+
 export const taskMutationOptions = (d: TaskMutationDeps) => ({
   create: createTaskOptions(d),
   move: moveTaskOptions(d),
   resize: resizeTaskOptions(d),
   toggle: toggleTaskOptions(d),
   change: changeTaskOptions(d),
+  split: splitTaskOptions(d),
   remove: deleteTaskOptions(d),
   save: saveTaskOptions(d),
 });

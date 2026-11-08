@@ -57,7 +57,7 @@ export { useProfile, useUpdateProfile, type ProfileSource } from "./hooks/profil
 
 // Pure helpers the views share
 export { dayStats, buildDayChecklist, emptyDayChecklist, type DayStats, type DayChecklistView } from "./derive";
-export { draftFromTemplate, planMove, isTempId, type MoveChanges } from "./blocks";
+export { draftFromTemplate, draftFromTask, planMove, isTempId, type MoveChanges } from "./blocks";
 export { NotesSaver, NOTES_SAVE_DELAY_MS, type NotesStatus } from "./notes-saver";
 
 // Keeping every open tab and device in step
@@ -73,7 +73,7 @@ export {
 } from "./persistence";
 
 // The mutations as plain options, for apps that want to drive them without these hooks
-export { taskMutationOptions, type SaveTaskVars } from "./mutations/tasks";
+export { taskMutationOptions, historyStepOptions, type SaveTaskVars } from "./mutations/tasks";
 export { libraryMutationOptions, type ActivityDraft } from "./mutations/library";
 export { checklistMutationOptions } from "./mutations/checklist";
 export type { Notify, MutationDeps } from "./mutations/types";

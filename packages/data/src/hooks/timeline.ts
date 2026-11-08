@@ -23,7 +23,7 @@ export function useDayTimeline(day: string) {
   const queryClient = useQueryClient();
   const query = useDayTasks(day);
   const colorOf = useCategoryColor();
-  const { history, canUndo, canRedo, undo, redo } = useTimelineHistory(day);
+  const { history, canUndo, canRedo, undo, redo } = useTimelineHistory();
 
   const options = useMemo(
     () => taskMutationOptions({ api, queryClient, notify, history }),
@@ -34,6 +34,7 @@ export function useDayTimeline(day: string) {
   const { mutateAsync: resize } = useMutation(options.resize);
   const { mutateAsync: toggle } = useMutation(options.toggle);
   const { mutateAsync: change } = useMutation(options.change);
+  const { mutateAsync: split } = useMutation(options.split);
   const { mutateAsync: remove } = useMutation(options.remove);
   const { mutateAsync: save, isPending: isSaving } = useMutation(options.save);
 
@@ -82,6 +83,16 @@ export function useDayTimeline(day: string) {
     [change],
   );
 
+  /**
+   * Split a block in two, the first half `firstMinutes` long and the second starting where it ends: one step,
+   * so one undo puts it back together. Never throws.
+   */
+  const splitTask = useCallback(
+    (task: ScheduledTask, firstMinutes: number) =>
+      firstMinutes > 0 && firstMinutes < task.durationMinutes ? handled(split({ task, firstMinutes })) : Promise.resolve(),
+    [split],
+  );
+
   /** Delete a block. Never throws: it resolves to whether the block was deleted, and a failure is put back and reported. */
   const deleteTask = useCallback(
     (task: ScheduledTask) => remove({ task }).then(() => true, () => false),
@@ -112,6 +123,7 @@ export function useDayTimeline(day: string) {
     resizeTask,
     toggleComplete,
     changeTask,
+    splitTask,
     deleteTask,
     saveTask,
     isSaving,

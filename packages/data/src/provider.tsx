@@ -1,25 +1,25 @@
-import type { ApiClient, TimelineHistory } from "@klndr/core";
+import { TimelineHistory, type ApiClient } from "@klndr/core";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider, type Persister } from "@tanstack/react-query-persist-client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, type PropsWithChildren } from "react";
+import { taskStore } from "./cache";
 import { createQueryClient } from "./client";
+import { queryKeys } from "./keys";
 import type { Notify } from "./mutations/types";
 import { cacheBuster, CACHE_MAX_AGE_MS } from "./persistence";
 import { syncQueryClientAcrossTabs, type LiveChanges } from "./tab-sync";
 import type { ProfileSource } from "./hooks/profile";
-
-/** The undo history of the day on screen. */
-export type HistoryHolder = { current: { day: string; history: TimelineHistory } | null };
 
 type DataContextValue = {
   api: ApiClient;
   notify: Notify;
   profile: ProfileSource | null;
   /**
-   * Where the day's undo history lives, so that every screen that changes that day's blocks (the timeline, the
-   * editor opened over it) records into, and undoes from, the same one. It starts afresh for a new person.
+   * The undo history: one for everything the person does to their blocks, on any day and any screen (the day,
+   * the week, the month, the editor over them), so moving between them never loses it. It starts afresh for a
+   * new person.
    */
-  histories: HistoryHolder;
+  history: TimelineHistory;
   /** The emoji already suggested this session, by title (see `useEmojiSuggester`). Starts empty for a new person. */
   emojiCache: Map<string, string>;
   /** The categories already suggested this session, by title (see `useCategorySuggester`). Starts empty for a new person. */
@@ -89,12 +89,21 @@ export function DataProvider({ api, userId, notify, profile, persister, syncTabs
   latestNotify.current = notify;
   const stableNotify = useCallback<Notify>((message) => latestNotify.current?.(message), []);
 
-  const histories = useMemo<HistoryHolder>(() => ({ current: null }), [client]);
+  const history = useMemo(
+    () =>
+      new TimelineHistory({
+        api,
+        store: taskStore(client),
+        notify: stableNotify,
+        resync: () => client.invalidateQueries({ queryKey: queryKeys.tasks.all }),
+      }),
+    [api, client, stableNotify],
+  );
   const emojiCache = useMemo(() => new Map<string, string>(), [client]);
   const categoryCache = useMemo(() => new Map<string, string | null>(), [client]);
   const value = useMemo<DataContextValue>(
-    () => ({ api, notify: stableNotify, profile: profile ?? null, histories, emojiCache, categoryCache }),
-    [api, stableNotify, profile, histories, emojiCache, categoryCache],
+    () => ({ api, notify: stableNotify, profile: profile ?? null, history, emojiCache, categoryCache }),
+    [api, stableNotify, profile, history, emojiCache, categoryCache],
   );
   const tree = <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 

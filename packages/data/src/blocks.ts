@@ -27,6 +27,22 @@ export function taskFromDraft(draft: TaskDraft, id: string): ScheduledTask {
   return { ...rest, id, templateId: templateId ?? null, notes: notes ?? null, completed: completed ?? false };
 }
 
+/** A block as a draft, to make a copy of it or save a changed version. */
+export function draftFromTask(task: ScheduledTask): TaskDraft {
+  return {
+    day: task.day,
+    title: task.title,
+    emoji: task.emoji,
+    color: task.color,
+    category: task.category,
+    startMinutes: task.startMinutes,
+    durationMinutes: task.durationMinutes,
+    notes: task.notes,
+    completed: task.completed,
+    templateId: task.templateId,
+  };
+}
+
 /** A made-up id for a block that is on screen before the server has saved it. */
 export const newTempId = () => `pending-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 

@@ -5,14 +5,17 @@ import { taskMutationOptions } from "../mutations/tasks";
 import { useData } from "../provider";
 
 /**
- * Changing blocks from a screen that isn't a day's timeline (the month view and its agenda): tick one off,
+ * Changing blocks from a screen that isn't a day's timeline (the week, the month and its agenda): tick one off,
  * save one from the editor, delete one. Changes show at once in every list that holds the block and are put
- * back if saving fails; unlike `useDayTimeline` there is no undo history to record into.
+ * back if saving fails; like `useDayTimeline`'s, each one can be undone (see `useTimelineHistory`).
  */
 export function useTaskActions() {
-  const { api, notify } = useData();
+  const { api, notify, history } = useData();
   const queryClient = useQueryClient();
-  const options = useMemo(() => taskMutationOptions({ api, queryClient, notify }), [api, queryClient, notify]);
+  const options = useMemo(
+    () => taskMutationOptions({ api, queryClient, notify, history }),
+    [api, queryClient, notify, history],
+  );
 
   const { mutateAsync: toggle } = useMutation(options.toggle);
   const { mutateAsync: remove } = useMutation(options.remove);

@@ -1,4 +1,4 @@
-import type { ActivityTemplate, Category, ScheduledTask } from "@klndr/core";
+import type { ActivityTemplate, Category, ScheduledTask, TaskStore } from "@klndr/core";
 import { compareCategoriesByName } from "@klndr/core";
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import { queryKeys } from "./keys";
@@ -69,6 +69,15 @@ export function patchTask(qc: QueryClient, id: string, patch: Partial<ScheduledT
 
 export function removeTask(qc: QueryClient, id: string): void {
   editLists(qc, (list) => (list.some((task) => task.id === id) ? list.filter((task) => task.id !== id) : list));
+}
+
+/** The blocks in the cache, as the undo history (`TimelineHistory`) reads and writes them. */
+export function taskStore(qc: QueryClient): TaskStore {
+  return {
+    find: (id) => findTask(qc, id),
+    put: (task) => upsertTask(qc, task),
+    remove: (id) => removeTask(qc, id),
+  };
 }
 
 /** Rewrite blocks in every cached list; a block `edit` returns unchanged keeps its place and identity. */

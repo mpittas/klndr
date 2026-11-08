@@ -7,16 +7,29 @@ export type HistoryEntry = { label: string; changes: HistoryChange[] };
 /** Whether there is anything left to undo or redo. */
 export type HistoryState = { canUndo: boolean; canRedo: boolean };
 export type HistoryListener = (state: HistoryState) => void;
+export type HistoryDirection = "undo" | "redo";
+/** A step taken off one stack and put on the other: shown with `preview`, then saved with `save`. */
+export type HistoryStep = { direction: HistoryDirection; entry: HistoryEntry };
 
-/** Everything the engine needs from the app around it: the API, the list on screen, and a voice. */
+/**
+ * The blocks on screen, wherever they are shown: a day's timeline, a week, a month. Undo may bring back a
+ * block on a day other than the one on screen, so it writes to every list that covers the block's day.
+ */
+export type TaskStore = {
+  /** The block as shown now, or undefined when nothing on screen has it. */
+  find: (id: string) => ScheduledTask | undefined;
+  /** Show this block wherever its day is shown (and nowhere else), in place of the one with its id. */
+  put: (task: ScheduledTask) => void;
+  /** Take the block off everything that shows it. */
+  remove: (id: string) => void;
+};
+
+/** Everything the engine needs from the app around it: the API, the blocks on screen, and a voice. */
 export type TimelineHistoryOptions = {
-  api: Pick<ApiClient, "createTask" | "updateTask" | "deleteTask" | "getTasksForDay">;
-  /** The blocks currently on screen. */
-  getTasks: () => ScheduledTask[];
-  /** Replace the blocks on screen; the engine keeps them sorted by start time. */
-  setTasks: (tasks: ScheduledTask[]) => void;
-  /** The day on screen, so a block brought back by undo only shows up when it belongs there. */
-  day: () => string;
+  api: Pick<ApiClient, "createTask" | "updateTask" | "deleteTask">;
+  store: TaskStore;
+  /** After a step failed to save (part of it may have): fetch the blocks afresh. */
+  resync?: () => unknown;
   /** Where "Undid: …" and failure messages go. */
   notify?: (message: string) => void;
   /** How many steps to remember. */
@@ -29,10 +42,21 @@ const FIELDS = [
   "title", "emoji", "color", "category", "day", "startMinutes", "durationMinutes", "notes", "completed", "lane",
 ] as const;
 
+/** The fields that differ between two versions of a block, with the values of `to`. */
+function changedFields(from: ScheduledTask, to: ScheduledTask): Partial<ScheduledTask> {
+  const changed: Record<string, unknown> = {};
+  for (const field of FIELDS) if (from[field] !== to[field]) changed[field] = to[field];
+  return changed as Partial<ScheduledTask>;
+}
+
 /**
- * Undo and redo for changes made on the timeline. Each step remembers the blocks it touched as they
- * were before and after, and undoing saves the "before" back (redoing, the "after"). Only the fields
- * a step changed are written, so edits made in between to other fields survive.
+ * Undo and redo of changes to blocks. Each step remembers the blocks it touched as they were before and
+ * after; undoing saves the "before" back (redoing, the "after"). Only the fields a step changed are written,
+ * so edits made in between to other fields survive.
+ *
+ * A step shows on screen at once (`preview`) and is saved afterwards (`save`); steps save one after another,
+ * so pressing undo quickly several times can't interleave them. What the server answers is not written over
+ * the screen: the screen already shows the step, and may by then show newer changes too.
  *
  * Framework-free: the app subscribes with `subscribe` to know whether there is anything to undo.
  */
@@ -43,7 +67,6 @@ export class TimelineHistory {
   private redoStack: HistoryEntry[] = [];
   // Undoing a delete makes the block again under a new id; later steps still name the old one.
   private readonly aliases = new Map<string, string>();
-  // Steps save one after another, so pressing undo quickly several times can't interleave them.
   private queue: Promise<void> = Promise.resolve();
   private readonly listeners = new Set<HistoryListener>();
 
@@ -91,82 +114,35 @@ export class TimelineHistory {
     this.publish();
   }
 
-  /** Resolves once the queued steps have finished, so tests can await it. */
-  undo(): Promise<void> {
-    return this.step("undo");
-  }
-
-  redo(): Promise<void> {
-    return this.step("redo");
-  }
-
-  private publish(): void {
-    const state = this.state();
-    for (const listener of this.listeners) listener(state);
-  }
-
-  private resolve(id: string): string {
+  /**
+   * The id a block has now. A block deleted and brought back by undo was made again by the server under a
+   * new id; anything that still names the old one (a step, a change made to it while it was being saved)
+   * reaches it through this.
+   */
+  resolve(id: string): string {
     let current = id;
     while (this.aliases.has(current)) current = this.aliases.get(current)!;
     return current;
   }
 
-  // Puts the saved block on the timeline, or takes it off if it's gone or now on another day.
-  private show(id: string, task: ScheduledTask | null): void {
-    const rest = this.options.getTasks().filter((item) => item.id !== id);
-    const next = task && task.day === this.options.day() ? [...rest, task] : rest;
-    this.options.setTasks(next.sort((a, b) => a.startMinutes - b.startMinutes));
+  /** Undo the last step: shown at once, saved after the steps before it. Resolves once it is saved. */
+  undo(): Promise<void> {
+    return this.run("undo");
   }
 
-  /** What the screen shows the moment a step is taken, before the server has answered. */
-  private preview(from: ScheduledTask | null, to: ScheduledTask | null): void {
-    if (!to) {
-      this.show(this.resolve(from!.id), null);
-      return;
-    }
-    const id = this.resolve(to.id);
-    if (!from) {
-      this.show(id, { ...to, id });
-      return;
-    }
-    const current = this.options.getTasks().find((item) => item.id === id);
-    if (!current) return;
-    const changed: Record<string, unknown> = {};
-    for (const field of FIELDS) if (from[field] !== to[field]) changed[field] = to[field] ?? null;
-    this.show(id, { ...current, ...changed } as ScheduledTask);
+  redo(): Promise<void> {
+    return this.run("redo");
   }
 
-  private async apply(from: ScheduledTask | null, to: ScheduledTask | null): Promise<void> {
-    const { api } = this.options;
-    if (!to) {
-      await api.deleteTask(this.resolve(from!.id));
-      return;
-    }
-    if (!from) {
-      const { id: _id, lane, ...draft } = to;
-      const stale = this.resolve(to.id);
-      const created = await api.createTask({ ...draft, ...(typeof lane === "number" ? { lane } : {}) });
-      if (stale !== created.id) this.aliases.set(stale, created.id);
-      // Swap the stand-in shown by `preview` for the saved block.
-      this.options.setTasks(this.options.getTasks().filter((item) => item.id !== stale));
-      this.show(created.id, created);
-      return;
-    }
-    const patch: Record<string, unknown> = {};
-    for (const field of FIELDS) {
-      if (from[field] !== to[field]) patch[field] = to[field] ?? null; // a lane that wasn't set is cleared
-    }
-    if (!Object.keys(patch).length) return;
-    const id = this.resolve(to.id);
-    this.show(id, await api.updateTask(id, patch as TaskPatch));
-  }
+  // ---- The parts of a step, for an app that saves through its own queue (see `@klndr/data`) ----
 
-  private step(direction: "undo" | "redo"): Promise<void> {
+  /** Move the next step to the other stack and hand it over, or say there is nothing to take. */
+  take(direction: HistoryDirection): HistoryStep | null {
     const undoing = direction === "undo";
     const entry = (undoing ? this.undoStack : this.redoStack).at(-1);
     if (!entry) {
       this.options.notify?.(undoing ? "Nothing to undo" : "Nothing to redo");
-      return Promise.resolve();
+      return null;
     }
     const remaining = (undoing ? this.undoStack : this.redoStack).slice(0, -1);
     const opposite = [...(undoing ? this.redoStack : this.undoStack), entry];
@@ -178,28 +154,97 @@ export class TimelineHistory {
       this.undoStack = opposite;
     }
     this.publish();
-    // On screen at once; the saving below follows, one step at a time.
-    for (const { before, after } of entry.changes) {
-      if (undoing) this.preview(after, before);
-      else this.preview(before, after);
-    }
-    this.queue = this.queue.then(async () => {
-      try {
-        await Promise.all(
-          entry.changes.map(({ before, after }) => (undoing ? this.apply(after, before) : this.apply(before, after))),
-        );
-        this.options.notify?.(`${undoing ? "Undid" : "Redid"}: ${entry.label}`);
-      } catch {
-        // Part of it may have saved; show what the server has and start the history afresh from there.
-        this.options.notify?.(`Could not ${direction} that`);
-        this.clear();
-        try {
-          this.options.setTasks(await this.options.api.getTasksForDay(this.options.day()));
-        } catch {
-          // Keep what is on screen; the next change or a reload brings it back in line.
-        }
-      }
-    });
+    return { direction, entry };
+  }
+
+  /** Show the step on screen, before the server has it. */
+  preview(step: HistoryStep): void {
+    for (const [from, to] of this.sides(step)) this.previewChange(from, to);
+  }
+
+  /** Save the step; rejects if the server refused any part of it. */
+  async save(step: HistoryStep): Promise<void> {
+    await Promise.all(this.sides(step).map(([from, to]) => this.saveChange(from, to)));
+  }
+
+  /** Say the step is done. */
+  saved(step: HistoryStep): void {
+    this.options.notify?.(`${step.direction === "undo" ? "Undid" : "Redid"}: ${step.entry.label}`);
+  }
+
+  /** Part of the step may have saved: say so, fetch what the server has and start the history afresh. */
+  failed(step: HistoryStep): void {
+    this.options.notify?.(`Could not ${step.direction} that`);
+    this.clear();
+    // If even that fails, what is on screen stays; the next change or a reload brings it back in line.
+    const { resync } = this.options;
+    if (resync) void Promise.resolve().then(resync).catch(() => {});
+  }
+
+  // ---- Inside ----
+
+  private publish(): void {
+    const state = this.state();
+    for (const listener of this.listeners) listener(state);
+  }
+
+  private run(direction: HistoryDirection): Promise<void> {
+    const step = this.take(direction);
+    if (!step) return this.queue;
+    this.preview(step);
+    this.queue = this.queue.then(() =>
+      this.save(step).then(
+        () => this.saved(step),
+        () => this.failed(step),
+      ),
+    );
     return this.queue;
+  }
+
+  /** Each change of a step as [what is there now, what to make it]. */
+  private sides({ direction, entry }: HistoryStep): [ScheduledTask | null, ScheduledTask | null][] {
+    return entry.changes.map(({ before, after }) => (direction === "undo" ? [after, before] : [before, after]));
+  }
+
+  private previewChange(from: ScheduledTask | null, to: ScheduledTask | null): void {
+    const { store } = this.options;
+    if (!to) {
+      store.remove(this.resolve(from!.id));
+      return;
+    }
+    const id = this.resolve(to.id);
+    // Made again: shown under its old id until the server has given it a new one (see `saveChange`).
+    if (!from) {
+      store.put({ ...to, id });
+      return;
+    }
+    // Only what the step changed, over the block as it is now; if nothing on screen has it (say it was moved
+    // to a day that isn't loaded), the block as the step remembers it.
+    store.put({ ...(store.find(id) ?? to), ...changedFields(from, to), id });
+  }
+
+  private async saveChange(from: ScheduledTask | null, to: ScheduledTask | null): Promise<void> {
+    const { api, store } = this.options;
+    if (!to) {
+      await api.deleteTask(this.resolve(from!.id));
+      return;
+    }
+    if (!from) {
+      const stale = this.resolve(to.id);
+      const { id: _id, lane, ...draft } = to;
+      const created = await api.createTask({ ...draft, ...(typeof lane === "number" ? { lane } : {}) });
+      if (created.id === stale) return;
+      this.aliases.set(stale, created.id);
+      // Swap the stand-in for the saved block, keeping whatever was done to it meanwhile. A stand-in that is
+      // gone was taken away again (or was never on screen), so nothing is put back.
+      const shown = store.find(stale);
+      store.remove(stale);
+      if (shown) store.put({ ...shown, id: created.id, templateId: created.templateId });
+      return;
+    }
+    const patch: Record<string, unknown> = {};
+    for (const [field, value] of Object.entries(changedFields(from, to))) patch[field] = value ?? null; // a lane that wasn't set is cleared
+    if (!Object.keys(patch).length) return;
+    await api.updateTask(this.resolve(to.id), patch as TaskPatch);
   }
 }

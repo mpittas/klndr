@@ -11,11 +11,10 @@ import {
   todayISO,
   type ActivityTemplate,
   type Category,
-  type ScheduledTask,
-  type TaskDraft,
 } from "@klndr/core";
 import {
   dayStats,
+  draftFromTask,
   useCategories,
   useCategoryColor,
   useChecklist,
@@ -25,7 +24,7 @@ import {
   useTemplates,
 } from "@klndr/data";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useEffectEvent, useMemo, useRef, useState, type DragEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
 import { DailyChecklist } from "@/components/DailyChecklist";
 import { DatePickerModal } from "@/components/DatePickerModal";
@@ -44,6 +43,7 @@ import { PlannerSidebar } from "@/components/planner/PlannerSidebar";
 import { PlannerToolbar } from "@/components/planner/PlannerToolbar";
 import { scrollTimeline } from "@/components/planner/planning";
 import { usePlannerShortcuts } from "@/components/planner/usePlannerShortcuts";
+import { useUndoShortcuts } from "@/components/planner/useUndoShortcuts";
 import { TaskEditor, type EditorRequest } from "@/components/TaskEditor";
 import { useHiddenCategories } from "@/hooks/useHiddenCategories";
 import { useSidebarOpen } from "@/hooks/useSidebarOpen";
@@ -55,20 +55,6 @@ const NO_TEMPLATES: ActivityTemplate[] = [];
 const NO_CATEGORIES: Category[] = [];
 /** A quarter hour, the shortest block: what a split's halves are rounded to. */
 const SPLIT_STEP = 15;
-
-/** A block as a draft, to make a copy of it or save a changed version. */
-const draftOf = (task: ScheduledTask): TaskDraft => ({
-  day: task.day,
-  title: task.title,
-  emoji: task.emoji,
-  color: task.color,
-  category: task.category,
-  startMinutes: task.startMinutes,
-  durationMinutes: task.durationMinutes,
-  notes: task.notes,
-  completed: task.completed,
-  templateId: task.templateId,
-});
 
 type MobileSheet = "checklist" | "notes";
 type Preview = { start: number; duration: number; color: string; label: string; emoji: string };
@@ -158,28 +144,8 @@ export function DayPlanner({ day }: { day: string }) {
     if (el) scrollTimeline(el, { nowMinute: isToday ? nowMinutes() : null, tasks });
   }, [day, timeline.query.isSuccess, tasks, isToday]);
 
-  // Ctrl+Z undoes; Ctrl+Shift+Z or Ctrl+Y redoes (Cmd on a Mac). Left alone while typing or in a dialog.
-  // An Effect Event reads the current timeline and dialogs without re-attaching the listener every render.
-  const onShortcut = useEffectEvent((event: KeyboardEvent) => {
-    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
-    // By letter where the layout has Latin letters, otherwise by key position (e.g. a Greek layout).
-    const key = /^[a-z]$/i.test(event.key) ? event.key.toLowerCase() : event.code.replace(/^Key/, "").toLowerCase();
-    const undo = key === "z" && !event.shiftKey;
-    const redo = (key === "z" && event.shiftKey) || (key === "y" && !event.shiftKey);
-    if (!undo && !redo) return;
-    const target = event.target as HTMLElement | null;
-    if (target?.closest("input, textarea, select, [contenteditable]:not([contenteditable='false'])")) return;
-    if (editor || mobileSheet || libraryOpen || resizing) return;
-    event.preventDefault();
-    if (undo) void timeline.undo();
-    else void timeline.redo();
-  });
-
-  useEffect(() => {
-    const listener = (event: KeyboardEvent) => onShortcut(event);
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, []);
+  // Ctrl+Z / Ctrl+Y, as on the week and the month; not while a dialog is open or a block is being resized.
+  useUndoShortcuts(Boolean(editor || picking || mobileSheet || libraryOpen || resizing));
 
   // The keys every planner view answers to (← → days, T today, N a new block, G go to a day, \ the sidebar).
   const goToDay = (date: string) => void navigate({ to: "/day/$date", params: { date } });
@@ -215,28 +181,22 @@ export function DayPlanner({ day }: { day: string }) {
     toggleComplete: (task) => void timeline.toggleComplete(task),
     duplicate: (task) =>
       void timeline.addTask({
-        ...draftOf(task),
+        ...draftFromTask(task),
         completed: false,
         // Straight after the block, or as late as the day allows.
         startMinutes: Math.min(task.startMinutes + task.durationMinutes, DAY_MINUTES - task.durationMinutes),
       }),
     copyToDay: (task, days) =>
-      void timeline.addTask({ ...draftOf(task), completed: false, day: addDaysISO(task.day, days) }),
+      void timeline.addTask({ ...draftFromTask(task), completed: false, day: addDaysISO(task.day, days) }),
     moveToDay: (task, days) =>
       void timeline.changeTask(task, { day: addDaysISO(task.day, days) }, `${task.title} → tomorrow`),
     startNow: (task) => {
       if (nowStart !== null) void timeline.moveTask(task, Math.min(nowStart, DAY_MINUTES - task.durationMinutes));
     },
+    // One step, so one undo puts the block back together.
     split: (task) => {
       const first = Math.floor(task.durationMinutes / 2 / SPLIT_STEP) * SPLIT_STEP;
-      if (first < SPLIT_STEP) return;
-      void timeline.resizeTask(task, first);
-      void timeline.addTask({
-        ...draftOf(task),
-        completed: false,
-        startMinutes: task.startMinutes + first,
-        durationMinutes: task.durationMinutes - first,
-      });
+      if (first >= SPLIT_STEP) void timeline.splitTask(task, first);
     },
     resize: (task, minutes) => void timeline.resizeTask(task, minutes),
     setCategory: (task, category) =>

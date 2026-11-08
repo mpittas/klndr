@@ -12,6 +12,7 @@ import { PlannerToolbar } from "@/components/planner/PlannerToolbar";
 import { nextFreeStart, scrollTimeline, scrollToColumn } from "@/components/planner/planning";
 import { useActivityPlanning } from "@/components/planner/useActivityPlanning";
 import { usePlannerShortcuts } from "@/components/planner/usePlannerShortcuts";
+import { useUndoShortcuts } from "@/components/planner/useUndoShortcuts";
 import { TaskEditor, type EditorRequest } from "@/components/TaskEditor";
 import { WeekGrid } from "@/components/week-view/WeekGrid";
 import { useHiddenCategories } from "@/hooks/useHiddenCategories";
@@ -26,7 +27,7 @@ const NO_TEMPLATES: never[] = [];
  * The week page: seven days on one timeline, between the month (the overview) and the day (the detail), in the
  * planner's frame (`PlannerLayout`, `PlannerToolbar` and `PlannerSidebar`, as the month and the day): drag an
  * activity from the sidebar onto any slot to plan it there. It owns what the grid, the toolbar and the sidebar
- * share: the block editor, the date picker, the clock and the keys (`usePlannerShortcuts`).
+ * share: the block editor, the date picker, the clock and the keys (`usePlannerShortcuts`, `useUndoShortcuts`).
  */
 export function WeekView({ days, tasks, loading }: { days: string[]; tasks: ScheduledTask[]; loading: boolean }) {
   const navigate = useNavigate();
@@ -114,6 +115,7 @@ export function WeekView({ days, tasks, loading }: { days: string[]; tasks: Sche
     },
     Boolean(editor || picking || libraryOpen),
   );
+  useUndoShortcuts(Boolean(editor || picking || libraryOpen));
 
   return (
     <PlannerLayout
