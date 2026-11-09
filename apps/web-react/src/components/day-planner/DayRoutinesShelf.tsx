@@ -1,4 +1,4 @@
-import type { DayChecklistItem } from "@dayro/core";
+import type { DayChecklistItem } from "@klndr/core";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 

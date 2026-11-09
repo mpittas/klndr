@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-const KEY = "dayro.hidden-categories";
+const KEY = "klndr.hidden-categories";
 const NONE: string[] = [];
 const listeners = new Set<() => void>();
 

@@ -7,7 +7,7 @@ import { resolve } from "node:path";
  * cannot change the package either, so both come from this one constant — HUMAN_TODO: confirm it
  * before the first store build.
  */
-const BUNDLE_ID = "com.dayro.app";
+const BUNDLE_ID = "com.klndr.app";
 
 /** The EAS project (itsamemarios/klndr), written by `eas init`, which cannot edit a dynamic config. */
 const EAS_PROJECT_ID = "da8a4d07-9389-46ab-bdd2-ff2bb3f87e04";
@@ -58,9 +58,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: "dayro",
-    slug: "dayro",
-    scheme: "dayro",
+    name: "klndr",
+    slug: "klndr",
+    scheme: "klndr",
     version: "0.1.0",
     orientation: "portrait",
     platforms: ["ios", "android"],

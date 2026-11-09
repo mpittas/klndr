@@ -25,7 +25,7 @@ export function AppearanceCard() {
           <h2 id="appearance-title" className="text-base font-semibold tracking-[-0.015em] text-foreground">
             Appearance
           </h2>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">How dayro. looks on this device.</p>
+          <p className="mt-0.5 text-[13px] text-muted-foreground">How klndr. looks on this device.</p>
         </div>
         {/* Unlike the profile above, nothing here waits for a save button */}
         <span className="inline-flex h-6 shrink-0 items-center gap-1 rounded-full bg-success/10 px-2.5 text-xs font-medium text-success">

@@ -179,7 +179,7 @@ export function AccountMenu({
 
           <Link to="/" role="menuitem" className={itemClass}>
             <Info className={iconClass} aria-hidden="true" />
-            <span className="flex-1">About dayro.</span>
+            <span className="flex-1">About klndr.</span>
             <span className="text-xs text-muted-foreground">Homepage</span>
           </Link>
           <Link to="/privacy" role="menuitem" className={itemClass}>

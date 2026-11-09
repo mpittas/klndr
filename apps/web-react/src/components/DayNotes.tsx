@@ -1,12 +1,12 @@
-import { renderMarkdown, toggleTaskLine } from "@dayro/core";
-import { useNotesEditor } from "@dayro/data";
+import { renderMarkdown, toggleTaskLine } from "@klndr/core";
+import { useNotesEditor } from "@klndr/data";
 import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 
 const MAX_LENGTH = 20_000;
 
 /**
  * One day's notes: a rendered preview until it is clicked, then a plain Markdown editor. The text, the
- * debounce, the "do not clobber unsaved typing" rule and the retry all come from `@dayro/data`'s
+ * debounce, the "do not clobber unsaved typing" rule and the retry all come from `@klndr/data`'s
  * `useNotesEditor`.
  *
  * The editor is a prop, not something this component makes for itself: `DayPlanner` owns one instance and

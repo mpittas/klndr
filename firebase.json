@@ -9,7 +9,7 @@
     "providers": {
       "emailPassword": true,
       "googleSignIn": {
-        "oAuthBrandDisplayName": "dayro",
+        "oAuthBrandDisplayName": "klndr",
         "supportEmail": "webpittas@gmail.com"
       }
     }
@@ -21,7 +21,7 @@
       {
         "source": "/api/**",
         "run": {
-          "serviceId": "dayro-api",
+          "serviceId": "klndr-api",
           "region": "europe-west1"
         }
       },

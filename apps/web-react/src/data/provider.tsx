@@ -1,4 +1,4 @@
-import { DataProvider } from "@dayro/data";
+import { DataProvider } from "@klndr/data";
 import { useCallback, useMemo, type PropsWithChildren } from "react";
 
 import { api } from "@/api";
@@ -9,7 +9,7 @@ import { useToast } from "@/toast";
 import { createLiveChanges } from "./live-changes";
 
 /**
- * The app's data layer (`@dayro/data`) wired to this app: the one API client, the signed-in person, the
+ * The app's data layer (`@klndr/data`) wired to this app: the one API client, the signed-in person, the
  * toast for the messages the hooks produce, and the profile source the profile screen reads.
  *
  * **It must not be mounted while auth is still finding out who is signed in.** `DataProvider` treats

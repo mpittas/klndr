@@ -1,4 +1,4 @@
-import type { ScheduledTask } from "@dayro/core";
+import type { ScheduledTask } from "@klndr/core";
 import { describe, expect, it, vi } from "vitest";
 import { draftFromTemplate, isTempId, planMove } from "../src/blocks";
 import { queryKeys } from "../src/keys";

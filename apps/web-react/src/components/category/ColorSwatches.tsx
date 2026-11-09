@@ -1,4 +1,4 @@
-import { canonicalColor, COLOR_KEYS, type ColorKey } from "@dayro/core";
+import { canonicalColor, COLOR_KEYS, type ColorKey } from "@klndr/core";
 import { Check } from "lucide-react";
 
 import { PALETTE } from "@/lib/colors";

@@ -1,5 +1,5 @@
-import { isValidISODate, longDate, todayISO } from "@dayro/core";
-import { useChecklist, useNotesEditor } from "@dayro/data";
+import { isValidISODate, longDate, todayISO } from "@klndr/core";
+import { useChecklist, useNotesEditor } from "@klndr/data";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";

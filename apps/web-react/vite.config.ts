@@ -6,7 +6,7 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
 /**
- * The React web app. `@dayro/core`, `@dayro/data` and `@dayro/tokens` ship TypeScript source, and this
+ * The React web app. `@klndr/core`, `@klndr/data` and `@klndr/tokens` ship TypeScript source, and this
  * app is their only Vite consumer, so there is nothing to transpile from `node_modules`: Vite resolves
  * the workspace symlinks and compiles them as if they were app code.
  *

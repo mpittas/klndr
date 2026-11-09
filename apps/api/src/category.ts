@@ -1,4 +1,4 @@
-import { parseCategoryAnswer, type CategoryOption } from "@dayro/core";
+import { parseCategoryAnswer, type CategoryOption } from "@klndr/core";
 import OpenAI from "openai";
 import { DEFAULT_EMOJI_MODEL } from "./emoji";
 

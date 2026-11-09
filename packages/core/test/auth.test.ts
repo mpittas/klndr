@@ -32,7 +32,7 @@ describe("authErrorMessage", () => {
 
   it("explains linking Apple to the account that already has the data", () => {
     expect(authErrorMessage(firebase("auth/account-exists-with-different-credential"))).toMatch(/connect this one from your profile/);
-    expect(authErrorMessage(firebase("auth/credential-already-in-use"))).toMatch(/another dayro\. account/);
+    expect(authErrorMessage(firebase("auth/credential-already-in-use"))).toMatch(/another klndr\. account/);
     expect(authErrorMessage(firebase("auth/provider-already-linked"))).toBe(
       "That sign-in method is already connected to your account.",
     );

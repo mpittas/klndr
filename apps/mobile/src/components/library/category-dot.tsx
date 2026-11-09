@@ -1,5 +1,5 @@
-import { canonicalColor } from "@dayro/core";
-import { PALETTE } from "@dayro/tokens";
+import { canonicalColor } from "@klndr/core";
+import { PALETTE } from "@klndr/tokens";
 import { View } from "react-native";
 
 import { useThemeScheme } from "@/theme/tokens";

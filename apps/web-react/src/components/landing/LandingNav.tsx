@@ -39,7 +39,7 @@ export function LandingNav({ start }: { start: LandingStart }) {
         <Link
           to="/"
           className="-mx-1 px-1 py-2 text-lg text-foreground transition hover:opacity-80 sm:text-xl"
-          aria-label="dayro. home"
+          aria-label="klndr. home"
         >
           <Wordmark />
         </Link>

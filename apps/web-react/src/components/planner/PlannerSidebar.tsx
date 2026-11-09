@@ -1,4 +1,4 @@
-import type { ActivityTemplate } from "@dayro/core";
+import type { ActivityTemplate } from "@klndr/core";
 
 import { ActivityPalette } from "@/components/day-planner/ActivityPalette";
 import { MiniCalendar } from "@/components/planner/MiniCalendar";

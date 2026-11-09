@@ -6,7 +6,7 @@ The historical handoff below describes the committed baseline. The current check
 R.3 extraction, the mobile Day tab and task editor, shared editor/timeline undo, reconnect handling, the
 R.4 `apps/web-react` scaffold, **all of R.5, and R.6's deletion**: `apps/web` (Nuxt 3 + Vue) is gone from
 the repo, `apps/web-react` draws the entire product, and the root scripts point at it. The planner's logic
-is `@dayro/data`'s hooks; the components only render.
+is `@klndr/data`'s hooks; the components only render.
 
 Verification after the delete: `npm install` pruned the workspace, a sweep finds no `.vue` file and no
 vue/nuxt dependency in any manifest, and typecheck (six workspaces) + 565 tests + the production build all
@@ -26,7 +26,7 @@ Start a new session with something like:
 
 ## 1. The project and the goal
 
-**dayro** (product name DayForge) is a daily time-block planner: a month calendar plus a half-hour day timeline you
+**klndr** (product name DayForge) is a daily time-block planner: a month calendar plus a half-hour day timeline you
 drag activities onto. See `PRODUCT.md` and `DESIGN.md`. Backend: Firebase Auth, Firestore (rules in
 `firestore.rules`), and a small REST API.
 
@@ -46,17 +46,17 @@ of `feat/mobile-app`'s history, so pulling this one branch is enough. `main` is 
 
 | Done | What |
 |---|---|
-| Phase 0 | npm workspaces; `@dayro/core` (framework-free logic, 264 tests); `@dayro/tokens` (design tokens, 41 tests); store compliance (account deletion, Apple sign-in on web, privacy pages) |
+| Phase 0 | npm workspaces; `@klndr/core` (framework-free logic, 264 tests); `@klndr/tokens` (design tokens, 41 tests); store compliance (account deletion, Apple sign-in on web, privacy pages) |
 | Phase 1.1-1.3 | Expo app shell, design system (Uniwind + tokens), auth (email, Google, Apple) with the auth gate and four placeholder tabs. Ran on the owner's iPhone as a dev build |
-| **R.1** | `apps/api` (`@dayro/api`): the server moved out of Nuxt into a Hono app; Nuxt still serves `/api/**` through one catch-all that forwards to it. 93 tests |
-| **R.2 (= task 1.4)** | `packages/data` (`@dayro/data`): TanStack Query hooks, optimistic mutations with rollback, undo, notes saver, device cache. Wired into the Expo app. 127 tests |
-| **R.3** | The timeline's pure interaction maths moved into `@dayro/core`; the Vue components call it, behaviour unchanged |
-| **R.4** | `apps/web-react` scaffold: Vite 8 + React 19 + TanStack Router + Tailwind v4 on `@dayro/tokens`; Firebase JS auth through core's `loadOrCreateProfile`; `@dayro/data` mounted once auth has settled; `/api` proxied to `apps/api` in dev. Screens are placeholders (R.5) |
+| **R.1** | `apps/api` (`@klndr/api`): the server moved out of Nuxt into a Hono app; Nuxt still serves `/api/**` through one catch-all that forwards to it. 93 tests |
+| **R.2 (= task 1.4)** | `packages/data` (`@klndr/data`): TanStack Query hooks, optimistic mutations with rollback, undo, notes saver, device cache. Wired into the Expo app. 127 tests |
+| **R.3** | The timeline's pure interaction maths moved into `@klndr/core`; the Vue components call it, behaviour unchanged |
+| **R.4** | `apps/web-react` scaffold: Vite 8 + React 19 + TanStack Router + Tailwind v4 on `@klndr/tokens`; Firebase JS auth through core's `loadOrCreateProfile`; `@klndr/data` mounted once auth has settled; `/api` proxied to `apps/api` in dev. Screens are placeholders (R.5) |
 
 | Next | What |
 |---|---|
-| **R.5** | Port the screens, page by page. **Done, and the port is complete** (2026-10-04): chrome, auth, the static pages, calendar, profile, landing page, and the whole day planner — `CategorySelect`, `ActivityForm`, `LibraryPanel`/`LibraryModal`, the activity palette, `TaskEditor`, `DayTimelineGrid` (the R.3 maths), `DayPlanner` with its header / routines shelf / mobile nav, and the route shell. Everything is driven by `@dayro/data`'s hooks, so the components render and nothing else. **Not verified: what any of it looks like** — no browser has been opened against a running app |
-| R.6 | Retire Nuxt (`apps/web`). **The app is deleted from the repo** (2026-10-04): the React app draws the whole product, so nothing was left behind. **What remains is the owner's deploy** — `apps/api` (Cloud Run `dayro-api` + Firebase Hosting rewrites, in HUMAN_TODO.md). A deployed Nuxt release keeps serving as it is, but it can no longer be rebuilt from this repo; see PLAN.md and DECISIONS.md |
+| **R.5** | Port the screens, page by page. **Done, and the port is complete** (2026-10-04): chrome, auth, the static pages, calendar, profile, landing page, and the whole day planner — `CategorySelect`, `ActivityForm`, `LibraryPanel`/`LibraryModal`, the activity palette, `TaskEditor`, `DayTimelineGrid` (the R.3 maths), `DayPlanner` with its header / routines shelf / mobile nav, and the route shell. Everything is driven by `@klndr/data`'s hooks, so the components render and nothing else. **Not verified: what any of it looks like** — no browser has been opened against a running app |
+| R.6 | Retire Nuxt (`apps/web`). **The app is deleted from the repo** (2026-10-04): the React app draws the whole product, so nothing was left behind. **What remains is the owner's deploy** — `apps/api` (Cloud Run `klndr-api` + Firebase Hosting rewrites, in HUMAN_TODO.md). A deployed Nuxt release keeps serving as it is, but it can no longer be rebuilt from this repo; see PLAN.md and DECISIONS.md |
 | Mobile 2.x | Checklist and notes sheets, calendar, library, settings, polish. Then Phase 3 (offline-first Firestore mode) and 4 (reminders, deep links, icons, store release) |
 
 The mobile tabs are still placeholders (`apps/mobile/src/app/(tabs)/*.tsx` render `PlaceholderTab`), so **no screen
@@ -108,20 +108,20 @@ npm run build -w apps/web-react  # optional, fast. Typecheck, then Vite into dis
 For anything touching `apps/mobile` or a shared package it imports, also prove Metro can bundle it:
 `npx expo export --platform android --output-dir <somewhere outside the repo>` (and `--platform ios`). Add
 `--source-maps` to check what actually got bundled. Last checked: both bundle, exactly **one** React copy
-(`apps/mobile/node_modules/react`, 19.2.3), no react-dom, no `@dayro/api`, no test tooling.
+(`apps/mobile/node_modules/react`, 19.2.3), no react-dom, no `@klndr/api`, no test tooling.
 
 ## 5. Repo map
 
 ```
 apps/
   api/       Hono REST API (createApp(config).fetch). src/db.ts has the Firestore + in-memory stores
-  mobile/    Expo SDK 57, Expo Router, Uniwind. src/data/ wires @dayro/data. Screens are still placeholders
+  mobile/    Expo SDK 57, Expo Router, Uniwind. src/data/ wires @klndr/data. Screens are still placeholders
   web-react/ React SPA (Vite, TanStack Router, Tailwind v4 on the tokens) and **the whole web app**: the
              Nuxt one (`apps/web`) was deleted in R.6 (2026-10-04)
 packages/
   core/      framework-free TS: types, time, layout (lane/overlap), colors, categories, validation, profile,
              markdown, API client (createApiClient), Store interface, TimelineHistory (undo engine)
-  data/      @dayro/data: TanStack Query hooks and mutations over core's API client (needs react + react-query)
+  data/      @klndr/data: TanStack Query hooks and mutations over core's API client (needs react + react-query)
   tokens/    design tokens: themes, scales, resolved palette. generated/ files are checked in and tested
 docs/mobile-port/   PLAN.md (checklist), PROGRESS.md (log), DECISIONS.md, HUMAN_TODO.md
 firestore.rules, firebase.json   at the root
@@ -133,7 +133,7 @@ Workspace packages ship TypeScript **source** (no build step); each consumer com
 ## 6. R.3 in detail (done — kept as the reference for what moved)
 
 Goal: the Vue components currently mix *interaction maths* (pure) with *input plumbing* (DOM pointer events, rAF,
-scroll containers). Move the pure part into `@dayro/core` with tests, call it from the Vue components so behaviour
+scroll containers). Move the pure part into `@klndr/core` with tests, call it from the Vue components so behaviour
 is unchanged, and so the React and mobile views can use it. Mobile 2.1 requires the formulas "bit for bit".
 
 Already in core: `SLOT_MINUTES` 30, `SNAP_MINUTES` 15, `SLOT_HEIGHT` 48 (`types.ts`); `snapMinutes`, `floorMinutes`
@@ -159,9 +159,9 @@ Method that worked for R.1 and R.2: write the pure functions in core, pin today'
 drive the day page). Keep the old behaviour; if you find a bug, note it in DECISIONS.md rather than silently fixing.
 
 After R.3 came R.4, which is done: `apps/web-react` exists with file-based TanStack Router routes (`_authed` is
-the guard, the generated tree is checked in), Firebase JS auth through core's `loadOrCreateProfile`, `@dayro/data`
+the guard, the generated tree is checked in), Firebase JS auth through core's `loadOrCreateProfile`, `@klndr/data`
 mounted only once auth has settled, and `/api` proxied to `apps/api` (:3001). R.5 is the port, page by page:
-`apps/web/pages/*.vue` and `apps/web/components/**`, with the shared tokens and the `@dayro/data` hooks
+`apps/web/pages/*.vue` and `apps/web/components/**`, with the shared tokens and the `@klndr/data` hooks
 underneath. Chrome, auth, the static pages, the calendar, the profile and the landing page are done; **the day
 planner is what is left**, and it is the large one — `DayPlanner.vue` plus the timeline grid, activity palette,
 block editor, library, checklist and notes, about 5,000 lines of Vue across twenty components. The R.3 functions
@@ -177,7 +177,7 @@ Full reasoning is in `docs/mobile-port/DECISIONS.md`. The load-bearing ones:
   caller's Firebase ID token to Firestore, so `firestore.rules` is enforced and the server holds no admin
   credentials. Errors keep the shape `{ error, statusCode, statusMessage, message }`, which `createApiClient` reads.
   `allowDevUser` must stay `false` in production builds (it was verified compiled to `false`).
-- **`@dayro/data` shape:** mutations are TanStack *options objects* (testable without React); hooks are thin wrappers;
+- **`@klndr/data` shape:** mutations are TanStack *options objects* (testable without React); hooks are thin wrappers;
   `useDayTimeline(day)` is the data half of the Vue day planner. React and react-query are **peer** dependencies,
   because the mobile app pins its own React and a second bundled copy crashes with "invalid hook call".
 - **Optimistic vs waiting:** moving, resizing, ticking, deleting and adding from an activity are optimistic and roll
@@ -227,7 +227,7 @@ Full reasoning is in `docs/mobile-port/DECISIONS.md`. The load-bearing ones:
   mixed quotes can fail to parse (write the file with the editor tool, then `cat >>`); Python is not installed.
 - **Two React copies exist in `node_modules`** (root 19.3.0 via transitive deps, `apps/mobile` pins 19.2.3). Metro is
   configured so mobile always uses its own. Don't add `react` to a shared package's `dependencies`. Vite resolves
-  `apps/web-react`'s `react` to the hoisted 19.3.0, which satisfies `@dayro/data`'s `^19.2.3` peer.
+  `apps/web-react`'s `react` to the hoisted 19.3.0, which satisfies `@klndr/data`'s `^19.2.3` peer.
 
 ## 9. What is verified and what is not
 
@@ -259,8 +259,8 @@ against real Firestore.
 
 ## 11. Open questions for the owner
 
-- Where `apps/api` is deployed: answered and configured (Cloud Run `dayro-api` + Firebase Hosting rewrites). What is
+- Where `apps/api` is deployed: answered and configured (Cloud Run `klndr-api` + Firebase Hosting rewrites). What is
   left is running the deploy — HUMAN_TODO.md, Phase R.
 - When to add `expo-network` (reconnect refetch), which needs a new development build.
 - Placeholders still to fill: privacy-policy and account-deletion pages (`[COMPANY LEGAL NAME]`, `[CONTACT EMAIL]`,
-  `[DATE]`), the iOS bundle id (`com.dayro.app`), Apple Services ID and keys. All in `HUMAN_TODO.md`.
+  `[DATE]`), the iOS bundle id (`com.klndr.app`), Apple Services ID and keys. All in `HUMAN_TODO.md`.

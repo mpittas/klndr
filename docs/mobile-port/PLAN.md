@@ -1,6 +1,6 @@
 # Mobile port plan
 
-Native iOS and Android apps for dayro (DayForge), built with Expo (React Native) while the
+Native iOS and Android apps for klndr (DayForge), built with Expo (React Native) while the
 Nuxt web app in `apps/web` keeps working unchanged (until Phase R replaces it with a React app, decided
 2026-10-03 after task 1.3). Tick each task as it finishes. Stop at
 each CHECKPOINT and post a review summary.
@@ -25,7 +25,7 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
 - [ ] HUMAN_TODO: move `.env` into `apps/web/`.
 - [ ] HUMAN_TODO: if the web app is served by Firebase Hosting, point it at `apps/web`.
 
-### 0.2 packages/core (@dayro/core)
+### 0.2 packages/core (@klndr/core)
 - [x] Move: types and constants, time, layout.
 - [x] Move: pure validation helpers and the profile model.
 - [x] Move: color keys, labels and canonicalization (Tailwind classes stay in web).
@@ -37,7 +37,7 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
 - [x] Move: undo/redo engine from useTimelineHistory as a plain class with `subscribe`
       (the Vue composable becomes a thin wrapper).
 - [x] Nuxt (incl. the Nitro server build) compiles the TypeScript source; Metro must too.
-- [x] Acceptance: web imports from `@dayro/core` and behaves the same.
+- [x] Acceptance: web imports from `@klndr/core` and behaves the same.
 - [x] Vitest: time, layout (layoutDay, columnsBeside, lanesFor, withLanes).
 - [x] Vitest: markdown parity on fixtures, toggleTaskLine.
 - [x] Vitest: validation.
@@ -48,7 +48,7 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
 - [x] Logged in DECISIONS.md: the markdown AST is by block and inline markup stays one ordered pass
       (so the HTML stays byte-identical), and what stayed in the web app as a thin adapter.
 
-### 0.3 packages/tokens (@dayro/tokens)
+### 0.3 packages/tokens (@klndr/tokens)
 - [x] Light and dark theme colors (exact values from apps/web/assets/css/main.css).
 - [x] Radii, spacing and the type scale.
 - [x] Every palette role in lib/colors.ts for all 12 colors (block, blockDone, chip, dot,
@@ -94,10 +94,10 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
 
 ### 1.1 Create apps/mobile
 - [x] `create-expo-app` (SDK 57, TypeScript, Expo Router). The template's demo screens, components
-      and images were removed, and the package is `@dayro/mobile` inside the workspace.
-- [x] app.config.ts: name "dayro", scheme "dayro", portrait, automatic light/dark.
+      and images were removed, and the package is `@klndr/mobile` inside the workspace.
+- [x] app.config.ts: name "klndr", scheme "klndr", portrait, automatic light/dark.
 - [x] app.config.ts: iOS bundle id + Android package from one constant (`BUNDLE_ID`), placeholder
-      "com.dayro.app".
+      "com.klndr.app".
 - [x] app.config.ts: Apple sign-in capability (`ios.usesAppleSignIn`), Android edge-to-edge — which
       SDK 57 turns on unconditionally, so the key no longer exists and the reason is a comment.
 - [x] app.config.ts: typed env vars EXPO_PUBLIC_API_BASE_URL, EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
@@ -109,12 +109,12 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
 - [x] eas.json: development (dev client, internal distribution), preview, production. Every profile
       pins `EXPO_PUBLIC_DATA_MODE=api`, so "api" stays the default (PLAN 3.4).
 - [x] metro.config.js: the workspace root is watched and both `node_modules` trees form the
-      resolution path, so Metro compiles `@dayro/core` and `@dayro/tokens` from TypeScript source —
+      resolution path, so Metro compiles `@klndr/core` and `@klndr/tokens` from TypeScript source —
       the acceptance task 0.2 left open. Proven below.
 - [x] Acceptance: web typecheck still passes, unchanged; `@types/react` does not leak from the
       hoisted mobile dependencies.
 - [x] Verified `npx expo export --platform android`: 1260 modules, 2.7 MB Hermes bytecode, and the
-      source map lists all 12 `@dayro/core` and all 5 `@dayro/tokens` modules.
+      source map lists all 12 `@klndr/core` and all 5 `@klndr/tokens` modules.
 - [x] Deviation logged: the mobile tsconfig names its `types` explicitly ("expo/types" for the CSS
       and asset imports, "node" for app.config.ts), because the generated `expo-env.d.ts` is
       gitignored — see DECISIONS.md.
@@ -123,7 +123,7 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
       native config files (`google-services.json`, `GoogleService-Info.plist`) for store builds.
 
 ### 1.2 Design system
-- [x] Uniwind wired to @dayro/tokens. `packages/tokens` now generates a second artefact,
+- [x] Uniwind wired to @klndr/tokens. `packages/tokens` now generates a second artefact,
       `generated/uniwind.css`, from the same theme and scale data (Uniwind picks a theme by `@variant`,
       not by a `.dark` class), and `apps/mobile/src/global.css` imports Tailwind, Uniwind and that file.
       `metro.config.js` wraps the config with `withUniwindConfig`.
@@ -156,7 +156,7 @@ Legend: `[ ]` todo, `[x]` done, `[~]` in progress / blocked.
 - [x] Sign in with Apple on iOS (nonce flow, Apple's own button).
 - [x] Apple sign-in on Android through Firebase's OAuth provider flow.
 - [x] First sign-in creates users/{uid} exactly like loadProfile in useAuth.ts — both now call
-      `newProfileData` / `loadOrCreateProfile` in `@dayro/core` (tested), instead of two copies.
+      `newProfileData` / `loadOrCreateProfile` in `@klndr/core` (tested), instead of two copies.
 - [x] Expo Router auth gate: signed-out stack vs the tabs (`Stack.Protected`, native tabs).
 - [x] Demo mode (EXPO_PUBLIC_DEMO_MODE=1): no sign-in; API calls without a token.
 - [x] Platform adapter: React Native Firebase (`src/auth/firebase.ts`). The planned `.web.ts` (Firebase JS SDK) was
@@ -243,7 +243,7 @@ Implemented and bundled for both platforms; native form/picker acceptance is pen
 ## Phase 3 — offline-first data mode
 
 ### 3.1 Shared store logic
-- [ ] Move server/utils/db.ts logic into @dayro/core as `createStore(db)`.
+- [ ] Move server/utils/db.ts logic into @klndr/core as `createStore(db)`.
 - [ ] Small document-database interface: get, query, batched commit with server timestamps.
 - [ ] Adapters: REST client (server), in-memory (tests/dev), Firebase JS SDK (web),
       React Native Firebase (mobile).
@@ -276,7 +276,7 @@ Implemented and bundled for both platforms; native form/picker acceptance is pen
 - [ ] Ask for permission in context, not at launch.
 
 ### 4.2 Deep links
-- [ ] dayro://day/YYYY-MM-DD and the web /day/YYYY-MM-DD and /calendar URLs.
+- [ ] klndr://day/YYYY-MM-DD and the web /day/YYYY-MM-DD and /calendar URLs.
 - [ ] Add apple-app-site-association and assetlinks.json under apps/web/public/.well-known.
 - [ ] HUMAN_TODO: Apple Team ID and the Android signing certificate SHA-256.
 
@@ -297,8 +297,8 @@ Implemented and bundled for both platforms; native form/picker acceptance is pen
 
 ## Phase R — the web app in React (decided 2026-10-03)
 
-The Nuxt app is rewritten in React and then retired, so web and mobile share not only `@dayro/core`
-and `@dayro/tokens` but also the data hooks. Only the views are written twice, on purpose: the mobile
+The Nuxt app is rewritten in React and then retired, so web and mobile share not only `@klndr/core`
+and `@klndr/tokens` but also the data hooks. Only the views are written twice, on purpose: the mobile
 app keeps its own native design. Nuxt stays the production web app until R.5 reaches parity.
 
 ### R.1 The API out of Nuxt (`apps/api`)
@@ -311,7 +311,7 @@ app keeps its own native design. Nuxt stays the production web app until R.5 rea
       the same app, so nothing changes for the deployed web app or the mobile app's base URL.
 - [x] Standalone Node entry: `npm run dev -w apps/api` (port 3001, tsx, in-memory without Firebase).
 - [x] Tests (93): the token check with real signed tokens and a local key set (wrong issuer, audience, key,
-      expiry, fail-closed), every route's success and refusal cases, and the `@dayro/core` API client driven
+      expiry, fail-closed), every route's success and refusal cases, and the `@klndr/core` API client driven
       against the app (every client method matches a route). Mutation-checked.
 - [x] Verified: standalone over HTTP, through Nuxt in dev (calendar and day pages load), the production
       bundle has `allowDevUser` compiled to `false`, typecheck for all five workspaces.
@@ -327,7 +327,7 @@ app keeps its own native design. Nuxt stays the production web app until R.5 rea
 - [x] Wired into the Expo app: `AppDataProvider` under the auth gate, MMKV cache, refetch on foreground, toast as `notify`.
 - [ ] HUMAN_TODO: check a cold start on the device (no flash, data from the last run shows at once) and sign-out wiping the cache.
 
-### R.3 Timeline interaction maths in `@dayro/core`
+### R.3 Timeline interaction maths in `@klndr/core`
 - [x] Move the pure parts out of `DayTimelineGrid.vue` / `DayPlanner.vue` into `packages/core/src/timeline.ts`:
       position to minutes, grab offset, snapping, resize limits, the lane a drag lands in, edge-scroll speed,
       block geometry (top, height, one-line and two-line rules), where a day opens, nudges for the keyboard.
@@ -338,8 +338,8 @@ app keeps its own native design. Nuxt stays the production web app until R.5 rea
 - [ ] The React web view calls them too (R.4/R.5).
 
 ### R.4 `apps/web-react` scaffold
-- [x] Vite, React, TanStack Router, Tailwind v4 on `@dayro/tokens`, Firebase JS SDK auth through the same
-      `@dayro/core` profile logic, `@dayro/data` for data. Proxy `/api` to `apps/api` in dev.
+- [x] Vite, React, TanStack Router, Tailwind v4 on `@klndr/tokens`, Firebase JS SDK auth through the same
+      `@klndr/core` profile logic, `@klndr/data` for data. Proxy `/api` to `apps/api` in dev.
       Screens are placeholders (plus a minimal sign-in form so the gate can be exercised); R.5 is the port.
 
 ### R.5 Port the screens
@@ -351,10 +351,10 @@ app keeps its own native design. Nuxt stays the production web app until R.5 rea
 - [x] Chrome and frame: `AppHeader.tsx` (logo, the Calendar/Today segmented toggle, the theme button, the
       profile chip and the no-Firebase banner) and the root frame's day-view scroll lock, both from `app.vue`.
 - [x] Auth and static pages: `login.tsx` and `signup.tsx` (Apple + Google, the reset flow, the split card),
-      `privacy.tsx`, `account-deletion.tsx` — wording unchanged, form checks and messages from `@dayro/core`.
+      `privacy.tsx`, `account-deletion.tsx` — wording unchanged, form checks and messages from `@klndr/core`.
 - [x] Calendar: `MonthView` with its header, grid, sidebar and date navigator, reading the month through
-      `@dayro/data`'s range query.
-- [x] Profile: `ProfileCard`, `AccountActionsCard`, `DeleteAccountCard` and the form, on `@dayro/data`'s
+      `@klndr/data`'s range query.
+- [x] Profile: `ProfileCard`, `AccountActionsCard`, `DeleteAccountCard` and the form, on `@klndr/data`'s
       `useProfile` / `useUpdateProfile`.
 - [x] Landing: `pages/index.vue` and the ten `components/landing/` files, ported into
       `src/components/landing/` (plus the shared `TimeBlock`, which the mockups draw blocks with). The
@@ -365,10 +365,10 @@ app keeps its own native design. Nuxt stays the production web app until R.5 rea
 - [~] Day planner: `DayPlanner.vue` and everything it draws. Done: the checklist (`DailyChecklist.tsx`
       with `ChecklistHeader`/`ChecklistItemRow`/`ChecklistQuickAdd`), the notes (`DayNotes.tsx`), the
       emoji picker, and the shared pieces (`category/ColorSwatches.tsx`, `ui/Tooltip.tsx`) — each taking
-      its behaviour from `@dayro/data`'s hooks rather than the Vue components' own save loops. Left:
+      its behaviour from `@klndr/data`'s hooks rather than the Vue components' own save loops. Left:
       `CategorySelect`, `ActivityForm`, `LibraryPanel`/`LibraryModal`, the activity palette,
       `TaskEditor`, `DayTimelineGrid` (drag, resize, touch hold, edge scroll — all calling the R.3 maths
-      in `@dayro/core`) and `DayPlanner` itself with its header, routines shelf and mobile nav, then the
+      in `@klndr/core`) and `DayPlanner` itself with its header, routines shelf and mobile nav, then the
       route shell swapping its placeholder for the real planner. Its route shell and data wiring are in
       place.
 
@@ -399,7 +399,7 @@ app keeps its own native design. Nuxt stays the production web app until R.5 rea
 - [x] Checked for packages `apps/web-react` imports but does not declare, before deleting: the sweep found
       none left. `emojibase-data` had been exactly that (it is declared by `apps/web-react` now); one was
       known, so the pattern was assumed and checked rather than the instance.
-- [x] Decided where `apps/api` is deployed (2026-10-04): the `dayro-api` Cloud Run service in
+- [x] Decided where `apps/api` is deployed (2026-10-04): the `klndr-api` Cloud Run service in
       `klndr-app`, region `europe-west1`, with Firebase Hosting rewriting `/api/**` to it so the API
       keeps the web app's own origin and CORS stays out of the design. `apps/api/Dockerfile` (built from
       the repo root) and the `hosting` block in `firebase.json` are in place; the exact commands are in

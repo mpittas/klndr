@@ -7,8 +7,8 @@ import {
   snapMinutes,
   todayISO,
   withImplicitCategories,
-} from "@dayro/core";
-import { useCategories, useDayTimeline, useLibraryActions, useProfile, useTemplates } from "@dayro/data";
+} from "@klndr/core";
+import { useCategories, useDayTimeline, useLibraryActions, useProfile, useTemplates } from "@klndr/data";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { useAuth } from "@/auth";

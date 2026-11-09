@@ -1,4 +1,4 @@
-import type { ApiClient, TimelineHistory } from "@dayro/core";
+import type { ApiClient, TimelineHistory } from "@klndr/core";
 import type { QueryClient } from "@tanstack/react-query";
 
 /** Where "Added Workout" and "Could not save that block" go: a flash on the web, a toast on the phone. */

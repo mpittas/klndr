@@ -1,4 +1,4 @@
-import type { ThemeVariable } from "@dayro/tokens";
+import type { ThemeVariable } from "@klndr/tokens";
 import type { ReactNode } from "react";
 import { ActivityIndicator, Pressable, type PressableProps } from "react-native";
 

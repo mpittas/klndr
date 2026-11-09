@@ -14,12 +14,12 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export LANG=en_US.UTF-8
 
-CACHE_ROOT="${DAYRO_IOS_CACHE:-$HOME/Library/Caches/dayro-ios}"
+CACHE_ROOT="${KLNDR_IOS_CACHE:-$HOME/Library/Caches/klndr-ios}"
 DERIVED_DATA="$CACHE_ROOT/derived-data"
 CAS_PATH="$CACHE_ROOT/compilation-cache"
 mkdir -p "$DERIVED_DATA" "$CAS_PATH"
 
-if [ ! -d ios/dayro.xcworkspace ]; then
+if [ ! -d ios/klndr.xcworkspace ]; then
   echo "No ios/ project yet: generating it (expo prebuild + pod install)…"
   npx expo prebuild --platform ios --no-install
   (cd ios && pod install)
@@ -41,12 +41,12 @@ udid="$(xcrun simctl list devices available -j | python3 -I -c 'import json,sys;
 xcrun simctl boot "$udid" 2>/dev/null || true
 
 start=$SECONDS
-xcodebuild -workspace ios/dayro.xcworkspace -scheme dayro -configuration Debug \
+xcodebuild -workspace ios/klndr.xcworkspace -scheme klndr -configuration Debug \
   -destination "id=$udid" -derivedDataPath "$DERIVED_DATA" \
   COMPILATION_CACHE_ENABLE_CACHING=YES COMPILATION_CACHE_CAS_PATH="$CAS_PATH" \
   CODE_SIGNING_ALLOWED=NO build | tail -n 3
 echo "Built in $((SECONDS - start))s."
 
-app="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/dayro.app"
+app="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/klndr.app"
 xcrun simctl install "$udid" "$app"
 echo "Installed on $udid. Start Metro with: npx expo start --dev-client"

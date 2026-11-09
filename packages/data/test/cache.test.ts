@@ -1,4 +1,4 @@
-import type { ActivityTemplate, Category, ScheduledTask } from "@dayro/core";
+import type { ActivityTemplate, Category, ScheduledTask } from "@klndr/core";
 import { describe, expect, it } from "vitest";
 import {
   findTask,

@@ -3,8 +3,8 @@ import {
   sortCategoriesByName,
   withImplicitCategories,
   type ActivityTemplate,
-} from "@dayro/core";
-import { useCategories, useEmojiFill, useLibraryActions } from "@dayro/data";
+} from "@klndr/core";
+import { useCategories, useEmojiFill, useLibraryActions } from "@klndr/data";
 import { Check, ChevronDown, Plus, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";

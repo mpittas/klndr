@@ -64,7 +64,7 @@ export const THEME_GROUPS: readonly { scheme: "light" | "dark"; label: string; o
   { scheme: "dark", label: "Dark", options: THEME_OPTIONS.filter((option) => option.scheme === "dark") },
 ];
 
-export const THEME_STORAGE_KEY = "dayro-theme";
+export const THEME_STORAGE_KEY = "klndr-theme";
 
 const schemeOf = (name: ThemeName) => THEME_OPTIONS.find((option) => option.name === name)?.scheme ?? "light";
 

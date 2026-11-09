@@ -1,4 +1,4 @@
-import type { UserProfile } from "@dayro/core";
+import type { UserProfile } from "@klndr/core";
 
 /** Who is signed in, as the rest of the app sees them (no Firebase SDK type leaks past `auth/`). */
 export type AuthUser = {

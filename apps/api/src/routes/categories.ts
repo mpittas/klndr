@@ -8,7 +8,7 @@ import {
   nextCategoryColor,
   planDistinctColors,
   type Category,
-} from "@dayro/core";
+} from "@klndr/core";
 import { Hono } from "hono";
 import type { Env } from "../env";
 import { HttpError } from "../errors";

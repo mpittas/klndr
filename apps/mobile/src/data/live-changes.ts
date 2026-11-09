@@ -1,4 +1,4 @@
-import type { LiveChanges } from "@dayro/data";
+import type { LiveChanges } from "@klndr/data";
 import { doc, getFirestore, onSnapshot } from "@react-native-firebase/firestore";
 
 import { clientId } from "./client-id";

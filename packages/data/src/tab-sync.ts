@@ -58,7 +58,7 @@ export function syncQueryClientAcrossTabs(client: QueryClient, options: TabSyncO
     options.tabs === false
       ? null
       : (options.createChannel ?? (typeof BroadcastChannel === "undefined" ? null : (name: string) => new BroadcastChannel(name)));
-  const channel = create?.(`dayro-sync:${options.channelName}`) ?? null;
+  const channel = create?.(`klndr-sync:${options.channelName}`) ?? null;
   const tabId = Math.random().toString(36).slice(2);
   const pending = new Set<string>();
 

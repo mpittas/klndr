@@ -1,4 +1,4 @@
-import { addDaysISO, addMonths, formatDuration, MONTH_LABELS, parseISODate } from "@dayro/core";
+import { addDaysISO, addMonths, formatDuration, MONTH_LABELS, parseISODate } from "@klndr/core";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
 import type { ReactNode } from "react";

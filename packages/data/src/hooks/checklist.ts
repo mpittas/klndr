@@ -1,4 +1,4 @@
-import type { ChecklistItem } from "@dayro/core";
+import type { ChecklistItem } from "@klndr/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { buildDayChecklist, emptyDayChecklist } from "../derive";

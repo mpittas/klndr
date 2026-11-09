@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // ===============================================================
-// dayro / DayForge data model (everything lives under the owner's uid)
+// klndr / DayForge data model (everything lives under the owner's uid)
 //
 //   users/{uid}                     profile
 //     uid, email            immutable, must match the signed-in identity

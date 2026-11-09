@@ -5,8 +5,8 @@ import {
   formatTime,
   sortCategoriesByName,
   type ScheduledTask,
-} from "@dayro/core";
-import { useCategories } from "@dayro/data";
+} from "@klndr/core";
+import { useCategories } from "@klndr/data";
 import {
   CalendarArrowDown,
   CalendarPlus,

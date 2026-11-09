@@ -1,8 +1,8 @@
-# Releasing dayro to the Apple App Store
+# Releasing klndr to the Apple App Store
 
 A runbook, in the order things have to happen. Tick items as you go. Items marked **(you)** need your own
-accounts or decisions and cannot be done by a script. The app is `com.dayro.app`, built with EAS (account
-`itsamemarios`, project `dayro`) and signed by Apple team **Marios Pittas (Y6H5QN6TFC)**.
+accounts or decisions and cannot be done by a script. The app is `com.klndr.app`, built with EAS (account
+`itsamemarios`, project `klndr`) and signed by Apple team **Marios Pittas (Y6H5QN6TFC)**.
 
 Related: `HUMAN_TODO.md` (open owner tasks), `PLAN.md` (Phase 4), `apps/mobile/README.md` (simulator builds).
 
@@ -10,8 +10,8 @@ Related: `HUMAN_TODO.md` (open owner tasks), `PLAN.md` (Phase 4), `apps/mobile/R
 
 ## 0. Before anything: decisions that cannot be undone
 
-- [ ] **(you)** Confirm the bundle id `com.dayro.app`. It is fixed after the first App Store release.
-- [ ] **(you)** Confirm the app name as it appears on the App Store ("dayro"). It must be unique on the store;
+- [ ] **(you)** Confirm the bundle id `com.klndr.app`. It is fixed after the first App Store release.
+- [ ] **(you)** Confirm the app name as it appears on the App Store ("klndr"). It must be unique on the store;
       if it is taken, App Store Connect tells you when you create the app (step 4) and you can add a subtitle or
       change the name then. The name on the home screen (`name` in `apps/mobile/app.config.ts`) can differ.
 
@@ -20,12 +20,12 @@ Related: `HUMAN_TODO.md` (open owner tasks), `PLAN.md` (Phase 4), `apps/mobile/R
 A store build talks to a public **HTTPS** API. iOS blocks plain `http://` in release builds, so the LAN addresses
 used for development will not work, and the reviewer cannot reach your Mac.
 
-Production is **`https://dayro.xyz` on Vercel** (the web app and the Hono API from `apps/api`, see `vercel.json`),
+Production is **`https://klndr.xyz` on Vercel** (the web app and the Hono API from `apps/api`, see `vercel.json`),
 not the Cloud Run + Hosting plan in `HUMAN_TODO.md` Phase R. Checked live: `/api/health` returns `{"ok":true}`,
 a data route without a token returns 401 (fail-closed), and `/privacy`, `/terms` and `/account-deletion` load.
 
 - [x] API reachable over HTTPS with auth enforced.
-- [x] EAS `production` environment has `EXPO_PUBLIC_API_BASE_URL=https://dayro.xyz` and
+- [x] EAS `production` environment has `EXPO_PUBLIC_API_BASE_URL=https://klndr.xyz` and
       `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`.
 - [x] EAS `production` environment has the `GOOGLE_SERVICES_INFO_PLIST` file secret (the Firebase iOS app
       `1:379750636201:ios:161b661b9e698763dca7b8`). Without it the production build fails in prebuild.
@@ -37,7 +37,7 @@ a data route without a token returns 401 (fail-closed), and `/privacy`, `/terms`
 ## 2. Sign-in has to work end to end
 
 - [x] Firebase Authentication providers **Email/Password, Google and Apple are enabled** (checked 2026-10-12 with the
-      Identity Platform admin API; Apple uses the web Services ID `com.dayro.app.web`, team `Y6H5QN6TFC`).
+      Identity Platform admin API; Apple uses the web Services ID `com.klndr.app.web`, team `Y6H5QN6TFC`).
       The native iOS flow signs in with the bundle id, which the registered Firebase iOS app already covers.
       Apple's rule 4.8 requires Sign in with Apple whenever another social login (Google) is offered.
 - [ ] Google on iOS needs `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` (already set on EAS `development`; set it for
@@ -65,8 +65,8 @@ a data route without a token returns 401 (fail-closed), and `/privacy`, `/terms`
 
 At <https://appstoreconnect.apple.com> → Apps → **+** → New App:
 
-- Platform **iOS**, name, primary language, **Bundle ID `com.dayro.app`** (it appears in the list because EAS
-  already registered it), SKU (any unique string, e.g. `dayro-ios`).
+- Platform **iOS**, name, primary language, **Bundle ID `com.klndr.app`** (it appears in the list because EAS
+  already registered it), SKU (any unique string, e.g. `klndr-ios`).
 - Then fill in the **App Information** and the first version page:
   - Subtitle (30 chars), promotional text, description, keywords (100 chars total), support URL (a page or a
     `mailto:` page that works), marketing URL (optional).
@@ -127,7 +127,7 @@ In App Store Connect → the version page:
 - [ ] Select the processed build.
 - [ ] **App Review Information**: the demo account's email and password (step 3), your contact phone and email,
       and notes. Suggested notes:
-      > dayro is a daily planner. Sign in with the demo account above (email + password). Blocks are created with
+      > klndr is a daily planner. Sign in with the demo account above (email + password). Blocks are created with
       > the + button on the Day tab. Account deletion: Settings → Delete account. Sign in with Apple and Google
       > are also offered.
 - [ ] Version release: **Manually release** is safest for a first version (you press the button after approval).
@@ -156,7 +156,7 @@ check → submit for review.
 
 | What | Where |
 |---|---|
-| EAS project | <https://expo.dev/accounts/itsamemarios/projects/dayro> |
+| EAS project | <https://expo.dev/accounts/itsamemarios/projects/klndr> |
 | Build profiles | `apps/mobile/eas.json` (`development`, `preview`, `production`) |
 | App config, bundle id, plugins | `apps/mobile/app.config.ts` |
 | Apple team | Marios Pittas, `Y6H5QN6TFC` |

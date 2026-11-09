@@ -1,8 +1,8 @@
-import { createApiClient, type ApiClient } from "@dayro/core";
+import { createApiClient, type ApiClient } from "@klndr/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { devApp } from "./helpers";
 
-// The API client in @dayro/core is what the web and mobile apps call. Pointing it at this app (with
+// The API client in @klndr/core is what the web and mobile apps call. Pointing it at this app (with
 // `fetch` routed straight into it) checks that every method still matches a route, its URL, its body
 // and the shape of what comes back, so the two can't drift apart unnoticed.
 

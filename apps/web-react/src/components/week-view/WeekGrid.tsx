@@ -23,8 +23,8 @@ import {
   titleLines,
   type ActivityTemplate,
   type ScheduledTask,
-} from "@dayro/core";
-import { useCategoryColor } from "@dayro/data";
+} from "@klndr/core";
+import { useCategoryColor } from "@klndr/data";
 import { Link } from "@tanstack/react-router";
 import { Check, Plus } from "lucide-react";
 import {

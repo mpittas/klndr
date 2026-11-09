@@ -1,6 +1,6 @@
-import { canonicalColor, hoursLabel, type CategoryShare } from "@dayro/core";
-import { useCategoryColor } from "@dayro/data";
-import { PALETTE } from "@dayro/tokens";
+import { canonicalColor, hoursLabel, type CategoryShare } from "@klndr/core";
+import { useCategoryColor } from "@klndr/data";
+import { PALETTE } from "@klndr/tokens";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { CategoryDot } from "@/components/library/category-dot";

@@ -12,8 +12,8 @@ import {
   type ActivityTemplate,
   type ScheduledTask,
   type TaskDraft,
-} from "@dayro/core";
-import { useCategoryColor, useCategoryField } from "@dayro/data";
+} from "@klndr/core";
+import { useCategoryColor, useCategoryField } from "@klndr/data";
 import {
   ArrowRight,
   CalendarDays,

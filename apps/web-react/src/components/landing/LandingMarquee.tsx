@@ -1,4 +1,4 @@
-import { formatDuration } from "@dayro/core";
+import { formatDuration } from "@klndr/core";
 import { Check } from "lucide-react";
 
 import { paletteOf } from "@/lib/colors";

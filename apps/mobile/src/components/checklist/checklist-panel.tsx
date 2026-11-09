@@ -1,11 +1,11 @@
-import type { DayChecklistItem } from "@dayro/core";
-import type { useChecklist } from "@dayro/data";
+import type { DayChecklistItem } from "@klndr/core";
+import type { useChecklist } from "@klndr/data";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, View } from "react-native";
 
 import { Button, Card, Chip, CircleButton, EmojiButton, EmptyState, SegmentedControl, Text, TextField, useToast } from "@/components/ui";
 import { Check, ChevronDown, ChevronRight, Ellipsis, ListChecks, Plus } from "@/icons";
-import { PALETTE } from "@dayro/tokens";
+import { PALETTE } from "@klndr/tokens";
 import { useThemeColors, useThemeScheme } from "@/theme/tokens";
 
 /** The emojis a new habit is given in turn, so adding several in a row needs no picking. */
@@ -20,7 +20,7 @@ type Scope = "default" | "day";
 /**
  * One day's checklist, as the web's panel: the count and bar, each routine (tap to tick; the "…" opens its
  * actions), the ones skipped for this day (with a way to bring them back), and a row to add another. The data
- * and what can be done to it come from `@dayro/data`'s `useChecklist`, so the shelf above the timeline and this
+ * and what can be done to it come from `@klndr/data`'s `useChecklist`, so the shelf above the timeline and this
  * panel show and change the same thing.
  */
 export function ChecklistPanel({ checklist }: { checklist: ReturnType<typeof useChecklist> }) {

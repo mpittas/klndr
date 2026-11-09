@@ -1,4 +1,4 @@
-import { isValidISODate, longDate, parseISODate, toISODate, todayISO } from "@dayro/core";
+import { isValidISODate, longDate, parseISODate, toISODate, todayISO } from "@klndr/core";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Button, Card, DateTimePicker, SheetScreen } from "@/components/ui";
 

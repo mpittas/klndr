@@ -1,4 +1,4 @@
-import { newProfileData, toProfile, type UserProfile } from "@dayro/core";
+import { newProfileData, toProfile, type UserProfile } from "@klndr/core";
 
 import type { AuthUser } from "./types";
 

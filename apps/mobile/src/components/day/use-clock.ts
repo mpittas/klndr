@@ -1,4 +1,4 @@
-import { nowMinutes, todayISO } from "@dayro/core";
+import { nowMinutes, todayISO } from "@klndr/core";
 import { useEffect, useState } from "react";
 import { AppState } from "react-native";
 

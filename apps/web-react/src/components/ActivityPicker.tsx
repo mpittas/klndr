@@ -1,4 +1,4 @@
-import { formatDuration, type ActivityTemplate } from "@dayro/core";
+import { formatDuration, type ActivityTemplate } from "@klndr/core";
 import { Check, ChevronDown, PencilLine, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { createPortal } from "react-dom";

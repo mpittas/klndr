@@ -11,7 +11,7 @@ export class HttpError extends Error {
 
 /**
  * The JSON body of an error response. It carries the keys (`error`, `statusCode`, `statusMessage`,
- * `message`) that the clients in `@dayro/core` read the message from.
+ * `message`) that the clients in `@klndr/core` read the message from.
  */
 export const errorBody = (status: number, message: string) => ({
   error: true,

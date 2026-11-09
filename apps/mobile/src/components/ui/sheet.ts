@@ -1,4 +1,4 @@
-import { RADII } from "@dayro/tokens";
+import { RADII } from "@klndr/tokens";
 import type { Stack } from "expo-router";
 import type { ComponentProps } from "react";
 

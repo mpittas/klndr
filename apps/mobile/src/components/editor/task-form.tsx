@@ -13,8 +13,8 @@ import {
   type Category,
   type ScheduledTask,
   type TaskDraft,
-} from "@dayro/core";
-import { useCategoryField } from "@dayro/data";
+} from "@klndr/core";
+import { useCategoryField } from "@klndr/data";
 import { useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 

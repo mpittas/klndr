@@ -1,4 +1,4 @@
-import type { ColorKey } from "@dayro/core";
+import type { ColorKey } from "@klndr/core";
 import type { ThemeName } from "./theme";
 
 /** Every role a colour plays in the UI, as `apps/web-react/src/lib/colors.ts` names them. */

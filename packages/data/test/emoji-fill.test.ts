@@ -1,4 +1,4 @@
-import type { ActivityTemplate, Category, ScheduledTask } from "@dayro/core";
+import type { ActivityTemplate, Category, ScheduledTask } from "@klndr/core";
 import { describe, expect, it } from "vitest";
 import { fillEmoji } from "../src/hooks/emoji";
 import { categoriesQuery, dayTasksQuery, templatesQuery } from "../src/hooks/queries";

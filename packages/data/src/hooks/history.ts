@@ -1,4 +1,4 @@
-import type { HistoryDirection } from "@dayro/core";
+import type { HistoryDirection } from "@klndr/core";
 import { useMutation, useQueryClient, type Mutation } from "@tanstack/react-query";
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import { historyStepOptions } from "../mutations/tasks";
@@ -11,7 +11,7 @@ const isPendingChange = (mutation: Mutation<unknown, Error, unknown, unknown>) =
 };
 
 /**
- * Undo and redo of what was done to blocks (the `TimelineHistory` engine of `@dayro/core`, over the query
+ * Undo and redo of what was done to blocks (the `TimelineHistory` engine of `@klndr/core`, over the query
  * cache). There is one history for the person, kept by the provider, so every screen records into and undoes
  * from the same one: the day, the week, the month and the editor over them, and moving between days or views
  * keeps it.

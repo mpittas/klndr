@@ -87,7 +87,7 @@ describe("the web app's stylesheet", () => {
   const mainCss = readFileSync(join(repo, "apps", "web-react", "src", "styles.css"), "utf8");
 
   it("imports the generated theme", () => {
-    expect(mainCss).toContain('@import "@dayro/tokens/theme.css";');
+    expect(mainCss).toContain('@import "@klndr/tokens/theme.css";');
   });
 
   it("no longer defines the theme variables itself", () => {

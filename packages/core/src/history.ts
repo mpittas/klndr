@@ -134,7 +134,7 @@ export class TimelineHistory {
     return this.run("redo");
   }
 
-  // ---- The parts of a step, for an app that saves through its own queue (see `@dayro/data`) ----
+  // ---- The parts of a step, for an app that saves through its own queue (see `@klndr/data`) ----
 
   /** Move the next step to the other stack and hand it over, or say there is nothing to take. */
   take(direction: HistoryDirection): HistoryStep | null {

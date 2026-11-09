@@ -1,5 +1,5 @@
 {
-  "name": "@dayro/mobile",
+  "name": "@klndr/mobile",
   "main": "expo-router/entry",
   "version": "0.0.0",
   "private": true,
@@ -13,9 +13,9 @@
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
     "@expo/ui": "~57.0.22",
-    "@dayro/core": "*",
-    "@dayro/data": "*",
-    "@dayro/tokens": "*",
+    "@klndr/core": "*",
+    "@klndr/data": "*",
+    "@klndr/tokens": "*",
     "@react-native-firebase/app": "^26.4.0",
     "@react-native-firebase/auth": "^26.4.0",
     "@react-native-firebase/firestore": "^26.4.0",

@@ -1,4 +1,4 @@
-import { authErrorMessage, signInProblem } from "@dayro/core";
+import { authErrorMessage, signInProblem } from "@klndr/core";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 
@@ -14,7 +14,7 @@ import { safeRedirect } from "@/lib/safeRedirect";
 
 /**
  * Sign in with email and password, Apple or Google, with a password reset. The form checks and the error
- * wording come from `@dayro/core` (`signInProblem` / `authErrorMessage`), so the phone says the same things.
+ * wording come from `@klndr/core` (`signInProblem` / `authErrorMessage`), so the phone says the same things.
  */
 export const Route = createFileRoute("/login")({
   // `?redirect=` is set by the `_authed` guard. Validated here so the router knows the shape.
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/login")({
 const RESET_SENT = "Password reset email sent. Check your inbox.";
 
 function LoginPage() {
-  useDocumentTitle("Log In · dayro.");
+  useDocumentTitle("Log In · klndr.");
   const auth = useAuth();
   const navigate = useNavigate();
   const { redirect } = Route.useSearch();
@@ -98,7 +98,7 @@ function LoginPage() {
   };
 
   return (
-    <AuthCard heading="Welcome back" subtitle="Sign in to your dayro. account">
+    <AuthCard heading="Welcome back" subtitle="Sign in to your klndr. account">
       {!isFirebaseConfigured ? <FirebaseNotice purpose="login" /> : null}
       {error ? <ErrorAlert message={error} /> : null}
       {success ? <SuccessAlert message={success} /> : null}

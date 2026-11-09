@@ -6,7 +6,7 @@ import {
   MAX_CATEGORY_OPTIONS,
   MAX_TITLE,
   type CategoryOption,
-} from "@dayro/core";
+} from "@klndr/core";
 import { Hono } from "hono";
 import type { Env } from "../env";
 import { HttpError } from "../errors";

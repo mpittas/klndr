@@ -1,5 +1,5 @@
-import { canonicalColor, formatTimeRange, type ScheduledTask } from "@dayro/core";
-import { PALETTE } from "@dayro/tokens";
+import { canonicalColor, formatTimeRange, type ScheduledTask } from "@klndr/core";
+import { PALETTE } from "@klndr/tokens";
 import { memo } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 

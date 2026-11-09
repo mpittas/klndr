@@ -1,5 +1,5 @@
 {
-  // The tests also run the API in memory (@dayro/api, which is Node code), so they get Node's types; the
+  // The tests also run the API in memory (@klndr/api, which is Node code), so they get Node's types; the
   // package's own source, checked by tsconfig.json, does not.
   "extends": "./tsconfig.json",
   "compilerOptions": { "types": ["node"] },

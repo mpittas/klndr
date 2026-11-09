@@ -11,7 +11,7 @@ import {
   todayISO,
   type ActivityTemplate,
   type Category,
-} from "@dayro/core";
+} from "@klndr/core";
 import {
   dayStats,
   draftFromTask,
@@ -22,7 +22,7 @@ import {
   useLibraryActions,
   useNotesEditor,
   useTemplates,
-} from "@dayro/data";
+} from "@klndr/data";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
@@ -64,7 +64,7 @@ type Preview = { start: number; duration: number; color: string; label: string; 
  * activities, the checklist and the notes in the sidebar (a full-height sheet's worth of them on a phone) and
  * the timeline with its hour gutter, routines shelf and mobile bar.
  *
- * The data is `@dayro/data`'s: `useDayTimeline` for the blocks and their undo history, `useChecklist` for
+ * The data is `@klndr/data`'s: `useDayTimeline` for the blocks and their undo history, `useChecklist` for
  * the routines, `useNotesEditor` for the notes and `useLibraryActions` for the activities and categories.
  * The planner keeps only what is genuinely its own: which panel is open, the drag in progress, and (via
  * `useBlockResize`) the block being resized.

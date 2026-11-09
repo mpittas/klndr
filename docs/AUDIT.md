@@ -1,8 +1,8 @@
-# dayro. — product audit
+# klndr. — product audit
 
 *November 2026. Covers the web app, the phone app and the API as they are on `main`.*
 
-dayro. is a calm, visual day planner: you drop time blocks onto an hour-by-hour timeline, keep a daily checklist of routines and jot notes for the day. It runs on the web and on phones, with or without an account.
+klndr. is a calm, visual day planner: you drop time blocks onto an hour-by-hour timeline, keep a daily checklist of routines and jot notes for the day. It runs on the web and on phones, with or without an account.
 
 ---
 
@@ -10,7 +10,7 @@ dayro. is a calm, visual day planner: you drop time blocks onto an hour-by-hour 
 
 **What's strong:** planning a single day feels fast and pleasant. The timeline is direct and forgiving (drag, resize, overlap, undo), and small AI touches (emoji, category) remove busywork without getting in the way. The engineering underneath is solid and well tested.
 
-**What's missing:** dayro. is great at *today* but weak at *every day*. Nothing repeats, nothing reminds you, nothing comes in from your real calendar, and nothing looks back at how your days went. Those four gaps are what stop it from becoming a daily habit.
+**What's missing:** klndr. is great at *today* but weak at *every day*. Nothing repeats, nothing reminds you, nothing comes in from your real calendar, and nothing looks back at how your days went. Those four gaps are what stop it from becoming a daily habit.
 
 **Do these next, in order:**
 

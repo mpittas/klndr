@@ -10,8 +10,8 @@ import {
   resizedDuration,
   titleLines,
   type ScheduledTask,
-} from "@dayro/core";
-import type { ThemeName } from "@dayro/tokens";
+} from "@klndr/core";
+import type { ThemeName } from "@klndr/tokens";
 import { memo, useEffect } from "react";
 import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";

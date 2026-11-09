@@ -6,8 +6,8 @@ import {
   FALLBACK_EMOJI,
   normalizeEmojiTitle,
   type EmojiKind,
-} from "@dayro/core";
-import { useEmojiFill, useEmojiSuggester, useRememberedEmoji, type EmojiTarget } from "@dayro/data";
+} from "@klndr/core";
+import { useEmojiFill, useEmojiSuggester, useRememberedEmoji, type EmojiTarget } from "@klndr/data";
 import { useCallback, useEffect, useEffectEvent, useReducer, useRef } from "react";
 
 import { canonicalEmoji } from "@/lib/emojis";

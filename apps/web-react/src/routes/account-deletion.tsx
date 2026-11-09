@@ -9,7 +9,7 @@ export const Route = createFileRoute("/account-deletion")({
 
 /** Written for someone who cannot sign in any more, so the email route is first-class. */
 const steps = [
-  "Sign in to dayro.",
+  "Sign in to klndr.",
   "Open Profile (your name in the header) and scroll to \u201cDelete account\u201d.",
   "Type \u201cdelete my account\u201d into the box to confirm, and enter your password if you sign in with one \u2014 or approve the pop-up if you sign in with Google or Apple.",
   "Press \u201cDelete my account\u201d. Everything goes at once: your activities, categories, blocks, checklist, notes and profile, and then the account itself.",
@@ -25,13 +25,13 @@ const removed = [
 ];
 
 function AccountDeletionPage() {
-  useDocumentTitle("Delete your account \u00b7 dayro.");
+  useDocumentTitle("Delete your account \u00b7 klndr.");
 
   return (
     <div className="mx-auto my-6 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-border bg-card px-6 py-9 shadow-xs sm:my-12 sm:px-12 sm:py-14">
       <h1 className="text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-[2.25rem]">Delete your account</h1>
       <p className="mt-3 text-[15px] leading-7 text-foreground/75">
-        You can delete your dayro. account and everything in it at any time, from the app, without asking anyone.
+        You can delete your klndr. account and everything in it at any time, from the app, without asking anyone.
       </p>
 
       <section className="mt-10">
@@ -70,7 +70,7 @@ function AccountDeletionPage() {
           Email{" "}
           <a
             className="rounded-sm font-medium text-foreground underline decoration-foreground/25 underline-offset-4 transition hover:decoration-foreground"
-            href={`mailto:${CONTACT_EMAIL}?subject=Delete%20my%20dayro.%20account`}
+            href={`mailto:${CONTACT_EMAIL}?subject=Delete%20my%20klndr.%20account`}
           >
             {CONTACT_EMAIL}
           </a>{" "}
@@ -84,7 +84,7 @@ function AccountDeletionPage() {
           Privacy policy
         </Link>
         <Link to="/" className="rounded-sm text-muted-foreground transition hover:text-foreground">
-          Back to dayro.
+          Back to klndr.
         </Link>
       </div>
     </div>

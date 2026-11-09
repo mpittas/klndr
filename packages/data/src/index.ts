@@ -1,6 +1,6 @@
 /**
- * @dayro/data — how the web and mobile apps read and change the user's data: TanStack Query hooks over the
- * `@dayro/core` API client, with the optimistic updates, rollbacks, messages and undo that the planner
+ * @klndr/data — how the web and mobile apps read and change the user's data: TanStack Query hooks over the
+ * `@klndr/core` API client, with the optimistic updates, rollbacks, messages and undo that the planner
  * needs. Views are the apps' own; this is everything behind them.
  *
  * Needs React and `@tanstack/react-query`; nothing from react-dom or react-native.

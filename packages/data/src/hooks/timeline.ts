@@ -1,4 +1,4 @@
-import type { ActivityTemplate, ScheduledTask, TaskDraft } from "@dayro/core";
+import type { ActivityTemplate, ScheduledTask, TaskDraft } from "@klndr/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo } from "react";
 import { draftFromTemplate, planMove } from "../blocks";

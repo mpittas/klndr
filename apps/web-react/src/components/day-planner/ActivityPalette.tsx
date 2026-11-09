@@ -4,8 +4,8 @@ import {
   sortCategoriesByName,
   withImplicitCategories,
   type ActivityTemplate,
-} from "@dayro/core";
-import { useCategories, useCategoryColor, useLibraryActions } from "@dayro/data";
+} from "@klndr/core";
+import { useCategories, useCategoryColor, useLibraryActions } from "@klndr/data";
 import { ChevronRight, ChevronsDownUp, ChevronsUpDown, Pencil, Plus, Search, SquarePen, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -33,7 +33,7 @@ function readCollapsed(): string[] {
  * the row's drag to the timeline (the caller owns the drop) or onto another group (which moves the
  * activity there).
  *
- * A quick add goes through `@dayro/data`'s `saveTemplate`, which writes the new activity into the cache,
+ * A quick add goes through `@klndr/data`'s `saveTemplate`, which writes the new activity into the cache,
  * which is where `templates` comes from.
  */
 export function ActivityPalette({

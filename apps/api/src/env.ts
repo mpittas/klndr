@@ -1,4 +1,4 @@
-import type { Store } from "@dayro/core";
+import type { Store } from "@klndr/core";
 import type { CategorySuggester } from "./category";
 import type { EmojiSuggester } from "./emoji";
 import type { Session } from "./session";

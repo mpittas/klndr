@@ -1,5 +1,5 @@
-import { authErrorMessage, type UserProfile } from "@dayro/core";
-import { useProfile } from "@dayro/data";
+import { authErrorMessage, type UserProfile } from "@klndr/core";
+import { useProfile } from "@klndr/data";
 import Constants from "expo-constants";
 import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
@@ -189,7 +189,7 @@ export default function SettingsTab() {
       )}
 
       <Text className="text-center" tone="muted" variant="caption">
-        dayro {Constants.expoConfig?.version ?? ""}
+        klndr {Constants.expoConfig?.version ?? ""}
       </Text>
     </ScrollView>
   );

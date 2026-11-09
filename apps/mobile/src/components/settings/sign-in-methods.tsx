@@ -1,4 +1,4 @@
-import { authErrorMessage } from "@dayro/core";
+import { authErrorMessage } from "@klndr/core";
 import { useState } from "react";
 import { Platform, View } from "react-native";
 

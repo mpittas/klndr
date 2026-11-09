@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { formatDuration, formatTimeRange, gutterLabel } from "@dayro/core";
+import { formatDuration, formatTimeRange, gutterLabel } from "@klndr/core";
 import { ArrowRight, CircleHelp } from "lucide-react";
 
 import { MockBlock } from "@/components/landing/MockBlock";

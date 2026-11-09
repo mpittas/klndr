@@ -1,5 +1,5 @@
-import { sortCategoriesByName, withImplicitCategories, type ActivityTemplate, type CategoryEntry } from "@dayro/core";
-import { useCategories, useTemplates } from "@dayro/data";
+import { sortCategoriesByName, withImplicitCategories, type ActivityTemplate, type CategoryEntry } from "@klndr/core";
+import { useCategories, useTemplates } from "@klndr/data";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { FlatList, RefreshControl, View } from "react-native";
@@ -19,7 +19,7 @@ type Group = { entry: CategoryEntry; items: ActivityTemplate[]; total: number };
 /**
  * The library: every category and the activities in it, with a search, as the web's library panel shows them.
  * Activities and categories are made and changed in sheets (`activity-sheet`, `category-sheet`); what they do to
- * the timeline's blocks (a rename relabels them, a recolour repaints them) is `@dayro/data`'s doing.
+ * the timeline's blocks (a rename relabels them, a recolour repaints them) is `@klndr/data`'s doing.
  */
 export default function LibraryTab() {
   const router = useRouter();

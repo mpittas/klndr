@@ -1,4 +1,4 @@
-import type { ChecklistItem, DayChecklist } from "@dayro/core";
+import type { ChecklistItem, DayChecklist } from "@klndr/core";
 import type { MutationOptions } from "@tanstack/react-query";
 import { queryKeys } from "../keys";
 import type { MutationDeps } from "./types";

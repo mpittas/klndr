@@ -18,14 +18,14 @@ const sections: Section[] = [
   {
     heading: "Agreeing to these terms",
     body: [
-      `These terms are the agreement between you and ${OPERATOR_NAME} (“we”, “us”) about your use of dayro., the day planner at dayro.xyz and its mobile apps (the “service”). By creating an account or using the service you agree to them. If you do not agree, please do not use it.`,
-      "You must be at least 16 years old to use dayro.",
+      `These terms are the agreement between you and ${OPERATOR_NAME} (“we”, “us”) about your use of klndr., the day planner at klndr.xyz and its mobile apps (the “service”). By creating an account or using the service you agree to them. If you do not agree, please do not use it.`,
+      "You must be at least 16 years old to use klndr.",
     ],
   },
   {
-    heading: "What dayro. is",
+    heading: "What klndr. is",
     body: [
-      "dayro. lets you plan your days: you create activities, schedule them as blocks on a timeline, keep a daily checklist and write notes. It is a personal planning tool, offered free of charge. We may add, change or remove features at any time.",
+      "klndr. lets you plan your days: you create activities, schedule them as blocks on a timeline, keep a daily checklist and write notes. It is a personal planning tool, offered free of charge. We may add, change or remove features at any time.",
     ],
   },
   {
@@ -40,7 +40,7 @@ const sections: Section[] = [
   {
     heading: "Your content",
     body: [
-      "What you put into dayro. (your activities, blocks, checklist, notes and profile) stays yours. We do not claim any ownership of it.",
+      "What you put into klndr. (your activities, blocks, checklist, notes and profile) stays yours. We do not claim any ownership of it.",
       "You give us permission to store, process and display it, but only as needed to run the service for you: to save it, show it back to you, sync it between your devices and suggest an emoji. The privacy policy explains exactly what that involves.",
       "You are responsible for your content. Please do not store anything unlawful or anything you do not have the right to store.",
     ],
@@ -65,8 +65,8 @@ const sections: Section[] = [
   {
     heading: "Availability, and keeping your own copy",
     body: [
-      "We try to keep dayro. running, but we do not promise it will always be available, error-free or free of data loss. It may be interrupted for maintenance, by problems at our providers, or for reasons we cannot control.",
-      "Because of that, do not rely on dayro. as the only place something important is written down. Keep your own copy of anything you cannot afford to lose.",
+      "We try to keep klndr. running, but we do not promise it will always be available, error-free or free of data loss. It may be interrupted for maintenance, by problems at our providers, or for reasons we cannot control.",
+      "Because of that, do not rely on klndr. as the only place something important is written down. Keep your own copy of anything you cannot afford to lose.",
     ],
   },
   {
@@ -85,19 +85,19 @@ const sections: Section[] = [
   {
     heading: "Suspension and ending",
     body: [
-      "You can stop using dayro. and delete your account whenever you like. We may suspend or close an account, or stop the service, if you break these terms, if we must by law, or if we decide to discontinue dayro. If we end the service we will give reasonable notice where we can, so you have time to take a copy of your data.",
+      "You can stop using klndr. and delete your account whenever you like. We may suspend or close an account, or stop the service, if you break these terms, if we must by law, or if we decide to discontinue klndr. If we end the service we will give reasonable notice where we can, so you have time to take a copy of your data.",
     ],
   },
   {
     heading: "Intellectual property",
     body: [
-      "The dayro. name, logo, design and code belong to us or our licensors. These terms give you the right to use the service, not to copy or resell it. Third-party software in the service stays under its own licences.",
+      "The klndr. name, logo, design and code belong to us or our licensors. These terms give you the right to use the service, not to copy or resell it. Third-party software in the service stays under its own licences.",
     ],
   },
   {
     heading: "Changes to these terms",
     body: [
-      "We may update these terms, for example when the service changes. The date at the top shows the latest version. If a change matters, we will tell you in the app or by email before it takes effect. If you keep using dayro. after that, you accept the new terms.",
+      "We may update these terms, for example when the service changes. The date at the top shows the latest version. If a change matters, we will tell you in the app or by email before it takes effect. If you keep using klndr. after that, you accept the new terms.",
     ],
   },
   {
@@ -114,7 +114,7 @@ const sections: Section[] = [
 ];
 
 function TermsPage() {
-  useDocumentTitle("Terms · dayro.");
+  useDocumentTitle("Terms · klndr.");
 
   return (
     <div className="mx-auto my-6 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-border bg-card px-6 py-9 shadow-xs sm:my-12 sm:px-12 sm:py-14">
@@ -149,7 +149,7 @@ function TermsPage() {
           Privacy policy
         </Link>
         <Link to="/" className="rounded-sm text-muted-foreground transition hover:text-foreground">
-          Back to dayro.
+          Back to klndr.
         </Link>
       </div>
     </div>

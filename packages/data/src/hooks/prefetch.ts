@@ -1,4 +1,4 @@
-import { addDaysISO, type ApiClient, type ScheduledTask } from "@dayro/core";
+import { addDaysISO, type ApiClient, type ScheduledTask } from "@klndr/core";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { byStart } from "../cache";

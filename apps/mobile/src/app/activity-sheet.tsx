@@ -9,7 +9,7 @@ import {
   withImplicitCategories,
   type ActivityTemplate,
   type Category,
-} from "@dayro/core";
+} from "@klndr/core";
 import {
   useCategories,
   useEmojiFill,
@@ -17,7 +17,7 @@ import {
   useLibraryActions,
   useRememberedEmoji,
   useTemplates,
-} from "@dayro/data";
+} from "@klndr/data";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { Alert, View } from "react-native";

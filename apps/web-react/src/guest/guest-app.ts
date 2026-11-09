@@ -1,9 +1,9 @@
-import { createApp, MemoryStore } from "@dayro/api";
+import { createApp, MemoryStore } from "@klndr/api";
 
 import { loadGuestData, saveGuestData } from "./storage";
 
 /**
- * The dayro API, running in this tab for guests: the same routes and rules as the server, with the planner
+ * The klndr API, running in this tab for guests: the same routes and rules as the server, with the planner
  * kept in `localStorage` instead of Firestore. Each request loads the saved planner first and saves it again
  * after a change, so every open tab of this browser sees the same data.
  *

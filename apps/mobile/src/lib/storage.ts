@@ -8,4 +8,4 @@ import { createMMKV } from "react-native-mmkv";
  * that persists something goes through this instance, so there is one place to look when a value is
  * stale after an upgrade.
  */
-export const storage = createMMKV({ id: "dayro" });
+export const storage = createMMKV({ id: "klndr" });

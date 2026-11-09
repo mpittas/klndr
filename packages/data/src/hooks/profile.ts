@@ -1,4 +1,4 @@
-import { cleanPatch, type ProfilePatch, type UserProfile } from "@dayro/core";
+import { cleanPatch, type ProfilePatch, type UserProfile } from "@klndr/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "../keys";
 import { useData } from "../provider";

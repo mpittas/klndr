@@ -8,7 +8,7 @@ import {
   withImplicitCategories,
   type ActivityTemplate,
   type Category,
-} from "@dayro/core";
+} from "@klndr/core";
 import {
   useCategories,
   useData,
@@ -17,7 +17,7 @@ import {
   useLibraryActions,
   useRememberedEmoji,
   useTemplates,
-} from "@dayro/data";
+} from "@klndr/data";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { Alert, View } from "react-native";
@@ -44,7 +44,7 @@ const NO_TEMPLATES: ActivityTemplate[] = [];
  * The sheet for a category: new, or opened from the library (`?id=…`; a name the activities use but nobody has
  * saved yet comes as `?name=…`). Rename it, recolour it, or delete it — its activities then go to another
  * category, or are deleted with it. Renaming and recolouring reach its activities and blocks through
- * `@dayro/data`, which relabels them in the same step.
+ * `@klndr/data`, which relabels them in the same step.
  */
 export default function CategorySheet() {
   const router = useRouter();

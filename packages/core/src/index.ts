@@ -1,5 +1,5 @@
 /**
- * @dayro/core — the logic the web and mobile apps share: the data model, time and layout maths,
+ * @klndr/core — the logic the web and mobile apps share: the data model, time and layout maths,
  * colours and categories, emoji search, markdown, the API client, the store interface and the
  * timeline undo engine. Framework-free: no React, no React Native.
  */

@@ -1,4 +1,4 @@
-import { MAX_EMOJI, type EmojiKind } from "@dayro/core";
+import { MAX_EMOJI, type EmojiKind } from "@klndr/core";
 import OpenAI from "openai";
 
 /** Picks an emoji for a title, or `null` when it has none to offer. Never throws. */

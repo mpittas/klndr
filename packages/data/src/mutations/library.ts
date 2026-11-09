@@ -1,4 +1,4 @@
-import type { ActivityTemplate, Category } from "@dayro/core";
+import type { ActivityTemplate, Category } from "@klndr/core";
 import { notifyManager, type MutationOptions } from "@tanstack/react-query";
 import {
   followsTemplate,

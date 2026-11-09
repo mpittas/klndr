@@ -1,4 +1,4 @@
-import { MONTH_LABELS, getMonthIndex, getYear, isValidISODate, todayISO } from "@dayro/core";
+import { MONTH_LABELS, getMonthIndex, getYear, isValidISODate, todayISO } from "@klndr/core";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { Pressable, View } from "react-native";

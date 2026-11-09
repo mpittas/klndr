@@ -1,5 +1,5 @@
-import { createApp } from "@dayro/api";
-import { createApiClient, type ScheduledTask, type TaskDraft } from "@dayro/core";
+import { createApp } from "@klndr/api";
+import { createApiClient, type ScheduledTask, type TaskDraft } from "@klndr/core";
 import { MutationObserver, QueryClient, type MutationObserverOptions } from "@tanstack/react-query";
 import { afterEach, beforeEach, vi } from "vitest";
 import type { MutationDeps } from "../src/mutations/types";
@@ -11,7 +11,7 @@ type Matcher = string | RegExp;
 const matches = (matcher: Matcher, line: string) => (typeof matcher === "string" ? line.startsWith(matcher) : matcher.test(line));
 
 /**
- * The real API (`@dayro/api`) with an in-memory account, behind `fetch`. A request can be held until the test
+ * The real API (`@klndr/api`) with an in-memory account, behind `fetch`. A request can be held until the test
  * lets it go, or made to fail, which is how the optimistic state and the rollbacks are looked at.
  */
 export function createServer() {

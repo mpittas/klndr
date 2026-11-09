@@ -1,5 +1,5 @@
-import { PROFILE_LIMITS, authErrorMessage, type UserProfile } from "@dayro/core";
-import { useProfile, useUpdateProfile } from "@dayro/data";
+import { PROFILE_LIMITS, authErrorMessage, type UserProfile } from "@klndr/core";
+import { useProfile, useUpdateProfile } from "@klndr/data";
 import { Link, createFileRoute, useBlocker, useNavigate } from "@tanstack/react-router";
 import { Check, Mail } from "lucide-react";
 import { useState, type FormEventHandler } from "react";
@@ -18,7 +18,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useTransientFlag } from "@/hooks/useTransientFlag";
 
 /**
- * The profile page. Reading and writing the profile goes through `@dayro/data` (`useProfile` /
+ * The profile page. Reading and writing the profile goes through `@klndr/data` (`useProfile` /
  * `useUpdateProfile`), which keeps its own cache. The auth gate loads the profile as well, so there are
  * briefly two reads of the same document.
  */
@@ -69,7 +69,7 @@ function describeDeleteError(thrown: unknown): string {
 }
 
 function ProfilePage() {
-  useDocumentTitle("Profile · dayro.");
+  useDocumentTitle("Profile · klndr.");
   const { state, signOut, requestPasswordReset, deleteAccount, linkProvider, retryProfile } = useAuth();
   const navigate = useNavigate();
   const profileQuery = useProfile();

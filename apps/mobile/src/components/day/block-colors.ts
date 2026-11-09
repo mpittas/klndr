@@ -1,7 +1,7 @@
-import { canonicalColor } from "@dayro/core";
-import { PALETTE } from "@dayro/tokens";
+import { canonicalColor } from "@klndr/core";
+import { PALETTE } from "@klndr/tokens";
 
-import type { ThemeName } from "@dayro/tokens";
+import type { ThemeName } from "@klndr/tokens";
 
 /** What a timeline block is painted with, as concrete colours (the palette is already resolved sRGB). */
 export type BlockColors = {

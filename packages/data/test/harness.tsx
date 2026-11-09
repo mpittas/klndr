@@ -1,4 +1,4 @@
-import type { UserProfile } from "@dayro/core";
+import type { UserProfile } from "@klndr/core";
 import type { QueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { DataProvider } from "../src/provider";

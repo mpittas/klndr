@@ -19,14 +19,14 @@ const sections: Section[] = [
   {
     heading: "The short version",
     body: [
-      "dayro. is a day planner. We store what you put into it so you can see it on your devices, and nothing more. We do not show advertising, we do not use tracking or analytics tools, and we do not sell your data or share it for marketing.",
+      "klndr. is a day planner. We store what you put into it so you can see it on your devices, and nothing more. We do not show advertising, we do not use tracking or analytics tools, and we do not sell your data or share it for marketing.",
       "You can see, change and delete your data from inside the app, and you can delete your whole account in a few taps.",
     ],
   },
   {
     heading: "Who is responsible for your data",
     body: [
-      `${OPERATOR_NAME}, an individual, operates dayro. (the “app”, including the website at dayro.xyz and the mobile apps) and decides how your personal data is used. In data-protection terms, that makes ${OPERATOR_NAME} the “controller”.`,
+      `${OPERATOR_NAME}, an individual, operates klndr. (the “app”, including the website at klndr.xyz and the mobile apps) and decides how your personal data is used. In data-protection terms, that makes ${OPERATOR_NAME} the “controller”.`,
       `Contact: ${CONTACT_EMAIL}, for anything on this page.`,
     ],
   },
@@ -47,7 +47,7 @@ const sections: Section[] = [
     heading: "Signing in with Google or Apple",
     body: [
       "If you choose Google or Apple, we receive only your basic profile: your name, your email address and your profile photo (and an identifier your provider assigns to you). We do not request or access your Gmail, Drive, Calendar, contacts or any other data in your Google or Apple account.",
-      "We use that information only to create and sign you in to your dayro. account and to show your name in the app. Our use of information received from Google follows the Google API Services User Data Policy, including its Limited Use requirements.",
+      "We use that information only to create and sign you in to your klndr. account and to show your name in the app. Our use of information received from Google follows the Google API Services User Data Policy, including its Limited Use requirements.",
     ],
   },
   {
@@ -128,7 +128,7 @@ const sections: Section[] = [
   {
     heading: "Children",
     body: [
-      "dayro. is not intended for anyone under 16, and we do not knowingly collect their data. If you believe a child has created an account, email us and we will delete it.",
+      "klndr. is not intended for anyone under 16, and we do not knowingly collect their data. If you believe a child has created an account, email us and we will delete it.",
     ],
   },
   {
@@ -144,7 +144,7 @@ const sections: Section[] = [
 ];
 
 function PrivacyPage() {
-  useDocumentTitle("Privacy · dayro.");
+  useDocumentTitle("Privacy · klndr.");
 
   return (
     <div className="mx-auto my-6 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-border bg-card px-6 py-9 shadow-xs sm:my-12 sm:px-12 sm:py-14">
@@ -187,7 +187,7 @@ function PrivacyPage() {
           Delete your account
         </Link>
         <Link to="/" className="rounded-sm text-muted-foreground transition hover:text-foreground">
-          Back to dayro.
+          Back to klndr.
         </Link>
       </div>
     </div>

@@ -13,8 +13,8 @@ import {
   snapMinutes,
   weekdayLabels,
   type ScheduledTask,
-} from "@dayro/core";
-import { rangeTasksQuery, useCategoryColor, useData, useProfile, useRangeTasks, useTaskActions } from "@dayro/data";
+} from "@klndr/core";
+import { rangeTasksQuery, useCategoryColor, useData, useProfile, useRangeTasks, useTaskActions } from "@klndr/data";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";

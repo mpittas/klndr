@@ -1,4 +1,4 @@
-import type { UserProfile } from "@dayro/core";
+import type { UserProfile } from "@klndr/core";
 
 /** The signed-in person, as far as the app cares: no SDK type crosses this line. */
 export type AuthUser = {

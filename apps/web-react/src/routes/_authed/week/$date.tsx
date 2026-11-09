@@ -1,5 +1,5 @@
-import { isValidISODate, todayISO, weekDays, type ScheduledTask } from "@dayro/core";
-import { useRangeTasks } from "@dayro/data";
+import { isValidISODate, todayISO, weekDays, type ScheduledTask } from "@klndr/core";
+import { useRangeTasks } from "@klndr/data";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { WeekView } from "@/components/WeekView";
@@ -10,7 +10,7 @@ const NO_TASKS: ScheduledTask[] = [];
 
 /**
  * The week a date falls in (`/week/<any day of it>`), starting on the day the profile says (Monday unless set
- * otherwise). Its blocks come from `@dayro/data`'s range query, which keeps the previous week on screen while
+ * otherwise). Its blocks come from `@klndr/data`'s range query, which keeps the previous week on screen while
  * the next one loads, so paging weeks never flashes empty.
  */
 export const Route = createFileRoute("/_authed/week/$date")({

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import type { UserProfile } from "@dayro/core";
+import type { UserProfile } from "@klndr/core";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { useChecklist } from "../src/hooks/checklist";

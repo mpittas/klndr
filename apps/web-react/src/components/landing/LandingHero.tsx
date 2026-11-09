@@ -52,7 +52,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
           </h1>
 
           <p className="hero-rise mx-auto mt-6 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground [--d:120ms] sm:text-lg">
-            dayro. is a visual day planner. Pick a date, drag activities like deep work, workouts and chores onto an
+            klndr. is a visual day planner. Pick a date, drag activities like deep work, workouts and chores onto an
             hour-by-hour timeline, and tick them off as your day unfolds.
           </p>
 

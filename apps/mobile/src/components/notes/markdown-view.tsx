@@ -1,5 +1,5 @@
-import { listItemDepth, parseInline, parseMarkdown, type InlineSpan, type MarkdownBlock } from "@dayro/core";
-import { PALETTE } from "@dayro/tokens";
+import { listItemDepth, parseInline, parseMarkdown, type InlineSpan, type MarkdownBlock } from "@klndr/core";
+import { PALETTE } from "@klndr/tokens";
 import { memo, useMemo } from "react";
 import { Linking, Platform, Pressable, Text as RNText, View } from "react-native";
 

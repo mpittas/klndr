@@ -1,4 +1,4 @@
-import { cleanText, isEmojiKind, MAX_TITLE } from "@dayro/core";
+import { cleanText, isEmojiKind, MAX_TITLE } from "@klndr/core";
 import { Hono } from "hono";
 import type { Env } from "../env";
 import { HttpError } from "../errors";

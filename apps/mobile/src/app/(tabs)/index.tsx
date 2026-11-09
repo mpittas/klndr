@@ -1,4 +1,4 @@
-import { addDaysISO, clampStart, isValidISODate, nowMinutes, snapMinutes, todayISO, type ScheduledTask } from "@dayro/core";
+import { addDaysISO, clampStart, isValidISODate, nowMinutes, snapMinutes, todayISO, type ScheduledTask } from "@klndr/core";
 import {
   dayStats,
   dayTasksQuery,
@@ -9,7 +9,7 @@ import {
   useDayTimeline,
   useProfile,
   useRangeTasks,
-} from "@dayro/data";
+} from "@klndr/data";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

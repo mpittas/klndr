@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import type { ScheduledTask } from "@dayro/core";
+import type { ScheduledTask } from "@klndr/core";
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { usePrefetchAroundDay } from "../src/hooks/prefetch";

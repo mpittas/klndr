@@ -1,4 +1,4 @@
-import type { ActivityTemplate, ChecklistItem, DayChecklist, ScheduledTask } from "@dayro/core";
+import type { ActivityTemplate, ChecklistItem, DayChecklist, ScheduledTask } from "@klndr/core";
 import { describe, expect, it } from "vitest";
 import { draftFromTemplate, isTempId, newTempId, planMove, taskFromDraft } from "../src/blocks";
 import { buildDayChecklist, dayStats, emptyDayChecklist } from "../src/derive";

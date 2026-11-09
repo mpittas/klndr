@@ -7,8 +7,8 @@ import {
   withImplicitCategories,
   type ActivityTemplate,
   type CategoryEntry,
-} from "@dayro/core";
-import { useCategories, useCategoryColor, useData, useEmojiFill, useLibraryActions } from "@dayro/data";
+} from "@klndr/core";
+import { useCategories, useCategoryColor, useData, useEmojiFill, useLibraryActions } from "@klndr/data";
 import { Clock, FolderPlus, Palette, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
@@ -26,7 +26,7 @@ const GENERAL = "General";
  * Every activity and category in one place, with a search, an activity form that opens in place and a
  * category that can be renamed, recolored or deleted (its activities moved elsewhere or deleted with it).
  *
- * `@dayro/data`'s library mutations write the server's answer into the cache, and relabel the activities
+ * `@klndr/data`'s library mutations write the server's answer into the cache, and relabel the activities
  * and blocks of a renamed category in the same step, so the parent's `templates` prop follows on its own.
  *
  * The dialog drops this panel when it closes, and starts a new one (a new `key`) for every request to open
@@ -248,7 +248,7 @@ export function LibraryPanel({ focus, templates }: { focus: LibraryFocus; templa
     setRowError(keyOf(entry), null);
     try {
       // Renaming relabels this category's activities and blocks in the cache, in the same step (see
-      // `@dayro/data`'s updateCategory).
+      // `@klndr/data`'s updateCategory).
       await updateCategory({ id: entry.id, patch });
       return true;
     } catch (err) {

@@ -1,4 +1,4 @@
-import { withImplicitCategories, type ActivityTemplate, type Category } from "@dayro/core";
+import { withImplicitCategories, type ActivityTemplate, type Category } from "@klndr/core";
 import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 

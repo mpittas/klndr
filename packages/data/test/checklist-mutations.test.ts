@@ -1,4 +1,4 @@
-import type { ChecklistItem, DayChecklist } from "@dayro/core";
+import type { ChecklistItem, DayChecklist } from "@klndr/core";
 import { describe, expect, it, vi } from "vitest";
 import { checklistItemsQuery, dayChecklistQuery } from "../src/hooks/queries";
 import { queryKeys } from "../src/keys";

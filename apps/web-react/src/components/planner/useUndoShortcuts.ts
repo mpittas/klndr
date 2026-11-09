@@ -1,4 +1,4 @@
-import { useTimelineHistory } from "@dayro/data";
+import { useTimelineHistory } from "@klndr/data";
 import { useEffect, useEffectEvent } from "react";
 
 /**
