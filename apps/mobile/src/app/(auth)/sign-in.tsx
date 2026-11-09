@@ -1,4 +1,4 @@
-import { signInProblem } from "@klndr/core";
+import { signInProblem } from "@dayro/core";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";

@@ -7,14 +7,14 @@ import type {
   DayNotes,
   ScheduledTask,
   Store,
-} from "@klndr/core";
-import { MAX_DAY_EXTRAS, nextCategoryColor, toISODate, UNSORTED_CATEGORY } from "@klndr/core";
+} from "@dayro/core";
+import { MAX_DAY_EXTRAS, nextCategoryColor, toISODate, UNSORTED_CATEGORY } from "@dayro/core";
 import { HttpError } from "./errors";
 import { Firestore, FirestoreError, type FsDoc } from "./firestore";
 import type { Session } from "./session";
 
 // The `Store` interface and the shared limits (MAX_DAY_EXTRAS, MAX_NOTES_LENGTH) live in
-// @klndr/core, beside the types they describe. Below: the two implementations of it.
+// @dayro/core, beside the types they describe. Below: the two implementations of it.
 
 const emptyNotes = (day: string): DayNotes => ({ day, text: "" });
 

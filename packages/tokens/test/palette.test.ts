@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ACCEPTED_COLOR_KEYS, COLOR_KEYS } from "@klndr/core";
+import { ACCEPTED_COLOR_KEYS, COLOR_KEYS } from "@dayro/core";
 import { PALETTE, PALETTE_ROLES, THEMES } from "../src/index";
 
 const HEX = /^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/;

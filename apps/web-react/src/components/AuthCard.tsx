@@ -19,7 +19,7 @@ export function AuthCard({
       <div className="mx-auto w-full max-w-[25rem]">
         <div className="card space-y-6 rounded-2xl p-6 shadow-md sm:p-8">
           <div className="text-center">
-            <Link to="/" className="inline-block rounded-md text-[1.75rem] leading-none text-foreground" aria-label="klndr. home">
+            <Link to="/" className="inline-block rounded-md text-[1.75rem] leading-none text-foreground" aria-label="dayro. home">
               <Wordmark />
             </Link>
             <h1 className="mt-5 text-xl font-semibold tracking-[-0.02em] text-foreground">{heading}</h1>

@@ -1,4 +1,4 @@
-import { isDocId } from "@klndr/core";
+import { isDocId } from "@dayro/core";
 import type { Context } from "hono";
 import { HttpError } from "./errors";
 

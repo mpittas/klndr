@@ -3,11 +3,11 @@
 # The API as a container, for Cloud Run (see docs/mobile-port/HUMAN_TODO.md, "where apps/api runs").
 #
 # `apps/api` is a Hono app — `createApp(config)` returns a fetch handler — run on plain Node through
-# `tsx` (`src/server.ts`). It compiles `@klndr/core` from source over the npm workspace link, so the
+# `tsx` (`src/server.ts`). It compiles `@dayro/core` from source over the npm workspace link, so the
 # image needs the workspace root plus `packages/core` and `apps/api`; neither front end belongs in it.
 #
 # Build from the repository root, so the workspace manifests are all in place:
-#   docker build -f apps/api/Dockerfile -t klndr-api .
+#   docker build -f apps/api/Dockerfile -t dayro-api .
 
 # --- dependencies ------------------------------------------------------------------------------
 # `npm ci` validates the lockfile against *every* workspace manifest, so all of them must be copied

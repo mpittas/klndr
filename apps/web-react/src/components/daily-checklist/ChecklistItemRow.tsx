@@ -1,4 +1,4 @@
-import type { DayChecklistItem } from "@klndr/core";
+import type { DayChecklistItem } from "@dayro/core";
 import { Check, Ellipsis } from "lucide-react";
 
 const MENU_ITEM_CLASS = "menu-item";

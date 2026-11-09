@@ -1,6 +1,6 @@
-# @klndr/mobile — the iOS and Android app
+# @dayro/mobile — the iOS and Android app
 
-Expo (React Native) + Expo Router, sharing `@klndr/core` and `@klndr/tokens` with the web app. The
+Expo (React Native) + Expo Router, sharing `@dayro/core` and `@dayro/tokens` with the web app. The
 work is planned in `docs/mobile-port/PLAN.md`; the reasoning lives in `DECISIONS.md` next to it.
 
 ## Commands
@@ -27,9 +27,9 @@ npm install                                   # at the repository root
 cd apps/mobile
 npx expo prebuild --platform ios --no-install # generates ios/ from app.config.ts and its plugins
 cd ios && LANG=en_US.UTF-8 pod install        # CocoaPods needs a UTF-8 locale
-xcodebuild -workspace klndr.xcworkspace -scheme klndr -configuration Debug \
+xcodebuild -workspace dayro.xcworkspace -scheme dayro -configuration Debug \
   -destination 'id=<simulator UDID>' -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO build
-xcrun simctl install <UDID> build/dd/Build/Products/Debug-iphonesimulator/klndr.app
+xcrun simctl install <UDID> build/dd/Build/Products/Debug-iphonesimulator/dayro.app
 npx expo start --dev-client                   # Metro; open the app and pick this server
 ```
 
@@ -38,7 +38,7 @@ takes the simulator for a physical device and asks for code signing.
 
 Native code is never edited in `ios/`; change it through a config plugin in `plugins/`, or the next `prebuild`
 loses it. `plugins/with-ios-scene-lifecycle.js` is one: iOS 27 kills an app that has not adopted the UIScene life
-cycle (the crash reads "klndr shut down unexpectedly"), and Expo's template does not do it yet. Rebuild the native
+cycle (the crash reads "dayro shut down unexpectedly"), and Expo's template does not do it yet. Rebuild the native
 app after changing `app.config.ts`, a plugin, or a native dependency; JavaScript changes reload on their own.
 
 ## Signing in

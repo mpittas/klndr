@@ -1,5 +1,5 @@
-import { toggleTaskLine } from "@klndr/core";
-import type { useNotesEditor } from "@klndr/data";
+import { toggleTaskLine } from "@dayro/core";
+import type { useNotesEditor } from "@dayro/data";
 import { useState } from "react";
 import { Platform, Pressable, TextInput, View } from "react-native";
 
@@ -14,7 +14,7 @@ const MONO = Platform.select({ ios: "Menlo", default: "monospace" });
 
 /**
  * One day's notes: a Markdown editor and a preview you can switch between. The text, the pause before saving,
- * the rule that the server's copy never overwrites unsaved typing and the retry all come from `@klndr/data`'s
+ * the rule that the server's copy never overwrites unsaved typing and the retry all come from `@dayro/data`'s
  * `useNotesEditor`, as on the web. An empty note opens straight in the editor, a written one in the preview,
  * where task checkboxes tick in place.
  */

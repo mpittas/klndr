@@ -1,5 +1,5 @@
 ---
-name: klndr.
+name: dayro.
 description: Tactile daily time-block planner, drawn as a warm paper planner (web)
 colors:
   background: "#fbf8f3"
@@ -60,11 +60,11 @@ components:
 
 ## Overview
 
-klndr. is an intentional, distraction-free daily planner. On the web it reads as a warm paper planner: cream paper, brown-black ink, one terracotta accent. The interface is calm, tactile and typographic. Color is reserved for the categories people create, never for decoration.
+dayro. is an intentional, distraction-free daily planner. On the web it reads as a warm paper planner: cream paper, brown-black ink, one terracotta accent. The interface is calm, tactile and typographic. Color is reserved for the categories people create, never for decoration.
 
 ## Colors
 
-All web values live in `apps/web-react/src/styles.css` (they override the shared `@klndr/tokens` palette; the mobile app keeps its own).
+All web values live in `apps/web-react/src/styles.css` (they override the shared `@dayro/tokens` palette; the mobile app keeps its own).
 
 - **Paper and desk**: `background` is the paper, `card` a brighter sheet laid on it, `canvas` the desk under the pages (calendar, profile, auth). Borders are warm hairlines (`border`); `input` is the stronger edge on hover.
 - **Ink**: `foreground` for text, `muted-foreground` for secondary text, `primary` (ink) for the one main action on a screen.
@@ -127,7 +127,7 @@ Build screens from the classes in `styles.css` (`@layer components`, so a utilit
 - **Activity Palettes**: Draggable items with clear drag handles and grab/grabbing cursors.
 - **Timeline Grid**: Crisp 30-minute rows, clean gutter labels, and a precise current-time indicator.
 - **Timeline Blocks** (`TimeBlock.tsx`): One anatomy at every length: emoji and title, the time beneath (beside it on 15-minute blocks), and a completion ring on the right. Opaque category tint (`tone-block`) with a matched 1px border, ink-colored text, no shadow, no side bar, and an 8px radius so short and long blocks share their corners. Blocks still to do carry a full tint and an empty ring in their color; done blocks drain back to the paper as soft grey shapes with no outline (grey ink, a struck-through title, a greyed emoji) and only their filled tick keeps the category color, so what is left to do stands out at a glance. The day runs 60px per half hour and blocks sit 3px inside their slot, so back-to-back 15-minute blocks keep a 6px gap and room to read. Notes, durations and other details live in the editor, not on the block.
-- **Header**: Translucent paper bar with the wordmark (terracotta full stop), a segmented Calendar/Today switch, a ghost theme button and the avatar chip, which opens the account menu (`AccountMenu.tsx`: who is signed in, Profile & settings, Appearance, About klndr. → the landing page, policies, Log out). Signed-in visitors on the landing page get "Open calendar" to go back.
+- **Header**: Translucent paper bar with the wordmark (terracotta full stop), a segmented Calendar/Today switch, a ghost theme button and the avatar chip, which opens the account menu (`AccountMenu.tsx`: who is signed in, Profile & settings, Appearance, About dayro. → the landing page, policies, Log out). Signed-in visitors on the landing page get "Open calendar" to go back.
 
 ## Do's and Don'ts
 

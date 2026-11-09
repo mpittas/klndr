@@ -1,4 +1,4 @@
-/** Who runs klndr., how to reach them, and when the policy last changed. Used by the privacy and deletion pages. */
+/** Who runs dayro., how to reach them, and when the policy last changed. Used by the privacy and deletion pages. */
 export const OPERATOR_NAME = "Marios Pittas";
 export const CONTACT_EMAIL = "webpittas@gmail.com";
 

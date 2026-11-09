@@ -1,4 +1,4 @@
-import { MIN_PASSWORD_LENGTH, signUpProblem } from "@klndr/core";
+import { MIN_PASSWORD_LENGTH, signUpProblem } from "@dayro/core";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";

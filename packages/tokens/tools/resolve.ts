@@ -6,7 +6,7 @@
  * types), so a relative import that survives type stripping carries an explicit `.ts` extension.
  */
 import { converter, formatHex, formatHex8, parse, toGamut } from "culori";
-import type { ColorKey } from "@klndr/core";
+import type { ColorKey } from "@dayro/core";
 import type { Theme, ThemeName, ThemeValues, ThemeVariable } from "../src/theme.ts";
 import { PALETTE_ROLES, type Palette, type PaletteRole, type ResolvedColor, type ResolvedRole } from "../src/palette-types.ts";
 

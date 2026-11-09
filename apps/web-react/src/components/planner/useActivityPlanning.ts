@@ -1,5 +1,5 @@
-import type { ActivityTemplate, ScheduledTask } from "@klndr/core";
-import { draftFromTemplate, useCategoryColor, useTaskActions } from "@klndr/data";
+import type { ActivityTemplate, ScheduledTask } from "@dayro/core";
+import { draftFromTemplate, useCategoryColor, useTaskActions } from "@dayro/data";
 import { useCallback, useState } from "react";
 
 import { nextFreeStart } from "@/components/planner/planning";

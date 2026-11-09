@@ -4,7 +4,7 @@ import type { ActivityTemplate, Category, ChecklistItem, DayChecklist, DayNotes,
 
 /** Where the API lives and how to prove who is calling. Both are optional. */
 export type ApiClientOptions = {
-  /** Prefix for every request, e.g. `https://klndr.example`; empty means the current origin. */
+  /** Prefix for every request, e.g. `https://dayro.example`; empty means the current origin. */
   baseUrl?: string;
   /** The signed-in user's bearer token (`null` when signed out or in demo mode). */
   getToken?: () => Promise<string | null>;

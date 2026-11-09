@@ -1,4 +1,4 @@
-import type { ProfileSource } from "@klndr/data";
+import type { ProfileSource } from "@dayro/data";
 import {
   createContext,
   useCallback,
@@ -24,7 +24,7 @@ import { isSignedIn, type AuthState, type AuthUser } from "./types";
  */
 export type AuthContextValue = {
   state: AuthState;
-  /** Reads and writes the signed-in person's profile; `@klndr/data`'s profile hooks need it. */
+  /** Reads and writes the signed-in person's profile; `@dayro/data`'s profile hooks need it. */
   profileSource: ProfileSource | null;
   signIn(email: string, password: string): Promise<void>;
   signUp(email: string, password: string, name: string): Promise<void>;

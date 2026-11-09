@@ -1,5 +1,5 @@
-import type { DayChecklistItem } from "@klndr/core";
-import { PALETTE } from "@klndr/tokens";
+import type { DayChecklistItem } from "@dayro/core";
+import { PALETTE } from "@dayro/tokens";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 import { CircleButton, ProgressRing, Text } from "@/components/ui";

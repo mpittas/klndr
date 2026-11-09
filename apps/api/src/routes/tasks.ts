@@ -14,7 +14,7 @@ import {
   MAX_EMOJI,
   MAX_TITLE,
   type ScheduledTask,
-} from "@klndr/core";
+} from "@dayro/core";
 import { Hono } from "hono";
 import { canonicalCategory } from "../categories";
 import type { Env } from "../env";

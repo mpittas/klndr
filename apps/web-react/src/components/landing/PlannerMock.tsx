@@ -1,5 +1,5 @@
 import type { CSSProperties, RefObject } from "react";
-import { formatDuration, formatTime, formatTimeRange, gutterLabel } from "@klndr/core";
+import { formatDuration, formatTime, formatTimeRange, gutterLabel } from "@dayro/core";
 import { Check, ChevronLeft, ChevronRight, Moon, Plus, Search } from "lucide-react";
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
@@ -151,13 +151,13 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
   return (
     <div
       role="img"
-      aria-label="The klndr. day planner: an activity library beside an hour-by-hour timeline, with a walk being dragged into an open slot at 11:30 AM."
+      aria-label="The dayro. day planner: an activity library beside an hour-by-hour timeline, with a walk being dragged into an open slot at 11:30 AM."
       className="overflow-hidden rounded-2xl border border-border bg-background text-left shadow-xs"
     >
       {/* App bar */}
       <div className="flex h-11 items-center justify-between border-b border-border px-3 sm:px-4">
         <div className="flex items-center gap-3">
-          <span className="text-[15px] font-bold tracking-[-0.045em] text-foreground">klndr<span className="text-brand">.</span></span>
+          <span className="text-[15px] font-bold tracking-[-0.045em] text-foreground">dayro<span className="text-brand">.</span></span>
           <span className="hidden h-7 items-center rounded-[9px] bg-foreground/[0.055] p-0.5 text-[11px] font-medium text-muted-foreground sm:inline-flex">
             <span className="px-2.5 py-1">Calendar</span>
             <span className="rounded-[7px] bg-card px-2.5 py-1 text-foreground shadow-[inset_0_0_0_1px_rgb(var(--shade)/0.13)] dark:bg-foreground/[0.16] dark:shadow-none">

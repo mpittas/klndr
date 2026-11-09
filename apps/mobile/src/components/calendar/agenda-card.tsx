@@ -1,5 +1,5 @@
-import { longDate, type ScheduledTask } from "@klndr/core";
-import { useCategoryColor, useTaskActions } from "@klndr/data";
+import { longDate, type ScheduledTask } from "@dayro/core";
+import { useCategoryColor, useTaskActions } from "@dayro/data";
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 

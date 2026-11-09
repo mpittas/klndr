@@ -12,7 +12,7 @@ import {
   type CategoryOption,
   type FiledItem,
   type ScheduledTask,
-} from "@klndr/core";
+} from "@dayro/core";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useEffectEvent, useMemo, useReducer, useRef, useState } from "react";
 import { findTask, patchTask } from "../cache";

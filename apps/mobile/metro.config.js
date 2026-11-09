@@ -5,7 +5,7 @@ const path = require("node:path");
 /**
  * Metro, told about the workspace and about Uniwind.
  *
- * `@klndr/core` and `@klndr/tokens` ship TypeScript source (no build step), so Metro has to watch
+ * `@dayro/core` and `@dayro/tokens` ship TypeScript source (no build step), so Metro has to watch
  * the workspace root and compile them with the app's Babel preset — the same way Vite compiles them
  * for the web app. Without this, Metro would only look inside apps/mobile and find neither.
  */

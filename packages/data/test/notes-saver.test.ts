@@ -1,4 +1,4 @@
-import type { DayNotes } from "@klndr/core";
+import type { DayNotes } from "@dayro/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NOTES_SAVE_DELAY_MS, NotesSaver } from "../src/notes-saver";
 

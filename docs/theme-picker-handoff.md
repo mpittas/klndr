@@ -4,7 +4,7 @@ Paste this file into a new Claude Code session (or point it here) to continue th
 
 ## The task
 
-In the klndr web app (`apps/web-react`), the header's theme button (`aria-label="Toggle light/dark theme"`) is a light/dark
+In the dayro web app (`apps/web-react`), the header's theme button (`aria-label="Toggle light/dark theme"`) is a light/dark
 toggle. Turn it into a button that opens a dropdown where the user picks one of **5 themes**: the existing Light and
 Dark, plus 3 new ones (designed below). Requirements:
 
@@ -48,7 +48,7 @@ Nothing else is changed. Nothing is committed.
   - Shadows in `@theme inline` and elsewhere are hard-coded brown: `rgb(60 40 20 / …)` and `rgb(52 36 20 / …)`
     (16 spots in styles.css).
 - **`apps/web-react/src/theme.tsx`**: `ThemeProvider` + `useTheme()`. `ThemePreference = "system" | "light" | "dark"`.
-  Saved in `localStorage` under `klndr-theme` (key removed for "system"). Applies `<html class="dark">`.
+  Saved in `localStorage` under `dayro-theme` (key removed for "system"). Applies `<html class="dark">`.
   `switchTheme()` turns transitions off for one frame so everything changes together. Listens to OS changes.
   Exposes `{ preference, setPreference, toggle }`.
 - **`apps/web-react/index.html`**: an inline script applies `.dark` before first paint (no flash). Two
@@ -84,7 +84,7 @@ Nothing else is changed. Nothing is committed.
 - Same specificity for all blocks, so **order matters**: theme blocks go after the `:root` and `.dark` blocks.
 - Two new variables so shadows follow the theme: `--shade` (neutral shadow tint, an RGB triplet) and `--brand-shade`
   (brand-tinted shadow triplet). Light and Dark keep today's values, so they look the same.
-- Keep the `klndr-theme` localStorage key; old saved values `light`/`dark` stay valid.
+- Keep the `dayro-theme` localStorage key; old saved values `light`/`dark` stay valid.
 - Header icon: use lucide `Palette` (it now opens a picker rather than toggling).
 
 ## Step-by-step plan
@@ -247,7 +247,7 @@ Replace the script with one that sets both `data-theme` and the `dark` class:
   // Apply the saved (or OS) theme before first paint, so there is no flash (see src/theme.tsx).
   try {
     var schemes = { light: 0, dark: 1, lavender: 0, midnight: 1, forest: 1 };
-    var t = localStorage.getItem("klndr-theme");
+    var t = localStorage.getItem("dayro-theme");
     if (!Object.prototype.hasOwnProperty.call(schemes, t)) {
       t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
@@ -329,7 +329,7 @@ npm run test -w packages/tokens
 - For each of the 5 themes, screenshot: month, week and day views, the block editor (dialog and side panel), a
   modal, the theme dropdown open, the landing page (`/`) including the dark CTA panel, and the profile page's
   Appearance card. Also a phone-size viewport with the dropdown open.
-- Reload after picking a theme: it must stick, with no flash. Clear the key (`localStorage.removeItem("klndr-theme")`)
+- Reload after picking a theme: it must stick, with no flash. Clear the key (`localStorage.removeItem("dayro-theme")`)
   and reload: it must follow the OS again.
 - Keyboard: Tab to the header button, ArrowDown opens it with the current theme focused, arrows move, Enter picks,
   Escape closes and returns focus.

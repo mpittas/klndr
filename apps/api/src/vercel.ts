@@ -1,5 +1,5 @@
 /**
- * The klndr API as one Vercel function: `scripts/build-vercel.mjs` bundles this file into
+ * The dayro API as one Vercel function: `scripts/build-vercel.mjs` bundles this file into
  * `.vercel/output/functions/api.func`, and the route table sends every `/api/*` request to it. The Hono
  * app does its own routing from the original URL.
  *

@@ -25,7 +25,7 @@ export function AuthScreen({ title, subtitle, children }: PropsWithChildren<{ ti
       >
         <View className="gap-xs">
           <Text accessibilityRole="header" variant="display">
-            klndr.
+            dayro.
           </Text>
           <Text accessibilityRole="header" variant="title">
             {title}

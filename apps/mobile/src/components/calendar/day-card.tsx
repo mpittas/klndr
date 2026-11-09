@@ -1,5 +1,5 @@
-import { addDaysISO, formatDuration, longDate, type ScheduledTask } from "@klndr/core";
-import { PALETTE } from "@klndr/tokens";
+import { addDaysISO, formatDuration, longDate, type ScheduledTask } from "@dayro/core";
+import { PALETTE } from "@dayro/tokens";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { Card, ProgressRing, Text } from "@/components/ui";

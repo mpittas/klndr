@@ -1,10 +1,10 @@
-import { TYPE_SCALE, type TypeScaleName } from "@klndr/tokens";
+import { TYPE_SCALE, type TypeScaleName } from "@dayro/tokens";
 import { Text as RNText, type TextProps as RNTextProps, type TextStyle } from "react-native";
 
 import { FONT_FOR_WEIGHT } from "@/fonts";
 
 /**
- * The class each scale entry maps to, from the stylesheet generated out of `@klndr/tokens`. Written
+ * The class each scale entry maps to, from the stylesheet generated out of `@dayro/tokens`. Written
  * out rather than built from the name: Tailwind finds class names by reading the source, so a
  * template string would produce a utility that was never generated.
  */

@@ -1,4 +1,4 @@
-import { TimelineHistory, type ApiClient } from "@klndr/core";
+import { TimelineHistory, type ApiClient } from "@dayro/core";
 import { QueryClientProvider, type QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider, type Persister } from "@tanstack/react-query-persist-client";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, type PropsWithChildren } from "react";

@@ -6,12 +6,12 @@ import {
   type EmojiEntry,
   type EmojiGroup,
   type KeyValueStorage,
-} from "@klndr/core";
+} from "@dayro/core";
 
 import emojiData from "./emoji-data.json";
 
-export { buildEmojiRows, moveEmojiCursor, searchEmojis } from "@klndr/core";
-export type { EmojiEntry, EmojiGroup, EmojiMove, EmojiRow, EmojiSection, KeyValueStorage } from "@klndr/core";
+export { buildEmojiRows, moveEmojiCursor, searchEmojis } from "@dayro/core";
+export type { EmojiEntry, EmojiGroup, EmojiMove, EmojiRow, EmojiSection, KeyValueStorage } from "@dayro/core";
 
 /** Windows has no flag emoji: it draws a country's flag as two letters ("US"), which is no use as an icon. */
 const canDrawFlags = () => typeof navigator === "undefined" || !/Windows/i.test(navigator.userAgent);

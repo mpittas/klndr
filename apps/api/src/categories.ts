@@ -1,4 +1,4 @@
-import { cleanCategory, type Store } from "@klndr/core";
+import { cleanCategory, type Store } from "@dayro/core";
 
 /**
  * The canonical category name for a value coming from a request, creating the category if it's

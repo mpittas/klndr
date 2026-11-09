@@ -10,7 +10,7 @@ import {
   MAX_EMOJI,
   MAX_NAME,
   type ActivityTemplate,
-} from "@klndr/core";
+} from "@dayro/core";
 import { Hono } from "hono";
 import { canonicalCategory } from "../categories";
 import type { Env } from "../env";

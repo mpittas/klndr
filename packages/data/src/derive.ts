@@ -1,4 +1,4 @@
-import type { ChecklistItem, DayChecklist, DayChecklistItem, ScheduledTask } from "@klndr/core";
+import type { ChecklistItem, DayChecklist, DayChecklistItem, ScheduledTask } from "@dayro/core";
 
 /** The numbers shown above a day's timeline. */
 export type DayStats = {

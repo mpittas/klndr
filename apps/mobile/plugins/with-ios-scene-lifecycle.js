@@ -1,11 +1,11 @@
 const { withAppDelegate, withInfoPlist } = require("expo/config-plugins");
 
 /** The scene delegate's Objective-C name: what Info.plist points at, and what AppDelegate.swift declares. */
-const SCENE_DELEGATE = "KlndrSceneDelegate";
+const SCENE_DELEGATE = "DayroSceneDelegate";
 
 /**
  * iOS 27 traps at launch (EXC_BREAKPOINT in `UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption`, which
- * the user sees as "klndr shut down unexpectedly") unless the app adopts the UIScene life cycle. Expo ships the
+ * the user sees as "dayro shut down unexpectedly") unless the app adopts the UIScene life cycle. Expo ships the
  * pieces (`ExpoAppSceneDelegate`, `ExpoReactNativeFactoryProvider`) but its prebuild template does not use them
  * yet, so this plugin wires them in. It lives in the config, not in `ios/`, because `ios/` is generated and
  * gitignored: a fresh checkout, `expo prebuild --clean` or an EAS build all get the fix.

@@ -1,4 +1,4 @@
-import { DAY_MINUTES, DEFAULT_SCROLL_MINUTES, minutesToPx, nowMinutes, snapMinutes, type ScheduledTask } from "@klndr/core";
+import { DAY_MINUTES, DEFAULT_SCROLL_MINUTES, minutesToPx, nowMinutes, snapMinutes, type ScheduledTask } from "@dayro/core";
 
 /** Where a day's planning starts when nothing says otherwise. */
 const MORNING = 9 * 60;

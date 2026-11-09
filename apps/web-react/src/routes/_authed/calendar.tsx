@@ -1,5 +1,5 @@
-import { isValidISODate, monthRange, todayISO, type ScheduledTask } from "@klndr/core";
-import { useRangeTasks } from "@klndr/data";
+import { isValidISODate, monthRange, todayISO, type ScheduledTask } from "@dayro/core";
+import { useRangeTasks } from "@dayro/data";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { MonthView } from "@/components/MonthView";
@@ -10,7 +10,7 @@ const NO_TASKS: ScheduledTask[] = [];
 
 /**
  * The month comes from `?m=` (a full date, or `YYYY-MM` from the month picker), and the blocks for the
- * month come from `@klndr/data`'s range query, which holds the previous range on screen while the next
+ * month come from `@dayro/data`'s range query, which holds the previous range on screen while the next
  * one loads.
  */
 export const Route = createFileRoute("/_authed/calendar")({
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authed/calendar")({
 });
 
 function CalendarPage() {
-  useDocumentTitle("klndr. · Day planner");
+  useDocumentTitle("dayro. · Day planner");
 
   const { m } = Route.useSearch();
   const today = todayISO();

@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { UNSORTED_CATEGORY, type ScheduledTask } from "@klndr/core";
+import { UNSORTED_CATEGORY, type ScheduledTask } from "@dayro/core";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { fillCategory, useCategoryField, useCategorySuggester, type CategoryFieldOptions } from "../src/hooks/category";

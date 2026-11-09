@@ -1,4 +1,4 @@
-import { colorOfCategory, type ApiClient, type Category } from "@klndr/core";
+import { colorOfCategory, type ApiClient, type Category } from "@dayro/core";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { queryKeys } from "../keys";

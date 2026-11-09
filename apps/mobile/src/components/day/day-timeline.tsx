@@ -24,8 +24,8 @@ import {
   slotAt,
   DAY_MINUTES,
   type ScheduledTask,
-} from "@klndr/core";
-import { isTempId } from "@klndr/data";
+} from "@dayro/core";
+import { isTempId } from "@dayro/data";
 import * as Haptics from "expo-haptics";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, useWindowDimensions, View } from "react-native";

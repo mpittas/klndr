@@ -1,5 +1,5 @@
 {
-  "name": "@klndr/tokens",
+  "name": "@dayro/tokens",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -20,7 +20,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@klndr/core": "*"
+    "@dayro/core": "*"
   },
   "devDependencies": {
     "@types/culori": "^4.0.1",

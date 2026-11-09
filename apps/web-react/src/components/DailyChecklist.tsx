@@ -1,5 +1,5 @@
-import type { ChecklistItem, DayChecklistItem } from "@klndr/core";
-import type { useChecklist } from "@klndr/data";
+import type { ChecklistItem, DayChecklistItem } from "@dayro/core";
+import type { useChecklist } from "@dayro/data";
 import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 
@@ -12,7 +12,7 @@ import { useToast } from "@/toast";
 
 /**
  * One day's checklist. The data — which routines apply, what is ticked, and what can be done to them —
- * comes from `@klndr/data`'s `useChecklist`, so the shelf beside the timeline and this panel (which is
+ * comes from `@dayro/data`'s `useChecklist`, so the shelf beside the timeline and this panel (which is
  * also the phone's sheet) are showing and changing the same thing.
  */
 export function DailyChecklist({ checklist }: { checklist: ReturnType<typeof useChecklist> }) {

@@ -1,4 +1,4 @@
-import { searchEmojis, type EmojiEntry, type EmojiGroup } from "@klndr/core";
+import { searchEmojis, type EmojiEntry, type EmojiGroup } from "@dayro/core";
 import { useRouter } from "expo-router";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Pressable, useWindowDimensions, View } from "react-native";

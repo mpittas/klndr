@@ -85,13 +85,13 @@ describe("a cache kept on the device", () => {
     const storage = memoryStorage();
     const first = mount({ userId: "a", storage });
     await waitFor(() => expect(first.result.current.data).toBeDefined());
-    await waitFor(() => expect(storage.items.get("klndr-query-cache")).toBeDefined());
+    await waitFor(() => expect(storage.items.get("dayro-query-cache")).toBeDefined());
     first.unmount();
 
     // The app was last open an hour ago, so what was saved is old enough that it must be refreshed.
-    const saved = JSON.parse(storage.items.get("klndr-query-cache")!);
+    const saved = JSON.parse(storage.items.get("dayro-query-cache")!);
     for (const query of saved.clientState.queries) query.state.dataUpdatedAt -= 60 * 60 * 1000;
-    storage.items.set("klndr-query-cache", JSON.stringify(saved));
+    storage.items.set("dayro-query-cache", JSON.stringify(saved));
 
     const release = server.current.hold("GET /api/templates"); // the network is slow
     const second = mount({ userId: "a", storage });
@@ -106,7 +106,7 @@ describe("a cache kept on the device", () => {
     const storage = memoryStorage();
     const first = mount({ userId: "a", storage });
     await waitFor(() => expect(first.result.current.data).toBeDefined());
-    await waitFor(() => expect(storage.items.get("klndr-query-cache")).toBeDefined());
+    await waitFor(() => expect(storage.items.get("dayro-query-cache")).toBeDefined());
     first.unmount();
     const requestsSoFar = server.current.sent.filter((line) => line === "GET /api/templates").length;
 
@@ -122,9 +122,9 @@ describe("a cache kept on the device", () => {
     const storage = memoryStorage();
     const first = mount({ userId: "a", storage });
     await waitFor(() => expect(first.result.current.data).toBeDefined());
-    await waitFor(() => expect(storage.items.get("klndr-query-cache")).toBeDefined());
+    await waitFor(() => expect(storage.items.get("dayro-query-cache")).toBeDefined());
     first.unmount();
-    expect(storage.items.get("klndr-query-cache")).toContain(cacheBuster("a"));
+    expect(storage.items.get("dayro-query-cache")).toContain(cacheBuster("a"));
 
     const release = server.current.hold("GET /api/templates");
     const other = mount({ userId: "b", storage });
@@ -140,11 +140,11 @@ describe("a cache kept on the device", () => {
     const storage = memoryStorage();
     const view = mount({ userId: "a", storage });
     await waitFor(() => expect(view.result.current.data).toBeDefined());
-    await waitFor(() => expect(storage.items.get("klndr-query-cache")).toBeDefined());
+    await waitFor(() => expect(storage.items.get("dayro-query-cache")).toBeDefined());
 
     view.signInAs(null);
 
-    await waitFor(() => expect(storage.items.has("klndr-query-cache")).toBe(false));
+    await waitFor(() => expect(storage.items.has("dayro-query-cache")).toBe(false));
   });
 
   it("saves nothing while signed out", async () => {

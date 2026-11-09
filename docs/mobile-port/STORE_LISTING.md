@@ -7,10 +7,10 @@ from what the app does today (Day timeline, quarter-hour blocks, routines, notes
 
 | Field | Value |
 |---|---|
-| Name (30) | `klndr` (fallbacks if taken: `klndr: Day Planner`, `klndr Planner`) |
+| Name (30) | `dayro` (fallbacks if taken: `dayro: Day Planner`, `dayro Planner`) |
 | Subtitle (30) | `Plan your day, block by block` |
 | Category | Productivity (secondary: Lifestyle) |
-| Privacy Policy URL | `https://klndr.xyz/privacy` |
+| Privacy Policy URL | `https://dayro.xyz/privacy` |
 | Content rights | Does not contain third-party content |
 | Age rating | answer "None" to every question → **4+** |
 
@@ -31,7 +31,7 @@ planner,day planner,schedule,timeline,time blocking,routine,checklist,calendar,d
 **Description (4000)**
 
 ```
-klndr is a calm, fast day planner built around time blocks.
+dayro is a calm, fast day planner built around time blocks.
 
 PLAN YOUR DAY ON A TIMELINE
 Tap an empty slot to add a block, drag it to move it, and pull its edge to change how long it lasts. Times snap to quarter hours, so a day always looks tidy. A live line shows where you are right now.
@@ -57,7 +57,7 @@ Sign in with Apple, Google or email. There are no ads and no tracking, and you c
 
 **What's new (first version)**: `First release.`
 
-**Support URL**: `https://klndr.xyz` (it must load; a contact page is better if you add one)
+**Support URL**: `https://dayro.xyz` (it must load; a contact page is better if you add one)
 **Marketing URL**: optional, leave empty.
 **Copyright**: `2026 Marios Pittas`
 
@@ -87,7 +87,7 @@ clean. Suggested order:
 - Notes:
 
 ```
-klndr is a daily planner. Sign in with the demo account above (email and password).
+dayro is a daily planner. Sign in with the demo account above (email and password).
 - Add a block: tap the + button on the Day tab, give it a title, tap the check mark.
 - Move a block: touch and hold, then drag. Tick a block with the circle at its right edge.
 - Library tab: activities and categories. Calendar tab: month view.

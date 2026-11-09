@@ -1,4 +1,4 @@
-import type { LiveChanges } from "@klndr/data";
+import type { LiveChanges } from "@dayro/data";
 import { doc, onSnapshot, type DocumentSnapshot } from "firebase/firestore";
 
 import { getFirebaseServices } from "@/auth/firebase";

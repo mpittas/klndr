@@ -1,5 +1,5 @@
-import { DURATION_OPTIONS, PROFILE_LIMITS, formatDuration, type UserProfile } from "@klndr/core";
-import { useUpdateProfile } from "@klndr/data";
+import { DURATION_OPTIONS, PROFILE_LIMITS, formatDuration, type UserProfile } from "@dayro/core";
+import { useUpdateProfile } from "@dayro/data";
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 

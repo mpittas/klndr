@@ -27,8 +27,8 @@ import {
   slotAt,
   titleLines,
   type ScheduledTask,
-} from "@klndr/core";
-import { useCategoryColor } from "@klndr/data";
+} from "@dayro/core";
+import { useCategoryColor } from "@dayro/data";
 import { Check, Plus, X } from "lucide-react";
 import type * as React from "react";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
@@ -61,7 +61,7 @@ type DragState = {
  * dragged-in activity, the live-time line, and the blocks themselves, which can be tapped, dragged (mouse,
  * touch and pen) and resized.
  *
- * Every measurement, snap and column decision is `@klndr/core`'s (`blockTop`, `planDrag`, `changedLanes`,
+ * Every measurement, snap and column decision is `@dayro/core`'s (`blockTop`, `planDrag`, `changedLanes`,
  * `dragPosition`, `resizedDuration`, `edgeScrollSpeed`), so the timeline behaves the same on every screen.
  */
 export function DayTimelineGrid({

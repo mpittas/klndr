@@ -22,5 +22,5 @@ const app = createApp({ firebaseProjectId, allowDevUser: !production, openaiApiK
 
 serve({ fetch: app.fetch, port }, ({ port: listening }) => {
   const mode = firebaseProjectId ? `Firebase project ${firebaseProjectId}` : "no Firebase: in-memory data for the local-dev user";
-  console.log(`klndr API listening on http://localhost:${listening} (${mode})`);
+  console.log(`dayro API listening on http://localhost:${listening} (${mode})`);
 });

@@ -1,4 +1,4 @@
-import { MIN_PASSWORD_LENGTH, authErrorMessage, signUpProblem } from "@klndr/core";
+import { MIN_PASSWORD_LENGTH, authErrorMessage, signUpProblem } from "@dayro/core";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 
@@ -13,14 +13,14 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 /**
  * Create an account. A new account lands on the profile screen. The form checks and the error wording
- * come from `@klndr/core` (`signUpProblem` / `authErrorMessage`), so the phone says the same things.
+ * come from `@dayro/core` (`signUpProblem` / `authErrorMessage`), so the phone says the same things.
  */
 export const Route = createFileRoute("/signup")({
   component: SignUpPage,
 });
 
 function SignUpPage() {
-  useDocumentTitle("Create Account · klndr.");
+  useDocumentTitle("Create Account · dayro.");
   const auth = useAuth();
   const navigate = useNavigate();
 
@@ -73,7 +73,7 @@ function SignUpPage() {
   };
 
   return (
-    <AuthCard heading="Create an account" subtitle="Start time-blocking with klndr.">
+    <AuthCard heading="Create an account" subtitle="Start time-blocking with dayro.">
       {!isFirebaseConfigured ? <FirebaseNotice purpose="signup" /> : null}
       {error ? <ErrorAlert message={error} /> : null}
 

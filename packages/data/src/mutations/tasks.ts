@@ -1,4 +1,4 @@
-import { formatTime, type HistoryStep, type ScheduledTask, type TaskDraft, type TimelineHistory } from "@klndr/core";
+import { formatTime, type HistoryStep, type ScheduledTask, type TaskDraft, type TimelineHistory } from "@dayro/core";
 import type { MutationOptions } from "@tanstack/react-query";
 import { findTask, patchTask, removeTask, upsertTask } from "../cache";
 import { draftFromTask, newTempId, taskFromDraft, type MoveChanges } from "../blocks";

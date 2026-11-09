@@ -7,7 +7,7 @@ import {
   MAX_TITLE,
   todayISO,
   type ChecklistItem,
-} from "@klndr/core";
+} from "@dayro/core";
 import { Hono } from "hono";
 import type { Env } from "../env";
 import { HttpError } from "../errors";

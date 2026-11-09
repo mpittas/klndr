@@ -1,4 +1,4 @@
-import { normalizeEmojiTitle, type ActivityTemplate, type Category, type EmojiKind } from "@klndr/core";
+import { normalizeEmojiTitle, type ActivityTemplate, type Category, type EmojiKind } from "@dayro/core";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { findTask, patchTask } from "../cache";

@@ -1,5 +1,5 @@
-import { addMonths, longDate, MONTH_LABELS, monthMatrix, parseISODate, weekdayLabels } from "@klndr/core";
-import { useRangeTasks } from "@klndr/data";
+import { addMonths, longDate, MONTH_LABELS, monthMatrix, parseISODate, weekdayLabels } from "@dayro/core";
+import { useRangeTasks } from "@dayro/data";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 

@@ -1,4 +1,4 @@
-import { createKeyValuePersister, type KeyValueStorage } from "@klndr/data";
+import { createKeyValuePersister, type KeyValueStorage } from "@dayro/data";
 
 import { storage } from "@/lib/storage";
 

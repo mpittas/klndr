@@ -1,4 +1,4 @@
-import { MAX_DAY_EXTRAS, MAX_NOTES_LENGTH } from "@klndr/core";
+import { MAX_DAY_EXTRAS, MAX_NOTES_LENGTH } from "@dayro/core";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createApp } from "../src/app";
 import { createStoreFactory, MemoryStore } from "../src/db";

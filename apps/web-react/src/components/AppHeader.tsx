@@ -1,4 +1,4 @@
-import { todayISO } from "@klndr/core";
+import { todayISO } from "@dayro/core";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { CalendarDays, CalendarRange, Clock } from "lucide-react";
 
@@ -47,7 +47,7 @@ export function AppHeader() {
           <Link
             to={user ? "/calendar" : "/"}
             className="-mx-1 flex items-center rounded-md px-1 py-2 text-[1.3rem] leading-none text-foreground transition-opacity hover:opacity-75"
-            aria-label="klndr. home"
+            aria-label="dayro. home"
           >
             <Wordmark />
           </Link>

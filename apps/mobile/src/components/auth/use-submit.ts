@@ -1,4 +1,4 @@
-import { authErrorMessage, type AuthContext } from "@klndr/core";
+import { authErrorMessage, type AuthContext } from "@dayro/core";
 import { useCallback, useState } from "react";
 
 /**

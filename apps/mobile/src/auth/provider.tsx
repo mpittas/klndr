@@ -1,4 +1,4 @@
-import type { UserProfile } from "@klndr/core";
+import type { UserProfile } from "@dayro/core";
 import {
   createContext,
   useCallback,

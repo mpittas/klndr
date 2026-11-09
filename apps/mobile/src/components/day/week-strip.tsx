@@ -1,5 +1,5 @@
-import { WEEKDAY_LABELS, addDaysISO, canonicalColor, longDate, parseISODate, type ScheduledTask } from "@klndr/core";
-import { PALETTE } from "@klndr/tokens";
+import { WEEKDAY_LABELS, addDaysISO, canonicalColor, longDate, parseISODate, type ScheduledTask } from "@dayro/core";
+import { PALETTE } from "@dayro/tokens";
 import { memo, useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";

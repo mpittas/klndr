@@ -35,24 +35,24 @@ Environment issue found and worked around (see DECISIONS.md and HUMAN_TODO.md):
 Next step:
 - Task 0.2: create `packages/core`, move the shared pure logic, add Vitest.
 
-## 2026-10-03 — session 2: task 0.2 packages/core (@klndr/core)
+## 2026-10-03 — session 2: task 0.2 packages/core (@dayro/core)
 
 Done:
-- Added `packages/core` (`@klndr/core`): TypeScript source, no build step, so Vite compiles it for
+- Added `packages/core` (`@dayro/core`): TypeScript source, no build step, so Vite compiles it for
   the web app (client and server), Vitest compiles it for its own tests, and Metro will compile it
   for the mobile app. It holds the types and constants, time, layout, the pure validation helpers,
   the profile model, the colour keys/labels/canonicalisation, the pure category helpers, emoji
   search and recents (behind an injected `KeyValueStorage`), markdown, the API client
   (`createApiClient({ baseUrl, getToken })`), the `Store` interface with its limits, and the timeline
   undo engine (`TimelineHistory`, a plain class with `subscribe`).
-- `apps/web` imports from `@klndr/core` now. The four moved modules (`lib/types.ts`, `lib/time.ts`,
+- `apps/web` imports from `@dayro/core` now. The four moved modules (`lib/types.ts`, `lib/time.ts`,
   `lib/layout.ts`, `lib/markdown.ts`) are gone; everything bound to the framework or the bundler
   stayed behind as a thin adapter: `lib/colors.ts` (Tailwind classes), `lib/emojis.ts` (the dataset
   imports plus `localStorage` as the injected storage), `lib/api.ts` (origin plus Firebase token),
   `server/utils/validation.ts` (the two h3 helpers, re-exporting the pure ones for auto-imports),
   `useCategories` (shared Vue state), `useTimelineHistory` (a wrapper over the engine), and `useAuth`
   (re-exports the profile model).
-- `build.transpile: ["@klndr/core"]` in nuxt.config.ts, which Nuxt also passes to Nitro's
+- `build.transpile: ["@dayro/core"]` in nuxt.config.ts, which Nuxt also passes to Nitro's
   `externals.inline`.
 - Vitest 5.0.3 in `packages/core`, with 10 suites and 251 tests, including 53 markdown fixtures
   generated from the implementation before it moved.
@@ -67,7 +67,7 @@ Verification (all green):
   MAX_TITLE, clampStart, cleanText, isDocId, … from `server/utils/validation`, and `imports.d.ts`
   still offers PROFILE_LIMITS, UserProfile, useCategories from the composables (re-exports are read).
 - `npm run build -w apps/web` — exit 0, 10 MB / 2.43 MB gzip (unchanged). No file in `.output/server`
-  references `@klndr/core`, and all twelve core modules appear in its source maps, so Nitro inlined
+  references `@dayro/core`, and all twelve core modules appear in its source maps, so Nitro inlined
   and compiled the TypeScript.
 - Dev server (`nuxt dev`, port 3211): health, notes get/put, day checklist, activities, categories and
   tasks get/post/patch/delete all behave, including core's behaviour end to end — a task created with
@@ -83,12 +83,12 @@ Verification (all green):
   over from session 1's verification (it held no port; nothing else was running).
 
 Next step:
-- Task 0.3: `packages/tokens` (@klndr/tokens) with `culori`.
+- Task 0.3: `packages/tokens` (@dayro/tokens) with `culori`.
 
-## 2026-10-03 — session 3: task 0.3 packages/tokens (@klndr/tokens)
+## 2026-10-03 — session 3: task 0.3 packages/tokens (@dayro/tokens)
 
 Done:
-- Added `packages/tokens` (`@klndr/tokens`): the light and dark theme (the exact values main.css
+- Added `packages/tokens` (`@dayro/tokens`): the light and dark theme (the exact values main.css
   used), the radii, the spacing steps and the type scale from DESIGN.md, and every palette role of
   all twelve colours resolved to concrete sRGB for both themes.
 - `src/theme.ts` is the source of truth for the theme; `scripts/generate.mts` writes
@@ -99,7 +99,7 @@ Done:
   culori (devDependency only; `@types/culori` was needed because culori ships no types), and applies
   CSS Color 4's sRGB gamut mapping. Anything it cannot read makes it throw, so a new class cannot
   slip through silently.
-- `apps/web/assets/css/main.css` lost 83 lines and now has `@import "@klndr/tokens/theme.css";`.
+- `apps/web/assets/css/main.css` lost 83 lines and now has `@import "@dayro/tokens/theme.css";`.
 
 Verification (all green):
 - `npm run typecheck` (web + core + tokens) — exit 0. `npm test` — core 251 + tokens 37 = 288 tests.
@@ -155,10 +155,10 @@ Next step:
 
 Done:
 - `apps/mobile`: Expo SDK 57 with Expo Router and TypeScript, from `create-expo-app`'s default
-  template, with the demo content removed and the package renamed `@klndr/mobile` so it sits in the
-  workspace beside `@klndr/web`, `@klndr/core` and `@klndr/tokens`. The template's Expo *web* target
+  template, with the demo content removed and the package renamed `@dayro/mobile` so it sits in the
+  workspace beside `@dayro/web`, `@dayro/core` and `@dayro/tokens`. The template's Expo *web* target
   and its demo-only dependencies went too: this app is iOS and Android.
-- `app.config.ts` replaces the template's `app.json`: the identity (name, slug, scheme "klndr",
+- `app.config.ts` replaces the template's `app.json`: the identity (name, slug, scheme "dayro",
   portrait, automatic light/dark), the bundle id and the Android package from one `BUNDLE_ID`
   constant, the Apple sign-in capability, and the two Firebase native config files, read from
   `GOOGLE_SERVICES_JSON` / `GOOGLE_SERVICES_INFO_PLIST` and left out entirely when they are not
@@ -169,8 +169,8 @@ Done:
   production — and all of them pin `EXPO_PUBLIC_DATA_MODE=api`.
 - `metro.config.js` tells Metro about the monorepo: the workspace root is watched and both
   `node_modules` trees are the resolution path, with hierarchical lookup off.
-- `src/app/index.tsx` is a placeholder that uses `@klndr/core` (the date, the clock, the slot
-  length) and `@klndr/tokens` (the theme, radii, spacing, type scale), which is what makes the
+- `src/app/index.tsx` is a placeholder that uses `@dayro/core` (the date, the clock, the slot
+  length) and `@dayro/tokens` (the theme, radii, spacing, type scale), which is what makes the
   bundle a real test of both packages. Task 1.2 replaces it.
 - `.claude/launch.json` gained a "mobile" configuration (`npm run start -w apps/mobile`, port 8081)
   and the mobile README describes the commands and the environment.
@@ -183,7 +183,7 @@ Verification (all green):
 - `npx expo config --type public` — the resolved config shows name/slug/scheme/portrait/automatic,
   both identifiers, `usesAppleSignIn`, the splash plugin and the experiments.
 - `npx expo export --platform android` — 1260 modules, 2.7 MB Hermes bytecode, and the source map
-  lists all 12 `@klndr/core` and all 5 `@klndr/tokens` modules. Metro compiles the shared TypeScript:
+  lists all 12 `@dayro/core` and all 5 `@dayro/tokens` modules. Metro compiles the shared TypeScript:
   the acceptance task 0.2 was holding open.
 - The export's `dist/` was deleted afterwards; nothing else was left behind.
 
@@ -196,7 +196,7 @@ Next step:
 Done:
 - **Tokens for two engines.** `packages/tokens` generates a second artefact from the same data:
   `generated/uniwind.css` (theme variables per `@variant`, the `--color-*` mapping, and the radii,
-  spacing and type scale). It is exported as `@klndr/tokens/uniwind.css`, imported by the mobile
+  spacing and type scale). It is exported as `@dayro/tokens/uniwind.css`, imported by the mobile
   stylesheet, and pinned by a test so it cannot drift from `src/theme.ts` / `src/scale.ts`. The web's
   `theme.css` is byte-for-byte unchanged.
 - **Uniwind.** `src/global.css` imports Tailwind, Uniwind and the tokens' stylesheet; `metro.config.js`
@@ -306,7 +306,7 @@ Verification:
   `ITSAppUsesNonExemptEncryption`, the EAS project id in `app.config.ts`, and the unused update `channel`s
   (and `expo-updates`) were removed. The second build **succeeded**.
 - Live Firebase project `klndr-app`: `firestore.rules` released (the account-deletion change; re-read live),
-  iOS and Android apps registered for `com.klndr.app`, config files fetched into `apps/mobile/` (gitignored).
+  iOS and Android apps registered for `com.dayro.app`, config files fetched into `apps/mobile/` (gitignored).
   The Firebase MCP's deploy reported success without changing anything; the Firebase CLI did the release.
 - **Verified on the device:** the development build installs and runs; it connects to Metro; the sign-in gate
   lets a signed-in user through to the four tabs; the Settings tab shows the right account.
@@ -344,16 +344,16 @@ Next step:
 
 Context: asked to migrate to a React web app plus the Expo app, on top of this branch rather than from
 `main` (branch `feat/react-web`, off `feat/mobile-app` @ `ef40f9c`). Most of the shared-package work this
-needed was already here (`@klndr/core`, `@klndr/tokens`, the workspace); what was missing was the API
+needed was already here (`@dayro/core`, `@dayro/tokens`, the workspace); what was missing was the API
 outside Nuxt, shared data hooks, and the React app. Phase R in PLAN.md records the plan and its order.
 
 Done (R.1):
-- `apps/api` (`@klndr/api`): Hono app, `createApp(config)`. The server code moved with `git mv` (`db.ts`,
+- `apps/api` (`@dayro/api`): Hono app, `createApp(config)`. The server code moved with `git mv` (`db.ts`,
   `firestore.ts`, `auth.ts`, `session.ts`, `validation.ts`, `categories.ts`), the routes were rewritten as
   Hono routers, and the Nitro calls became a small `HttpError`. Standalone entry `src/server.ts`.
 - Nuxt: the 24 route files and the auth middleware are replaced by one catch-all that forwards to the
   same app. `jose` moved from `apps/web` to `apps/api`; `.claude/launch.json` has an `api` config.
-- Tests (93): auth with real RS256 tokens and a local key set, every route, and the `@klndr/core` API client
+- Tests (93): auth with real RS256 tokens and a local key set, every route, and the `@dayro/core` API client
   against the app. Mutation check: breaking a status code and the id validation produced 5 failures.
 - `.gitattributes` for the byte-compared files in `packages/tokens` (see DECISIONS.md).
 
@@ -374,15 +374,15 @@ unchanged, but nothing here exercises it; Task 3.2's emulator tests would, and n
 
 Next step: R.2, `packages/data` (the task 1.4 hooks, written once for mobile and web), then R.3.
 
-## 2026-10-03 — session 9: R.2 `@klndr/data`, and task 1.4 with it
+## 2026-10-03 — session 9: R.2 `@dayro/data`, and task 1.4 with it
 
 Done:
-- `packages/data` (`@klndr/data`): query keys, cache helpers, the task / library / checklist mutations, the
+- `packages/data` (`@dayro/data`): query keys, cache helpers, the task / library / checklist mutations, the
   notes saver, the profile hooks, `DataProvider`, `useDayTimeline`, `useTimelineHistory`, `useChecklist`,
   `useNotesEditor`, `useLibraryActions`, the cache persister. See DECISIONS.md for the shape and the
   deliberate differences from the Vue planner.
 - `apps/mobile`: `AppDataProvider` (`src/data/`) under the auth gate: the API client, the signed-in uid, toast as
-  `notify`, the cache in MMKV, refetch on foreground. `@klndr/data` and `@tanstack/react-query` added to its
+  `notify`, the cache in MMKV, refetch on foreground. `@dayro/data` and `@tanstack/react-query` added to its
   dependencies. No native dependency was added, so the existing development build keeps working.
 - Root `typecheck` and `test` scripts now include the package.
 - Tasks 1.4 and R.2 ticked in PLAN.md. Only "refetch on reconnect" is open (see DECISIONS.md).
@@ -395,9 +395,9 @@ Verification:
   ignore whose it is each failed exactly the one test written for it (125 of 126 passed each time); the files
   were restored and re-run (126, then 127 with the sign-out test).
 - Flakiness: the whole data suite run three times in a row, 126 of 126 each time.
-- `expo export` for **android and ios** both bundle. In the source maps: all 19 `@klndr/data` modules, TanStack
+- `expo export` for **android and ios** both bundle. In the source maps: all 19 `@dayro/data` modules, TanStack
   Query core, react-query and the persisters; **one** React copy (`apps/mobile/node_modules/react`); no
-  react-dom; no `@klndr/api`; no test tooling.
+  react-dom; no `@dayro/api`; no test tooling.
 
 Found while testing:
 - A first version of the cache wipe would have deleted the saved cache on every cold start, because auth is
@@ -410,7 +410,7 @@ Not verified, and not verifiable here:
 - The screens do not use the hooks yet (the Day tab is Phase 2.1), so nothing visible changed in the app.
 - `useProfile` against the real Firestore.
 
-Next step: R.3, the timeline's interaction maths into `@klndr/core` (it is also what 2.1 needs), then R.4.
+Next step: R.3, the timeline's interaction maths into `@dayro/core` (it is also what 2.1 needs), then R.4.
 
 
 ## 2026-10-04 — session 10: resumed Claude's mobile implementation in Codex
@@ -451,14 +451,14 @@ Verification:
 - `npm run build -w apps/web`: Build complete.
 - Expo export: both Android and iOS Hermes bundles pass; a separate iOS source-map export confirms
   core's timeline is included, one React copy (`apps/mobile/node_modules/react`), no react-dom, API or Vitest.
-- Prior native build logs `/tmp/klndr-build4.log` and `/tmp/klndr-xcodebuild.log` both end in BUILD SUCCEEDED.
-  Installed the simulator binary from `/tmp/klndr-dd/Build/Products/Debug-iphonesimulator/klndr.app`.
+- Prior native build logs `/tmp/dayro-build4.log` and `/tmp/dayro-xcodebuild.log` both end in BUILD SUCCEEDED.
+  Installed the simulator binary from `/tmp/dayro-dd/Build/Products/Debug-iphonesimulator/dayro.app`.
 - `git diff --check`: clean. No commit, push or deployment.
 
 Not verified:
 - Native runtime, gestures, visual appearance, keyboard avoidance, accessibility, dark mode, largest
   text size, or reconnect behavior. Simulator access is not exposed by the available UI tool; its
-  screenshot still showed the system “Open in klndr?” prompt. Asked the owner to click Open.
+  screenshot still showed the system “Open in dayro?” prompt. Asked the owner to click Open.
 - The simulator build is demo mode; it does not establish real Firebase sign-in or Firestore parity.
 
 Running locally for the owner: demo API on **3101**, Metro dev client on **8082** (the usual ports
@@ -486,16 +486,16 @@ Done (all in `apps/web-react`, ported from the Nuxt files of the same names):
   shared pieces. The wording and the checks come from core (`authErrorMessage`, `signInProblem`,
   `signUpProblem`), so both apps read identically.
 - **Calendar.** `components/MonthView.tsx` with `components/month-view/{MonthViewHeader,MonthGrid,MonthSidebar,DateNavigatorModal}.tsx`
-  and a shared `DayCell.ts` type, reading the month through `@klndr/data`'s `useRangeTasks`.
+  and a shared `DayCell.ts` type, reading the month through `@dayro/data`'s `useRangeTasks`.
 - **Profile.** `components/profile/{ProfileCard,AccountActionsCard,DeleteAccountCard}.tsx` and
-  `routes/_authed/profile.tsx`, on `@klndr/data`'s `useProfile` / `useUpdateProfile`.
+  `routes/_authed/profile.tsx`, on `@dayro/data`'s `useProfile` / `useUpdateProfile`.
   `auth/service.ts` gained `currentProviderIds()` for the delete card's password rule.
 - **Day route shell.** `routes/_authed/day/$date.tsx` has the page's real skeleton/error/retry states and
   its data wiring; the planner view itself is still to come (see below).
 
 Decisions recorded in DECISIONS.md: `lucide-react` added to `apps/web-react`; the tooltip is deferred to
 the one component that uses it rather than pulling in a Radix equivalent of `reka-ui`; the profile screen
-reads through `@klndr/data` rather than the auth provider.
+reads through `@dayro/data` rather than the auth provider.
 
 Verification (all green):
 - `npm run build -w apps/web-react` — typecheck, then Vite: 2137 modules, 833 ms. The route tree
@@ -531,12 +531,12 @@ remain untouched. CHECKPOINT B is still open.
 ## 2026-10-04 — session 11: R.4 `apps/web-react` scaffold
 
 Done:
-- New workspace `apps/web-react` (`@klndr/web-react`): Vite 8 + React 19 + TanStack Router (file-based
-  routes) + Tailwind v4 on `@klndr/tokens`, Firebase JS SDK auth, `@klndr/data` for data, and `/api`
-  proxied to `apps/api` in development. It does **not** depend on `@klndr/api`, and the workspace packages
+- New workspace `apps/web-react` (`@dayro/web-react`): Vite 8 + React 19 + TanStack Router (file-based
+  routes) + Tailwind v4 on `@dayro/tokens`, Firebase JS SDK auth, `@dayro/data` for data, and `/api`
+  proxied to `apps/api` in development. It does **not** depend on `@dayro/api`, and the workspace packages
   are compiled from source (no build step), as the Nuxt app does.
 - `src/styles.css` ports the Nuxt app's `main.css` (base layer, the `dark`/`touch`/`short` variants, the
-  touch and reduced-motion rules) over `@klndr/tokens/theme.css`; `index.html` carries the pre-paint theme
+  touch and reduced-motion rules) over `@dayro/tokens/theme.css`; `index.html` carries the pre-paint theme
   script plus the head metas and fonts from `nuxt.config.ts`. Tailwind scans this app only
   (`source(none)` + `@source ".."`), so the Nuxt app's classes are not pulled in.
 - Auth as a React context: `src/auth/firebase.ts` (handles + ID token), `service.ts` (the Firebase calls,
@@ -548,7 +548,7 @@ Done:
   minimal working form so the gate can be exercised), and `_authed.tsx` + `_authed/calendar.tsx`. The
   `_authed` pathless layout is `middleware/auth.global.ts`; the router mounts only once auth has settled,
   and `router.invalidate()` sends a person to /login the moment they sign out.
-- `src/data/provider.tsx` mounts `@klndr/data`'s `DataProvider` with the API client, the person
+- `src/data/provider.tsx` mounts `@dayro/data`'s `DataProvider` with the API client, the person
   (`local-dev` in credential-free development, `null` when signed out), the toast `notify` and the profile
   source. `src/toast.tsx` is the 2.2 s flash `DayPlanner.vue` uses; `src/theme.tsx` is `useTheme`.
 - Root `package.json`: `dev:web-react`, `build:web-react`, `typecheck:web-react`, and web-react added to
@@ -582,7 +582,7 @@ Not verified (and not verifiable without a browser here):
 - Rendered appearance: the placeholders use the tokens, but nothing was compared page by page with the
   Nuxt app (that is R.5's acceptance test).
 - A known duplication, to collapse in R.5: the auth provider loads the profile for the gate while
-  `@klndr/data`'s `useProfile` reads it through `profileSource`, so the profile screen would read it
+  `@dayro/data`'s `useProfile` reads it through `profileSource`, so the profile screen would read it
   twice. The phone's `AuthProvider` has the same shape (its Settings tab will be the first user).
 
 Next step: R.5 — port the screens page by page against the Nuxt app (landing, sign-in/up, calendar, day,
@@ -658,7 +658,7 @@ Verified by `npm run typecheck -w apps/web-react` (exit 0) and `npm run build:we
 in 906ms`). **Not verified: what it looks like.** No browser was opened — the same gap this project has
 always had for `apps/web-react`. The page-by-page parity check against Nuxt is still owed.
 
-**R.6 — the API host decided (config in place, nothing deployed).** `apps/api` runs as the `klndr-api`
+**R.6 — the API host decided (config in place, nothing deployed).** `apps/api` runs as the `dayro-api`
 Cloud Run service in `klndr-app` (region `europe-west1`, beside the `eur3` Firestore data), and Firebase
 Hosting fronts it so the API keeps the web app's own origin — the property that keeps CORS out of the
 design, exactly as Nuxt's catch-all did.
@@ -695,7 +695,7 @@ checklist, the notes, the emoji picker and the small shared pieces. **It is not 
 deployed, and `apps/web` was deliberately not deleted** — see the warning below.
 
 **R.5 — started, ~1,400 of ~4,400 lines.** Into `apps/web-react/src/components/`, following
-`@klndr/data`'s hooks rather than the Vue components' hand-rolled save loops:
+`@dayro/data`'s hooks rather than the Vue components' hand-rolled save loops:
 
 - `daily-checklist/ChecklistHeader.tsx`, `ChecklistItemRow.tsx`, `ChecklistQuickAdd.tsx` and
   `DailyChecklist.tsx`. The data half of `DailyChecklist.vue` — the optimistic tick, the add/edit/skip
@@ -735,7 +735,7 @@ and the root `package.json`'s `dev`/`build`/`typecheck` still name `apps/web`.
 **Next.** The rest of the day planner, in the order the components depend on each other: `ActivityForm`
 and `CategorySelect` (both used by the editor and the library), `LibraryPanel`/`LibraryModal`, the
 activity palette, `TaskEditor`, then `DayTimelineGrid` — the drag, the resize, the touch hold and the
-edge scroll, all of which call the R.3 maths already in `@klndr/core` — then `DayPlanner.tsx` with its
+edge scroll, all of which call the R.3 maths already in `@dayro/core` — then `DayPlanner.tsx` with its
 header, routines shelf and mobile nav, and finally the route shell's swap from placeholder to planner.
 
 
@@ -746,7 +746,7 @@ Done — the rest of the day planner, in dependency order:
 - `CategorySelect.tsx` (popover on a pointer, bottom sheet on a phone, with the on-screen-keyboard inset),
   `activity/ActivityForm.tsx`, `library/LibraryPanel.tsx`, `LibraryModal.tsx`, `day-planner/ActivityPalette.tsx`,
   `TaskEditor.tsx`, `day-planner/DayTimelineGrid.tsx` (pointer drag, touch hold, edge auto-scroll, hover ghost,
-  resize guides and the live-time line — every measurement from `@klndr/core`'s R.3 maths),
+  resize guides and the live-time line — every measurement from `@dayro/core`'s R.3 maths),
   `day-planner/{DayPlannerHeader,DayRoutinesShelf,DayMobileNav}.tsx`, and `DayPlanner.tsx` itself, with
   `routes/_authed/day/$date.tsx` swapping its placeholder for the real planner.
 - `src/lib/library.ts`: the Nuxt `useLibrary` singleton as a tiny external store, so the palette, the category

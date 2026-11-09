@@ -40,7 +40,7 @@ export function authErrorMessage(error: unknown, context: AuthContext = "sign-in
     return "An account with this email already exists under a different sign-in method. Sign in with that method first, then connect this one from your profile.";
   }
   if (code.includes("credential-already-in-use")) {
-    return "That sign-in already belongs to another klndr. account, so it can't be connected to this one.";
+    return "That sign-in already belongs to another dayro. account, so it can't be connected to this one.";
   }
   if (code.includes("provider-already-linked")) return "That sign-in method is already connected to your account.";
   if (context === "sign-up") {

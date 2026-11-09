@@ -1,5 +1,5 @@
-import { COLOR_LABELS, type ColorKey } from "@klndr/core";
-import { PALETTE } from "@klndr/tokens";
+import { COLOR_LABELS, type ColorKey } from "@dayro/core";
+import { PALETTE } from "@dayro/tokens";
 import { Pressable, View, type PressableProps } from "react-native";
 
 import { useThemeScheme } from "@/theme/tokens";
@@ -14,8 +14,8 @@ export type ColorSwatchProps = Omit<PressableProps, "children" | "style"> & {
 };
 
 /**
- * A category colour, drawn from the resolved palette (`@klndr/tokens`) so the phone paints exactly
- * what the web app paints. The accessible name is the colour's own name from `@klndr/core`, which is
+ * A category colour, drawn from the resolved palette (`@dayro/tokens`) so the phone paints exactly
+ * what the web app paints. The accessible name is the colour's own name from `@dayro/core`, which is
  * what a screen reader should say — "indigo", not a hex value.
  */
 export function ColorSwatch({

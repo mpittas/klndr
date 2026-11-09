@@ -1,4 +1,4 @@
-import { resizedDuration, type ScheduledTask } from "@klndr/core";
+import { resizedDuration, type ScheduledTask } from "@dayro/core";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 
 /** How long after a resize ends the click it produces is still ignored, so it does not open the editor. */

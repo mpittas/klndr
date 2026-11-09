@@ -1,6 +1,6 @@
 /**
  * The design system: every primitive the screens are built from. They all read their colours and
- * their sizes from `@klndr/tokens` (through the stylesheet Uniwind compiles), state their accessible
+ * their sizes from `@dayro/tokens` (through the stylesheet Uniwind compiles), state their accessible
  * role and label, keep DESIGN.md's hit areas, and leave typography to `Text` so the scale and the
  * Inter faces are decided in one place.
  */

@@ -1,4 +1,4 @@
-import { formatDuration, type ActivityTemplate, type CategoryEntry } from "@klndr/core";
+import { formatDuration, type ActivityTemplate, type CategoryEntry } from "@dayro/core";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { Card, IconTile, Text } from "@/components/ui";

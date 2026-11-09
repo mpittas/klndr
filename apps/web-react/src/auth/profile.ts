@@ -4,8 +4,8 @@ import {
   type NewProfileSource,
   type ProfileDb,
   type UserProfile,
-} from "@klndr/core";
-import type { ProfileSource } from "@klndr/data";
+} from "@dayro/core";
+import type { ProfileSource } from "@dayro/data";
 import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 
 import { GUEST_UID, loadGuestProfile, saveGuestProfile } from "@/guest/storage";
@@ -116,7 +116,7 @@ export function createProfileLoader(store: ProfileStore) {
 
 export const profileLoader = createProfileLoader(profileStore);
 
-/** The profile as `@klndr/data`'s `useProfile` and `useUpdateProfile` read and write it. */
+/** The profile as `@dayro/data`'s `useProfile` and `useUpdateProfile` read and write it. */
 export function createProfileSource(user: AuthUser): ProfileSource {
   return {
     load: () => profileLoader.load(user),

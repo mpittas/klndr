@@ -1,5 +1,5 @@
 /**
- * @klndr/tokens — the design tokens the web and mobile apps share: the light and dark theme, the
+ * @dayro/tokens — the design tokens the web and mobile apps share: the light and dark theme, the
  * radii, spacing and type scale, and every palette role resolved to concrete sRGB.
  *
  * The theme and the palette are generated (`npm run generate -w packages/tokens`) so nothing has to

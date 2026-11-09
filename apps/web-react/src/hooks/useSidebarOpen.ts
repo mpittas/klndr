@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from "react";
 
-const KEY = "klndr.planner-sidebar";
+const KEY = "dayro.planner-sidebar";
 const listeners = new Set<() => void>();
 
 const read = (): boolean => {

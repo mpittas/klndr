@@ -1,4 +1,4 @@
-import { isValidISODate, MAX_NOTES_LENGTH, todayISO } from "@klndr/core";
+import { isValidISODate, MAX_NOTES_LENGTH, todayISO } from "@dayro/core";
 import { Hono } from "hono";
 import type { Env } from "../env";
 import { HttpError } from "../errors";

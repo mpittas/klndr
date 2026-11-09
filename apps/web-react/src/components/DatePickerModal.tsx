@@ -1,4 +1,4 @@
-import { addDaysISO, addMonths, MONTH_LABELS, monthMatrix, monthTitle, weekdayLabels } from "@klndr/core";
+import { addDaysISO, addMonths, MONTH_LABELS, monthMatrix, monthTitle, weekdayLabels } from "@dayro/core";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";

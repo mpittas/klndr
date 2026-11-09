@@ -10,7 +10,7 @@ import {
 } from "react";
 
 /**
- * Where the messages `@klndr/data` produces ("Added Workout", "Could not move that block") go.
+ * Where the messages `@dayro/data` produces ("Added Workout", "Could not move that block") go.
  *
  * One message is shown for 2.2 seconds and replaced if another arrives.
  */

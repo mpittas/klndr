@@ -59,14 +59,14 @@ Review notes:
 - The cleanest fix is to turn Smart App Control off, but it cannot be re-enabled without
   resetting Windows, so that is the owner's decision (see HUMAN_TODO.md).
 
-## 2026-10-03 — 0.2: what @klndr/core is, and what stayed in the web app
+## 2026-10-03 — 0.2: what @dayro/core is, and what stayed in the web app
 
 `packages/core` ships TypeScript source and has no build step: Vite compiles it for the web app,
 Vitest compiles it for its own tests, and Metro will compile it for the mobile app.
 `apps/web/nuxt.config.ts` adds it to `build.transpile`, which Nuxt passes on to Nitro's
 `externals.inline` (`@nuxt/nitro-server` builds that list from it). Without it Nitro would treat the
 package as an external and try to `require` a `.ts` file at runtime. Verified on the build: no file
-in `.output/server` mentions `@klndr/core`, and all twelve core modules appear in its source maps.
+in `.output/server` mentions `@dayro/core`, and all twelve core modules appear in its source maps.
 
 What did not move, because it belongs to the framework or to the bundler:
 - `apps/web/lib/colors.ts` keeps the Tailwind classes (`PALETTE`, `paletteOf`); the keys, the labels
@@ -109,13 +109,13 @@ workaround is intact.
 ## 2026-10-03 — 0.2: tooling used for the move itself
 
 The import rewrite (37 files importing the four moved modules) was done with a one-shot codemod that
-merges each file's moved imports into a single `@klndr/core` statement and wraps the long ones. Its
+merges each file's moved imports into a single `@dayro/core` statement and wraps the long ones. Its
 first version was wrong — its statement regex matched across import statements and mangled the
 formatting — so the affected files were reverted from git and the codemod fixed to match whole
 statements by line before being re-run. The markdown fixtures were generated the same way: a one-shot
 script run against the old implementation, then deleted. Neither script is part of the repo.
 
-## 2026-10-03 — 0.3: how @klndr/tokens is built
+## 2026-10-03 — 0.3: how @dayro/tokens is built
 
 `packages/tokens` has three inputs and two generated outputs. `src/theme.ts` is the theme's single
 source of truth; `apps/web/lib/colors.ts` stays the place the palette classes live (the generator
@@ -124,7 +124,7 @@ Tailwind's own `theme.css` is what those classes name, because that is what a br
 to at runtime.
 
 `npm run generate -w packages/tokens` writes two committed files: `generated/theme.css` (which
-`main.css` imports as `@klndr/tokens/theme.css`) and `generated/palette.ts` (the palette as data).
+`main.css` imports as `@dayro/tokens/theme.css`) and `generated/palette.ts` (the palette as data).
 Both are in git, so the web build needs no pre-step and a reviewer can read the diff; tests re-run the
 generator's pure functions and fail if either file drifts. `culori` (and `@types/culori`, because
 culori ships no types) is a devDependency — the apps read plain numbers and never do colour maths.
@@ -241,7 +241,7 @@ the point of use.
 
 ## 2026-10-03 — 1.1: Metro has to be told about the workspace
 
-`@klndr/core` and `@klndr/tokens` ship TypeScript source and no build step (DECISIONS, 0.2), which
+`@dayro/core` and `@dayro/tokens` ship TypeScript source and no build step (DECISIONS, 0.2), which
 is exactly what the web app wants — Vite compiles them. Metro, by default, only watches its own
 project directory, so it would find neither package. `metro.config.js` therefore adds the workspace
 root to `watchFolders`, lists both `node_modules` directories in `resolver.nodeModulesPaths`, and
@@ -308,11 +308,11 @@ stores it. Three decisions are worth stating:
   current theme, so `resolved` in the provider is what the screen is actually showing — and it keeps
   up when the phone flips at dusk.
 - **Native props that take a colour and no class name** — an `ActivityIndicator`, a picker's accent,
-  a status bar — read `THEMES[resolved].values` from `@klndr/tokens` through `useThemeColors()`. The
+  a status bar — read `THEMES[resolved].values` from `@dayro/tokens` through `useThemeColors()`. The
   data is already resolved sRGB, so no colour maths happens at runtime.
 
 The shared stylesheet is `apps/mobile/src/global.css`, which imports Tailwind, Uniwind and
-`@klndr/tokens/uniwind.css`. Tailwind scans for class names from the directory the entry file is in,
+`@dayro/tokens/uniwind.css`. Tailwind scans for class names from the directory the entry file is in,
 which is `src` — where all of this app's code lives, so no `@source` directive is needed.
 
 ## 2026-10-03 — 1.2: typography goes through `Text`, and the family comes from the weight
@@ -345,7 +345,7 @@ file names are not always the component names: there is no `trash-2`, `Trash2` i
 
 - **A role and a label.** `IconButton`'s `label` is required, not optional: an icon has no text, so it
   is the only accessible name it will ever have. Rows, chips, swatches and pickers all name
-  themselves, and a swatch says "indigo" (the name from `@klndr/core`), not a hex value.
+  themselves, and a swatch says "indigo" (the name from `@dayro/core`), not a hex value.
 - **A 44-point target**, from `MIN_TOUCH_TARGET`/`MIN_TAP_TARGET` in `components/ui/targets.ts` —
   numbers rather than utilities, so a hit area can never depend on the stylesheet. A small colour dot
   still gets a 44-point pressable.
@@ -365,7 +365,7 @@ with the Day tab — but it is how all of this gets looked at before there are s
 ## 2026-10-03 — audit: Reusables was in the brief, and the primitives are hand-built
 
 The brief lists React Native Reusables among the mobile components. Tasks 1.1-1.2 instead wrote the
-primitives directly on Uniwind and `@klndr/tokens`, without recording the choice. Kept: they are small,
+primitives directly on Uniwind and `@dayro/tokens`, without recording the choice. Kept: they are small,
 read DESIGN.md's scale and the shared tokens, and carry the accessibility rules (a required name on every
 icon button, 44 pt targets) that Reusables' defaults would have had to be bent to. If a later screen wants
 a Reusables component (a combobox, say), it can be added beside them and will pick up the same tokens.
@@ -374,7 +374,7 @@ a Reusables component (a combobox, say), it can be added beside them and will pi
 
 The web's `loadProfile` and the phone's both have to create `users/{uid}` the same way on a first
 sign-in, because the rules, the web profile page and the API all read that document. Rather than copy the
-web's twelve lines, `@klndr/core` owns it: `newProfileData` (the fields, minus the two timestamps the
+web's twelve lines, `@dayro/core` owns it: `newProfileData` (the fields, minus the two timestamps the
 database stamps) and `loadOrCreateProfile` (read, create if absent, read back) over a `ProfileDb` that a
 platform implements in a few lines. The web still keeps its own Vue wrapper (shared state,
 `pendingSignUpName`) and only swapped the field list for `newProfileData`; its output is the same object,
@@ -460,7 +460,7 @@ forwarded to Firestore), and its only Nitro coupling was `createError`, `getQuer
   without a server. Standalone Node is the default way to run it (`npm run dev -w apps/api`).
 - **One implementation.** While Nuxt exists, `apps/web/server/api/[...].ts` hands every `/api/**` request to
   the same app (`toWebRequest`), so the deployed web app and the mobile app's base URL are unchanged.
-  `@klndr/api` is in `build.transpile`, like `@klndr/core`, because it ships TypeScript source.
+  `@dayro/api` is in `build.transpile`, like `@dayro/core`, because it ships TypeScript source.
 - **Configuration is injected, not read from Nitro.** `createApp({ firebaseProjectId, allowDevUser, keys?,
   storeFor? })`. Nuxt passes `useRuntimeConfig().public.firebaseProjectId` and `Boolean(import.meta.dev)`;
   the Node entry reads `FIREBASE_PROJECT_ID` (or `NUXT_PUBLIC_FIREBASE_PROJECT_ID`) and `NODE_ENV`, and refuses
@@ -486,9 +486,9 @@ forwarded to Firestore), and its only Nitro coupling was `createError`, `getQuer
 without anything being wrong. A `.gitattributes` now pins exactly those paths to LF. Nothing else about line
 endings changed.
 
-## 2026-10-03 — R.2: `@klndr/data`, the data layer both apps share
+## 2026-10-03 — R.2: `@dayro/data`, the data layer both apps share
 
-TanStack Query hooks over the `@klndr/core` API client, for the React web app and the Expo app. Views stay
+TanStack Query hooks over the `@dayro/core` API client, for the React web app and the Expo app. Views stay
 each app's own; this is everything behind them.
 
 - **Shape.** The logic is plain functions over a `QueryClient` (`cache.ts`, `blocks.ts`, `derive.ts`) and
@@ -509,7 +509,7 @@ each app's own; this is everything behind them.
   animation dependency or ~15 lines. The helper keeps the node mounted for the transition's duration and
   the CSS moved from the component's scoped block into `styles.css`, keyed off `data-state`. The same
   pattern is there for other transitions if they need it.
-- **The profile screen reads and writes through `@klndr/data`, not the auth provider.** The Nuxt page used
+- **The profile screen reads and writes through `@dayro/data`, not the auth provider.** The Nuxt page used
   `useAuth().updateProfileData`; here `useProfile` / `useUpdateProfile` already exist and carry the
   optimistic update and rollback, so the page uses them. The auth provider still loads the profile for the
   gate, so there are briefly two reads of one document — the known duplication, still to collapse, and one
@@ -564,7 +564,7 @@ each app's own; this is everything behind them.
 - **The profile** is a Firestore document read through each platform's own Firebase SDK, so `useProfile` takes
   an injected `ProfileSource` (`load`, `save`); values go through core's `cleanPatch` first. The phone's
   `AuthProvider` still loads the profile itself and doesn't use it yet; the Settings tab (2.6) will.
-- **Test harness.** The tests run the real `@klndr/api` in memory behind a stubbed `fetch`, with requests that
+- **Test harness.** The tests run the real `@dayro/api` in memory behind a stubbed `fetch`, with requests that
   can be held or made to fail, so optimistic state is looked at while a request is in flight and rollbacks are
   forced for real. React's side is checked with a renderer (happy-dom). Two things learned: TanStack tells React
   about cache changes a tick later, so hook results are asserted with `waitFor`; and the default scheduler already
@@ -612,7 +612,7 @@ each app's own; this is everything behind them.
 - **The profile.** `ProfileStore` is core's `ProfileDb` plus the merge an edit needs. It is the Firestore
   document with a project configured, and an in-memory Map without one — the same trick the API plays for
   `local-dev` — so the profile screen will work in credential-free development too.
-  `createProfileSource(user)` is what `@klndr/data`'s `useProfile` / `useUpdateProfile` are given, while
+  `createProfileSource(user)` is what `@dayro/data`'s `useProfile` / `useUpdateProfile` are given, while
   the provider still loads the profile itself for the gate, as the phone's provider does (a known
   duplication, recorded in PROGRESS, to collapse when the profile screen lands).
 - **No cache persister on the web.** `DataProvider` gets no `persister`, so the query cache is memory-only
@@ -625,7 +625,7 @@ each app's own; this is everything behind them.
   means the deploy cannot accidentally point at another origin.
 - **A minimal sign-in form sits in `src/routes/login.tsx`** so the gate can be exercised before R.5. It is
   scaffolding, not the port: no reset flow, no Apple button, none of the real layout. `apps/web-react`
-  also deliberately does not depend on `@klndr/api` — the app is a client, and the bundle must not carry
+  also deliberately does not depend on `@dayro/api` — the app is a client, and the bundle must not carry
   the server (the same rule the mobile bundle is checked against).
 
 
@@ -673,7 +673,7 @@ each app's own; this is everything behind them.
 
 ## 2026-10-04 — R.6: where the API lives, and how the site is served
 
-- **`apps/api` runs on Cloud Run as `klndr-api`, in `klndr-app`, region `europe-west1`.** Chosen over
+- **`apps/api` runs on Cloud Run as `dayro-api`, in `klndr-app`, region `europe-west1`.** Chosen over
   Firebase Functions because it needs *no* adapter code: `createApp(config)` already returns a fetch
   handler and `src/server.ts` already runs it on plain Node, so the container runs the server that
   already exists and has already been tested. Region `europe-west1` is the closest fixed region to the
@@ -682,7 +682,7 @@ each app's own; this is everything behind them.
   missing `FIREBASE_PROJECT_ID` stops the container instead of serving the `local-dev` user.
 - **Firebase Hosting fronts it, so the API keeps the same origin as the web app.** `firebase.json`
   gained the `hosting` block the repo was missing: `apps/web-react/dist` is `public`, `/api/**` is
-  rewritten to the `klndr-api` run service and `**` → `/index.html` covers the app's real paths.
+  rewritten to the `dayro-api` run service and `**` → `/index.html` covers the app's real paths.
   The rewrite order matters (`/api/**` first). This is what keeps CORS out of the design — the React
   app calls its own origin, exactly as it did behind Nuxt's `server/api/[...].ts` catch-all — and it is
   why the mobile app should be pointed at the Hosting origin rather than the Cloud Run URL.
@@ -718,7 +718,7 @@ each app's own; this is everything behind them.
   `apps/web-react/package.json` (`^17.0.0`, resolved 17.0.0) with the lockfile synced, so the delete is
   safe. Worth a general check before any similar delete: a workspace that imports a package it does not
   declare is invisible until the workspace that does is gone.
-- **The checklist and the notes follow `@klndr/data`, not the Vue save loops.** `DailyChecklist.vue` and
+- **The checklist and the notes follow `@dayro/data`, not the Vue save loops.** `DailyChecklist.vue` and
   `DayNotes.vue` each carry their own debounce/optimistic/rollback machinery (~50 lines each). In React
   that is `useChecklist(day)` and `useNotesEditor(day)`, and the components only render. `DailyChecklist`
   takes the hook's full return value as a prop rather than calling the hook, so the shelf beside the
@@ -770,7 +770,7 @@ the tree aliasing or stubbing the deleted app. One implementation, and it is the
 **Decision: the emoji is chosen when the person saves, never while they type or leave the title field.** A new
 activity, block or category starts with no emoji: the picker shows a dashed sparkle placeholder (not 📌), and the
 button says "Choosing emoji…" for the second or so it takes. `useEmojiField` (web) owns the state; the rule itself
-is the pure `emojiNeedsPicking` in `@klndr/core`, which is tested. One request per save, and none at all when nothing
+is the pure `emojiNeedsPicking` in `@dayro/core`, which is tested. One request per save, and none at all when nothing
 needs picking.
 
 **Decision: an emoji the person chose is never replaced; an edit re-picks only when the title changed.** There is no
@@ -785,7 +785,7 @@ to change it) through the official SDK's Responses API, with `reasoning: { effor
 which would add seconds and cost to a one-emoji answer), `max_output_tokens: 32`, `store: false`, no retries and a 4 s
 timeout. The route needs a signed-in user, takes the text and `"activity" | "category"`, and answers `{ emoji: string | null }`;
 no key, an error, a timeout or an answer that isn't exactly one emoji all give `null`, never an error, because saving
-must not depend on it. The client (`useEmojiSuggester` in `@klndr/data`, so mobile can use it) adds a 5 s race, remembers
+must not depend on it. The client (`useEmojiSuggester` in `@dayro/data`, so mobile can use it) adds a 5 s race, remembers
 answers for the session, and `useEmojiPicker` (web) tries, in order: an emoji the person already uses for that exact name,
 the model's suggestion if the picker's own set contains it (so one too new to draw is never saved), then 📌 / 📁.
 
@@ -823,12 +823,12 @@ a pause, so a half-typed title isn't sent.
 
 **Decision: saving never waits.** If the pick isn't back when the person saves (Enter right after typing, the quick
 adds that never leave the field), the item is saved with the emoji showing (📌 / 📁 for a new one, no emoji for a
-category added from the category select) and `fillEmoji` (`@klndr/data`) puts the picked one on it when it arrives:
+category added from the category select) and `fillEmoji` (`@dayro/data`) puts the picked one on it when it arrives:
 on screen at once, then on the server, quietly (no message, no undo step). It does nothing if the person changed the
 emoji in the meantime. On screen the swap pops (`EmojiPop`), so it reads as the app finishing, not as a glitch.
 
 **Decision: an emoji chosen by hand always wins.** An answer still on its way is dropped when the person picks one,
-or when the title changes to something else; the rules are the pure `emojiFieldReducer` in `@klndr/core` (tested),
+or when the title changes to something else; the rules are the pure `emojiFieldReducer` in `@dayro/core` (tested),
 and `useEmojiField` (web) runs them. The picker button pulses while a pick is on its way but stays usable (it was
 disabled before, which would swallow the click that also leaves the title field). "Pick for me" shows the emoji it
 chose, says "Type a name first" while there is no title, and "Picking one from the name…" while it works.

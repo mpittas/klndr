@@ -1,6 +1,6 @@
 /**
  * The measurements of the day timeline that are about drawing it (the minutes-and-pixels maths is in
- * `@klndr/core`, shared with the web). Points, like every size in the app.
+ * `@dayro/core`, shared with the web). Points, like every size in the app.
  */
 
 /** The hour gutter on the left, wide enough for the live "12:00 PM" pill. */

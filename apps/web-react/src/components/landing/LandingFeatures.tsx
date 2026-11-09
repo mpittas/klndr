@@ -1,4 +1,4 @@
-import { COLOR_KEYS } from "@klndr/core";
+import { COLOR_KEYS } from "@dayro/core";
 import { ArrowUpDown, Check, Clock, Columns2, Contrast, Plus } from "lucide-react";
 
 import { MockBlock } from "@/components/landing/MockBlock";

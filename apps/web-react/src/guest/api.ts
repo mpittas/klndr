@@ -1,4 +1,4 @@
-import { createApiClient } from "@klndr/core";
+import { createApiClient } from "@dayro/core";
 
 type GuestHandler = (request: Request) => Promise<Response>;
 

@@ -31,7 +31,7 @@ export function createKeyValuePersister(
   return createSyncStoragePersister({
     // The persister only calls these three methods.
     storage: storage as unknown as Storage,
-    key: options.key ?? "klndr-query-cache",
+    key: options.key ?? "dayro-query-cache",
     throttleTime: options.throttleTime ?? 1000,
   });
 }

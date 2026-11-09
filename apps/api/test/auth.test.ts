@@ -5,7 +5,7 @@ import { createStoreFactory } from "../src/db";
 import type { Session } from "../src/session";
 import { call, devApp } from "./helpers";
 
-const PROJECT = "klndr-test";
+const PROJECT = "dayro-test";
 
 let privateKey: CryptoKey;
 let keys: ReturnType<typeof createLocalJWKSet>;

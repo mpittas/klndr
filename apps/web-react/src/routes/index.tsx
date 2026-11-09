@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 function LandingPage() {
-  useDocumentTitle("klndr. · Plan your day, block by block");
+  useDocumentTitle("dayro. · Plan your day, block by block");
 
   const { state } = useAuth();
   const signedIn = isSignedIn(state);

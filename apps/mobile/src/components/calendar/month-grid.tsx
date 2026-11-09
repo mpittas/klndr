@@ -1,5 +1,5 @@
-import { canonicalColor } from "@klndr/core";
-import { PALETTE } from "@klndr/tokens";
+import { canonicalColor } from "@dayro/core";
+import { PALETTE } from "@dayro/tokens";
 import { memo } from "react";
 import { Pressable, useWindowDimensions, View } from "react-native";
 

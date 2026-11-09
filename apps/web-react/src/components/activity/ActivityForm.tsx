@@ -1,4 +1,4 @@
-import { DURATION_CHOICES, formatDuration, type ActivityTemplate } from "@klndr/core";
+import { DURATION_CHOICES, formatDuration, type ActivityTemplate } from "@dayro/core";
 import { useEffect, useRef, useState } from "react";
 
 import { CategorySelect } from "@/components/category/CategorySelect";

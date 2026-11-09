@@ -109,7 +109,7 @@ export interface KeyValueStorage {
   setItem(key: string, value: string): void;
 }
 
-export const RECENT_EMOJIS_KEY = "klndr:recent-emojis";
+export const RECENT_EMOJIS_KEY = "dayro:recent-emojis";
 export const RECENT_EMOJIS_MAX = 16;
 
 /** Recently used emojis, newest first. No storage (or a failing one) simply means none. */

@@ -1,4 +1,4 @@
-import { MONTH_LABELS, getMonthIndex, getYear } from "@klndr/core";
+import { MONTH_LABELS, getMonthIndex, getYear } from "@dayro/core";
 import { Pressable, View } from "react-native";
 
 import { Chip, CircleButton, Text } from "@/components/ui";

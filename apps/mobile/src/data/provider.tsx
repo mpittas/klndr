@@ -1,4 +1,4 @@
-import { DataProvider } from "@klndr/data";
+import { DataProvider } from "@dayro/data";
 import { useCallback, useMemo, useRef, type PropsWithChildren } from "react";
 
 import { api } from "@/api";
@@ -12,7 +12,7 @@ import { queryPersister } from "./persister";
 import { createProfileSource } from "./profile-source";
 
 /**
- * The app's data layer (`@klndr/data`) wired to this app: the API client, the signed-in person, a toast for
+ * The app's data layer (`@dayro/data`) wired to this app: the API client, the signed-in person, a toast for
  * the messages the hooks produce, the profile source the Settings screen reads, the cache kept in MMKV and the
  * live feed of what the person changes on their other devices.
  *

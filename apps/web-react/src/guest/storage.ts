@@ -1,4 +1,4 @@
-import type { MemorySnapshot } from "@klndr/api";
+import type { MemorySnapshot } from "@dayro/api";
 
 /**
  * Guest mode keeps everything in this browser's `localStorage`: the planner, the profile, and whether this
@@ -9,9 +9,9 @@ import type { MemorySnapshot } from "@klndr/api";
 export const GUEST_UID = "guest";
 
 const KEYS = {
-  session: "klndr-guest-session",
-  data: "klndr-guest-data",
-  profile: "klndr-guest-profile",
+  session: "dayro-guest-session",
+  data: "dayro-guest-data",
+  profile: "dayro-guest-profile",
 } as const;
 
 const SAVE_FAILED = "Couldn't save to this browser's local storage. Free up some space and try again.";

@@ -1,11 +1,11 @@
 @import "@fontsource-variable/instrument-sans";
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
-@import "@klndr/tokens/theme.css";
+@import "@dayro/tokens/theme.css";
 
 /*
  * ---------------------------------------------------------------------------------------------
- * klndr. on the web: a warm paper planner.
+ * dayro. on the web: a warm paper planner.
  *
  * These sit after the shared tokens so they win; the mobile app keeps its own palette. The rules of the look:
  *
@@ -379,7 +379,7 @@
 }
 
 /*
- * Category colors: one hue per key `@klndr/core` stores, tuned to sit on warm paper. `--cat-*` is the color itself
+ * Category colors: one hue per key `@dayro/core` stores, tuned to sit on warm paper. `--cat-*` is the color itself
  * (dots, swatches, solid marks); `--cat-*-ink` is the text drawn on its tints. Everything else is mixed from these
  * two in `.tone-*` below, so a block, a chip and an icon of one category always agree.
  */

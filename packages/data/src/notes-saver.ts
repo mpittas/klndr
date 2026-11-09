@@ -1,4 +1,4 @@
-import type { DayNotes } from "@klndr/core";
+import type { DayNotes } from "@dayro/core";
 
 export type NotesStatus = "idle" | "saving" | "saved" | "error";
 

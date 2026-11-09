@@ -1,4 +1,4 @@
-import { MAX_CATEGORY, withImplicitCategories, type ActivityTemplate, type Category } from "@klndr/core";
+import { MAX_CATEGORY, withImplicitCategories, type ActivityTemplate, type Category } from "@dayro/core";
 import { useMemo, useState } from "react";
 import { View } from "react-native";
 

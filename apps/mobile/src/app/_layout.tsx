@@ -28,7 +28,7 @@ function ThemedStatusBar() {
 /**
  * The auth gate: the tabs (and everything reached from them) exist only while someone is signed in, and
  * the sign-in screens only while no one is. Expo Router's `Stack.Protected` is what makes that true of
- * deep links too — a link to `klndr://day/…` while signed out lands on sign-in, not on a screen with no
+ * deep links too — a link to `dayro://day/…` while signed out lands on sign-in, not on a screen with no
  * data behind it — and it redirects by itself when the sign-in state flips, so no screen has to
  * navigate after signing in or out.
  */

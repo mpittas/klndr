@@ -1,5 +1,5 @@
-import { withImplicitCategories, type ActivityTemplate } from "@klndr/core";
-import { useCategories } from "@klndr/data";
+import { withImplicitCategories, type ActivityTemplate } from "@dayro/core";
+import { useCategories } from "@dayro/data";
 import { Check, Folder, Sparkles } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 

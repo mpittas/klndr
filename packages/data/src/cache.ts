@@ -1,5 +1,5 @@
-import type { ActivityTemplate, Category, ScheduledTask, TaskStore } from "@klndr/core";
-import { compareCategoriesByName } from "@klndr/core";
+import type { ActivityTemplate, Category, ScheduledTask, TaskStore } from "@dayro/core";
+import { compareCategoriesByName } from "@dayro/core";
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
 import { queryKeys } from "./keys";
 

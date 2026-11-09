@@ -1,5 +1,5 @@
-import type { ActivityTemplate } from "@klndr/core";
-import { useCategoryColor } from "@klndr/data";
+import type { ActivityTemplate } from "@dayro/core";
+import { useCategoryColor } from "@dayro/data";
 import { Link } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";

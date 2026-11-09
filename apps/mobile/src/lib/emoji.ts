@@ -5,7 +5,7 @@ import {
   type CompactEmoji,
   type EmojiGroup,
   type KeyValueStorage,
-} from "@klndr/core";
+} from "@dayro/core";
 
 import { storage } from "./storage";
 

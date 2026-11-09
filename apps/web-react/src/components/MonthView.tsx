@@ -10,8 +10,8 @@ import {
   todayISO,
   weekdayLabels,
   type ScheduledTask,
-} from "@klndr/core";
-import { useLibraryActions, useTaskActions, useTemplates } from "@klndr/data";
+} from "@dayro/core";
+import { useLibraryActions, useTaskActions, useTemplates } from "@dayro/data";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 

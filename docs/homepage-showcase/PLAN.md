@@ -1,6 +1,6 @@
 # Homepage "Our Work" Showcase: Handoff Plan
 
-Goal: add an **"Our work"** section to the klndr landing page (`/`) that shows work items as cards with thumbnail images. Build five minimal layouts, compare them in the browser, then keep one.
+Goal: add an **"Our work"** section to the dayro landing page (`/`) that shows work items as cards with thumbnail images. Build five minimal layouts, compare them in the browser, then keep one.
 
 This plan is written so a smaller model (Sonnet or Haiku) can execute each task without more context. Do the tasks in order. Each task lists the exact files, what to build, and how to check it.
 
@@ -18,7 +18,7 @@ This plan is written so a smaller model (Sonnet or Haiku) can execute each task 
 
 ### Assumption to confirm with the user
 
-"Our work" is taken to mean **showcase items about klndr and its related work** (projects, screenshots, case studies). No real work items exist in the repo yet, so this plan uses **placeholder items** that are clearly marked. Replace them with real content once the user provides it. If the user meant something else, stop and ask before Phase 1.
+"Our work" is taken to mean **showcase items about dayro and its related work** (projects, screenshots, case studies). No real work items exist in the repo yet, so this plan uses **placeholder items** that are clearly marked. Replace them with real content once the user provides it. If the user meant something else, stop and ask before Phase 1.
 
 ---
 
@@ -127,7 +127,7 @@ The user requires that a thumbnail appears. The placeholder items have no image 
 
 - Root: `<section aria-labelledby="showcase-title" className="relative bg-background py-20 sm:py-28">` with an inner `mx-auto max-w-6xl px-5 sm:px-8`.
 - Heading: `<h2 id="showcase-title" data-reveal className="text-balance text-3xl font-semibold tracking-[-0.03em] text-foreground sm:text-4xl">Our work</h2>`
-- Body: `<p data-reveal className="mt-3 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground">` with one sentence, for example: "Recent things we have built, designed and shipped for klndr."
+- Body: `<p data-reveal className="mt-3 max-w-xl text-pretty text-base leading-relaxed text-muted-foreground">` with one sentence, for example: "Recent things we have built, designed and shipped for dayro."
 - Layout choice: read `SHOWCASE_LAYOUT`. In **dev only**, also read `new URLSearchParams(window.location.search).get("showcase")` and use it if it is one of the five valid names. Map the name to a component (`grid` → `GridLayout`, etc.) and render it with `items={showcaseItems.slice(0, 6)}`.
 - Use `import.meta.env.DEV` to gate the query override. Validate the query value against the five names. Fall back to `SHOWCASE_LAYOUT` for anything else.
 

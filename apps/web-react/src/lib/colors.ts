@@ -1,7 +1,7 @@
-import { COLOR_LABELS, canonicalColor, type ColorKey } from "@klndr/core";
+import { COLOR_LABELS, canonicalColor, type ColorKey } from "@dayro/core";
 
 /**
- * The classes behind every role a category color plays; the keys and their labels live in @klndr/core.
+ * The classes behind every role a category color plays; the keys and their labels live in @dayro/core.
  *
  * Each value pairs the hue (`tone-<key>`) with a role (`tone-block`, `tone-chip`, …). Both are defined in
  * `styles.css`, where every role is mixed from the same two colors (the hue and its ink) against the paper, so

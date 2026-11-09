@@ -1,4 +1,4 @@
-import { MONTH_LABELS, formatDuration, getMonthIndex, getYear, longDate, parseISODate, type ScheduledTask } from "@klndr/core";
+import { MONTH_LABELS, formatDuration, getMonthIndex, getYear, longDate, parseISODate, type ScheduledTask } from "@dayro/core";
 import { Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

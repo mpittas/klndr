@@ -1,4 +1,4 @@
-import { THEMES, type ThemeValues } from "@klndr/tokens";
+import { THEMES, type ThemeValues } from "@dayro/tokens";
 import { useColorScheme } from "react-native";
 
 /** The theme as JavaScript values, for the few native props that take a colour and no class name. */

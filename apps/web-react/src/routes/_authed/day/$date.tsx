@@ -1,5 +1,5 @@
-import { isValidISODate, todayISO } from "@klndr/core";
-import { useDayTasks, usePrefetchAroundDay, useTemplates } from "@klndr/data";
+import { isValidISODate, todayISO } from "@dayro/core";
+import { useDayTasks, usePrefetchAroundDay, useTemplates } from "@dayro/data";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { DayPlanner } from "@/components/DayPlanner";
@@ -7,7 +7,7 @@ import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 /**
  * The shell of the day page: the date comes from the path, the day's blocks and the activity templates
- * come from `@klndr/data`, and there are three states: a skeleton while they load, the "we couldn't load
+ * come from `@dayro/data`, and there are three states: a skeleton while they load, the "we couldn't load
  * this day" card with a retry if either fails, and the planner once both are in.
  *
  * `DayPlanner` runs the checklist and notes hooks itself, and each of its panels has its own loading and

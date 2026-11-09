@@ -8,7 +8,7 @@ Things only the owner can do, grouped by what each item unblocks. Exact steps gi
       so the build is not blocked while this is pending.
 - [ ] **How the web app is served — decided 2026-10-04 (see DECISIONS.md).** `firebase.json` now has
       the `hosting` block this repository was missing: the `klndr-app` Hosting site serves
-      `apps/web-react/dist`, with `/api/**` rewritten to the `klndr-api` Cloud Run service (same
+      `apps/web-react/dist`, with `/api/**` rewritten to the `dayro-api` Cloud Run service (same
       origin, so no CORS) and `**` → `/index.html` for the app's real paths (`/calendar`,
       `/day/<date>`). The site it replaces was served from `apps/web/.output/public`; the exact
       deploy steps are under Phase R below. Nothing changes until you run them.
@@ -18,7 +18,7 @@ Things only the owner can do, grouped by what each item unblocks. Exact steps gi
       feature. Categories gained an optional `emoji` field, and until the rules allow it, creating or renaming a category
       is refused (403 "Not allowed") because the app now sends one. The same file also carries the pending color-key change.
 - [ ] Set `OPENAI_API_KEY` on the Vercel project (Settings → Environment Variables, Production and Preview), and the same
-      variable on the `klndr-api` Cloud Run service if that is still deployed. Without it nothing breaks: the API answers
+      variable on the `dayro-api` Cloud Run service if that is still deployed. Without it nothing breaks: the API answers
       `{ "emoji": null }` and the app falls back to 📌 for an activity and 📁 for a category. Optional: `EMOJI_MODEL`
       (default `gpt-5.6-luna`). The key stays on the server; the browser never sees it. Env vars only reach a new deployment,
       so redeploy after setting it.
@@ -54,7 +54,7 @@ Things only the owner can do, grouped by what each item unblocks. Exact steps gi
       see Task 3.2).
 
 ## Task 1.1 — mobile app identity
-- [ ] Confirm the iOS bundle id / Android package (placeholder `com.klndr.app`). It cannot
+- [ ] Confirm the iOS bundle id / Android package (placeholder `com.dayro.app`). It cannot
       change after the first store release.
 - [x] `eas init` once you have an Expo account (it writes the EAS project id). `eas.json` currently
       uses `"appVersionSource": "local"` so builds work without a project; switch it to `remote` if
@@ -88,7 +88,7 @@ Needs a dev build with the Firebase config files in `apps/mobile/` (see Task 1.1
       this one is not yet proven by a successful EAS build.
 - [ ] Try each path: email sign-up (the name shows in Settings), email sign-in, a wrong password (message),
       password reset (email arrives), Google, Apple. Kill and relaunch: still signed in, no signed-out flash.
-- [ ] Sign out lands on sign-in; a deep link while signed out (`klndr://`) lands on sign-in, not a blank screen.
+- [ ] Sign out lands on sign-in; a deep link while signed out (`dayro://`) lands on sign-in, not a blank screen.
 - [ ] A new account has a `users/{uid}` document that looks the same as one created on the web.
 - [ ] Demo mode: `EXPO_PUBLIC_DEMO_MODE=1` with the web dev server running opens straight into the tabs.
 - [ ] Hand-check the keyboard on the sign-up form (four fields): the focused field and the button stay visible.
@@ -119,7 +119,7 @@ Needs a dev build with the Firebase config files in `apps/mobile/` (see Task 1.1
       `.env`). Without it the React app runs credential-free: the auth gate stays open and the API
       answers as its `local-dev` user. Nothing is blocked while this is pending.
 - [ ] **Deploy the API, then move the site — decided 2026-10-04 (see DECISIONS.md).** `apps/api`
-      runs as the `klndr-api` Cloud Run service in the `klndr-app` project (region `europe-west1`,
+      runs as the `dayro-api` Cloud Run service in the `klndr-app` project (region `europe-west1`,
       next to the `eur3` Firestore data), and Firebase Hosting puts it behind the same origin as the
       web app. `apps/api/Dockerfile` and the `hosting` block in `firebase.json` are in place; these
       are the commands, and they are the whole of R.6's live half. **This is now the last thing outstanding
@@ -128,17 +128,17 @@ Needs a dev build with the Firebase config files in `apps/mobile/` (see Task 1.1
       until Hosting is switched over; after that the API has to be up, or the web app and the mobile app's
       `EXPO_PUBLIC_API_BASE_URL` have nothing behind them.
 
-      1. Build and push the image (Artifact Registry, `klndr` repository, same region):
+      1. Build and push the image (Artifact Registry, `dayro` repository, same region):
          ```bash
-         docker build -f apps/api/Dockerfile -t europe-west1-docker.pkg.dev/klndr-app/klndr/klndr-api .
-         docker push europe-west1-docker.pkg.dev/klndr-app/klndr/klndr-api
+         docker build -f apps/api/Dockerfile -t europe-west1-docker.pkg.dev/klndr-app/dayro/dayro-api .
+         docker push europe-west1-docker.pkg.dev/klndr-app/dayro/dayro-api
          ```
       2. Deploy the service. `--allow-unauthenticated` is required: the API checks the Firebase ID
          token itself (`firebase.rules` is enforced through that token), and Hosting is a plain
          caller. The container is fail-closed, so `FIREBASE_PROJECT_ID` is not optional.
          ```bash
-         gcloud run deploy klndr-api \
-           --image europe-west1-docker.pkg.dev/klndr-app/klndr/klndr-api \
+         gcloud run deploy dayro-api \
+           --image europe-west1-docker.pkg.dev/klndr-app/dayro/dayro-api \
            --region europe-west1 --project klndr-app \
            --set-env-vars FIREBASE_PROJECT_ID=klndr-app \
            --allow-unauthenticated
@@ -181,7 +181,7 @@ Needs a development build; the existing one works, because no native dependency 
 The implementation is present and both native bundles pass. Interactive acceptance remains open.
 The local simulator dev build includes expo-network; an older phone build needs rebuilding.
 
-- [ ] Simulator: click Open in the pending “Open in klndr?” prompt. Local Metro is on 8082 and
+- [ ] Simulator: click Open in the pending “Open in dayro?” prompt. Local Metro is on 8082 and
       the demo API is on 3101. A physical phone needs the Mac's LAN address rather than 127.0.0.1.
 - [ ] Header: previous/next, Today, date sheet, swipe both ways, cancel a swipe, undo and redo.
 - [ ] Open a seeded day and an empty day: scroll to the first block or 07:00, check the live now-line.

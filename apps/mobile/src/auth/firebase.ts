@@ -26,7 +26,7 @@ import * as Crypto from "expo-crypto";
 import { GoogleSignin, statusCodes } from "@react-native-google-signin/google-signin";
 import { Platform } from "react-native";
 
-import { toProfile } from "@klndr/core";
+import { toProfile } from "@dayro/core";
 
 import { env } from "@/env";
 import { createProfileLoader } from "./profile-loader";

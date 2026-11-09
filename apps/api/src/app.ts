@@ -1,4 +1,4 @@
-import type { Store } from "@klndr/core";
+import type { Store } from "@dayro/core";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
@@ -45,7 +45,7 @@ export type ApiConfig = {
 };
 
 /**
- * The klndr HTTP API as a fetch handler (`app.fetch(request)`), so the same code runs on plain Node and
+ * The dayro HTTP API as a fetch handler (`app.fetch(request)`), so the same code runs on plain Node and
  * on edge runtimes.
  *
  * Every route under `/api` except `/api/health` needs a verified Firebase ID token. The caller's token

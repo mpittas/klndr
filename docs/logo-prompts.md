@@ -1,6 +1,6 @@
-# klndr. — logo prompts
+# dayro. — logo prompts
 
-klndr. is a calm, visual day planner. You drop time blocks onto an hour-by-hour timeline, tick off daily routines and write notes for the day, on the web and on your phone.
+dayro. is a calm, visual day planner. You drop time blocks onto an hour-by-hour timeline, tick off daily routines and write notes for the day, on the web and on your phone.
 
 ---
 
@@ -55,7 +55,7 @@ klndr. is a calm, visual day planner. You drop time blocks onto an hour-by-hour 
 - The same prompt with similar settings gives the generator the same starting point every time.
 - Chat-based generators (ChatGPT, Gemini) **reuse the previous image** as a reference for the next one in the same chat.
 
-**Why variety matters:** at this stage you're choosing an **idea**, not polishing one. Ten versions of the same "k from blocks" only tell you how that one idea can look. Ten truly different ideas show you which direction actually fits klndr. Real logo designers sketch dozens of different directions first and narrow down later. Do the same here: **go wide first, then refine.**
+**Why variety matters:** at this stage you're choosing an **idea**, not polishing one. Ten versions of the same "k from blocks" only tell you how that one idea can look. Ten truly different ideas show you which direction actually fits dayro. Real logo designers sketch dozens of different directions first and narrow down later. Do the same here: **go wide first, then refine.**
 
 Real variety means changing **what the symbol shows** (concept) and **how it's built** (technique), not just thickness or corner radius.
 
@@ -66,7 +66,7 @@ Real variety means changing **what the symbol shows** (concept) and **how it's b
 One image, nine different ideas. The prompt tells the generator directly that variety is the main goal.
 
 ```text
-Logo exploration sheet for "klndr.", a calm, visual day-planner app where you place time blocks on an hour-by-hour timeline, tick off daily routines and write notes for the day. Show 9 different logo symbols in a 3x3 grid on a pure white background, each in solid flat black, each with the lowercase wordmark "klndr." in a plain neutral grotesk sans-serif, regular weight, next to it.
+Logo exploration sheet for "dayro.", a calm, visual day-planner app where you place time blocks on an hour-by-hour timeline, tick off daily routines and write notes for the day. Show 9 different logo symbols in a 3x3 grid on a pure white background, each in solid flat black, each with the lowercase wordmark "dayro." in a plain neutral grotesk sans-serif, regular weight, next to it.
 
 VARIETY IS THE MOST IMPORTANT REQUIREMENT. Every one of the 9 symbols must be a clearly different idea built with a different technique. No two symbols may share the same base shape, construction or silhouette. Do not make variations of one idea. Mix letter-based marks (a lowercase "k") with abstract marks. Spread these techniques across the grid: two shapes overlapping where the overlap flips to white; horizontal slabs stacked with even gaps and 45-degree cut ends; one continuous line of constant thickness folded into a shape; flat isometric planes with one piece missing; radial spokes around a hidden negative-space shape; a solid shape with a letter cut out of it.
 
@@ -80,7 +80,7 @@ Style for all: modern, minimal, geometric, heavy and compact, built from only 2 
 Use this to explore one direction properly. **Change both the concept and the technique every run.**
 
 ```text
-Minimal modern logo for "klndr.", a calm, visual day-planner app. Horizontal lockup: a symbol on the left, about as tall as the letters, then the lowercase wordmark "klndr." in a plain neutral grotesk sans-serif, regular weight.
+Minimal modern logo for "dayro.", a calm, visual day-planner app. Horizontal lockup: a symbol on the left, about as tall as the letters, then the lowercase wordmark "dayro." in a plain neutral grotesk sans-serif, regular weight.
 
 Symbol: [CONCEPT]
 Corners: [all softly rounded / all sharp with 45-degree cuts].
@@ -162,7 +162,7 @@ Each one is a different idea. Use a new one every run (picking a random number w
 55. **Moving forward (chevrons, sharp):** three chevrons pointing right, each a different thickness, like moving through the day.
 56. **Focus frame (corners, sharp):** four thick L-shaped corners framing an empty square, like focusing on one block of time.
 57. **Square spiral (spiral, sharp):** a square spiral of straight thick segments that get shorter toward the center, like days winding into a week.
-58. **The period (dot + bar, rounded):** the period from "klndr." grown into the symbol: a solid circle at the end of a short thick horizontal bar, like the end of a sentence and of a timeline at once.
+58. **The period (dot + bar, rounded):** the period from "dayro." grown into the symbol: a solid circle at the end of a short thick horizontal bar, like the end of a sentence and of a timeline at once.
 59. **Puzzle fit (interlock, rounded):** two rounded shapes fitting together like puzzle pieces, the seam between them forming the diagonal of a lowercase k.
 
 ---
@@ -173,4 +173,4 @@ Each one is a different idea. Use a new one every run (picking a random number w
 - **ChatGPT / Gemini:** start a **new chat for each concept**, or they copy the last image. If they stick to one idea, say: "Completely different idea. Don't use rounded rectangles or stacked bars."
 - **Midjourney:** run each concept as its own prompt and add `--chaos 50 --style raw --no color, gradient, shadow, mockup`. Raise `--chaos` for wilder results.
 - **Ideogram:** turn **Magic Prompt off**, so it doesn't rewrite every prompt into the same default style.
-- **Spelling:** if "klndr." comes out wrong, add "symbol only, no text" and set the wordmark yourself.
+- **Spelling:** if "dayro." comes out wrong, add "symbol only, no text" and set the wordmark yourself.

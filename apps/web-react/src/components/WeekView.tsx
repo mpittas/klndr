@@ -1,5 +1,5 @@
-import { addDaysISO, nowMinutes, snapMinutes, todayISO, type ScheduledTask } from "@klndr/core";
-import { useLibraryActions, useTaskActions, useTemplates } from "@klndr/data";
+import { addDaysISO, nowMinutes, snapMinutes, todayISO, type ScheduledTask } from "@dayro/core";
+import { useLibraryActions, useTaskActions, useTemplates } from "@dayro/data";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 

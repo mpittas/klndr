@@ -1,4 +1,4 @@
-import type { ScheduledTask } from "@klndr/core";
+import type { ScheduledTask } from "@dayro/core";
 
 /** One cell of the month grid, built by `MonthView` and drawn by `MonthGrid`. */
 export type DayCell = {

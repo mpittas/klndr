@@ -1,4 +1,4 @@
-import type { ActivityTemplate } from "@klndr/core";
+import type { ActivityTemplate } from "@dayro/core";
 
 import { LibraryPanel } from "@/components/library/LibraryPanel";
 import { Modal } from "@/components/Modal";

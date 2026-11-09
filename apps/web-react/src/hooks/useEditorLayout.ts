@@ -3,9 +3,9 @@ import { useCallback, useSyncExternalStore } from "react";
 /** How the block editor opens from `sm` up: a centred dialog, or a drawer on the right (Notion's "side peek"). */
 export type EditorLayout = "center" | "side";
 
-const STORAGE_KEY = "klndr-editor-layout";
+const STORAGE_KEY = "dayro-editor-layout";
 /** Told to every reader in this tab when the default changes (the `storage` event covers other tabs). */
-const CHANGE_EVENT = "klndr-editor-layout-change";
+const CHANGE_EVENT = "dayro-editor-layout-change";
 
 const read = (): EditorLayout => {
   try {

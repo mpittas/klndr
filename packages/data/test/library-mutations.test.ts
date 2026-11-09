@@ -1,4 +1,4 @@
-import type { ActivityTemplate, Category, ScheduledTask } from "@klndr/core";
+import type { ActivityTemplate, Category, ScheduledTask } from "@dayro/core";
 import { notifyManager, QueryObserver } from "@tanstack/react-query";
 import { describe, expect, it } from "vitest";
 import { categoriesQuery, dayTasksQuery, templatesQuery } from "../src/hooks/queries";

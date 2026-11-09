@@ -1,5 +1,5 @@
-import { categoryBreakdown, hoursLabel, sortCategoriesByName, type ScheduledTask } from "@klndr/core";
-import { useCategories, useCategoryColor } from "@klndr/data";
+import { categoryBreakdown, hoursLabel, sortCategoriesByName, type ScheduledTask } from "@dayro/core";
+import { useCategories, useCategoryColor } from "@dayro/data";
 import { Check, ChevronDown } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 

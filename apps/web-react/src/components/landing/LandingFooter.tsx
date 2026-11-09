@@ -16,7 +16,7 @@ export function LandingFooter({ start, signedIn }: { start: LandingStart; signed
     <footer className="relative overflow-hidden bg-background pt-12">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
         <div>
-          <Link to="/" className="text-lg text-foreground transition hover:opacity-80" aria-label="klndr. home">
+          <Link to="/" className="text-lg text-foreground transition hover:opacity-80" aria-label="dayro. home">
             <Wordmark />
           </Link>
           <p className="mt-2 text-sm text-muted-foreground">A tactile planner for people who time-block.</p>
@@ -56,14 +56,14 @@ export function LandingFooter({ start, signedIn }: { start: LandingStart; signed
           </Link>
         </nav>
       </div>
-      <p className="mx-auto mt-8 max-w-6xl px-5 text-xs text-muted-foreground sm:px-8">© {year} klndr.</p>
+      <p className="mx-auto mt-8 max-w-6xl px-5 text-xs text-muted-foreground sm:px-8">© {year} dayro.</p>
 
       {/* The wordmark, large and fading into the page */}
       <p
         aria-hidden="true"
         className="footer-wordmark pointer-events-none mx-auto -mb-[0.2em] mt-4 max-w-6xl select-none px-5 text-center text-[clamp(5.5rem,25vw,19rem)] font-bold leading-[0.9] tracking-[-0.065em] sm:px-8"
       >
-        klndr.
+        dayro.
       </p>
     </footer>
   );

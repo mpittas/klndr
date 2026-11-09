@@ -1,4 +1,4 @@
-import type { ActivityTemplate, ScheduledTask, TaskDraft } from "@klndr/core";
+import type { ActivityTemplate, ScheduledTask, TaskDraft } from "@dayro/core";
 
 /** What a block made from an activity starts as. `color` is the activity's category color. */
 export function draftFromTemplate(
