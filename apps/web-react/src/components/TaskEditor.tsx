@@ -12,8 +12,8 @@ import {
   type ActivityTemplate,
   type ScheduledTask,
   type TaskDraft,
-} from "@klndr/core";
-import { useCategoryColor, useCategoryField } from "@klndr/data";
+} from "@dayro/core";
+import { useCategoryColor, useCategoryField } from "@dayro/data";
 import {
   ArrowRight,
   CalendarDays,
@@ -544,6 +544,8 @@ function TaskEditorDialog({
           <NotesEditor
             value={draft.notes}
             placeholder="Details, or type / for a list…"
+            touchPlaceholder="Tap to write. Add a to-do list, bullets or a title…"
+            context={draft.title.trim() || undefined}
             onChange={(notes) => patch({ notes })}
           />
         </div>
