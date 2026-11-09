@@ -1,23 +1,20 @@
 import { todayISO } from "@klndr/core";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { CalendarDays, CalendarRange, Clock, Moon, Sun } from "lucide-react";
+import { CalendarDays, CalendarRange, Clock } from "lucide-react";
 
 import { isSignedIn, useAuth } from "@/auth";
 import { AccountMenu } from "@/components/AccountMenu";
+import { ThemeMenu } from "@/components/ThemeMenu";
 import { Wordmark } from "@/components/Wordmark";
 import { isFirebaseConfigured } from "@/env";
-import { useTheme } from "@/theme";
 
 /**
- * The logo, the Month/Week/Day switch, the theme button and the account menu (profile, appearance, the way back
+ * The logo, the Month/Week/Day switch, the theme menu and the account menu (profile, appearance, the way back
  * to the homepage, log out). The active tab comes from the router's pathname.
- *
- * The two theme icons stay rendered and CSS picks one (`dark:hidden` / `dark:block`).
  */
 export function AppHeader() {
   const path = useRouterState({ select: (state) => state.location.pathname });
   const { state } = useAuth();
-  const theme = useTheme();
 
   const today = todayISO();
   const user = isSignedIn(state) ? state.user : null;
@@ -84,16 +81,7 @@ export function AppHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5">
-          <button
-            type="button"
-            aria-label="Toggle light/dark theme"
-            title="Toggle theme"
-            className="btn btn-ghost btn-icon h-10 sm:h-9"
-            onClick={theme.toggle}
-          >
-            <Moon className="dark:hidden" aria-hidden="true" />
-            <Sun className="hidden dark:block" aria-hidden="true" />
-          </button>
+          <ThemeMenu triggerClassName="btn btn-ghost btn-icon h-10 sm:h-9" />
 
           {loading ? (
             <div className="h-10 w-10 animate-pulse rounded-full bg-muted sm:h-9 sm:w-24 sm:rounded-lg" />

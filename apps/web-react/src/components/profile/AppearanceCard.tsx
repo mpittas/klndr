@@ -1,13 +1,8 @@
-import { Check, Monitor, Moon, Sun, type LucideIcon } from "lucide-react";
+import { Check, Moon, Sun } from "lucide-react";
 
+import { ThemeSwatch } from "@/components/ThemeSwatch";
 import { useDefaultEditorLayout, type EditorLayout } from "@/hooks/useEditorLayout";
-import { useTheme, type ThemePreference } from "@/theme";
-
-const THEMES: Array<{ value: ThemePreference; label: string; icon: LucideIcon }> = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
-  { value: "system", label: "System", icon: Monitor },
-];
+import { THEME_GROUPS, useTheme, type ThemeName } from "@/theme";
 
 const LAYOUTS: Array<{ value: EditorLayout; label: string; description: string }> = [
   { value: "center", label: "Dialog", description: "Centred over the page" },
@@ -24,7 +19,7 @@ export function AppearanceCard() {
   const [layout, setLayout] = useDefaultEditorLayout();
 
   return (
-    <section className="card p-5 sm:p-7" aria-labelledby="appearance-title">
+    <section id="appearance" className="card scroll-mt-20 p-5 sm:p-7" aria-labelledby="appearance-title">
       <div className="flex items-start justify-between gap-3 border-b border-border pb-4">
         <div>
           <h2 id="appearance-title" className="text-base font-semibold tracking-[-0.015em] text-foreground">
@@ -39,27 +34,52 @@ export function AppearanceCard() {
         </span>
       </div>
 
-      {/* Theme */}
-      <div className="flex flex-col gap-3 border-b border-border py-5 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p id="theme-label" className="text-sm font-medium text-foreground">
-            Theme
-          </p>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">System follows your device's light or dark setting.</p>
-        </div>
-        <div role="radiogroup" aria-labelledby="theme-label" className="segmented h-10 self-start sm:h-9 sm:self-auto">
-          {THEMES.map(({ value, label, icon: Icon }) => (
-            <button
-              key={value}
-              type="button"
-              role="radio"
-              aria-checked={theme.preference === value}
-              className="segmented-item flex-none px-3"
-              onClick={() => theme.setPreference(value)}
-            >
-              <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              {label}
-            </button>
+      {/* Theme: follow the device, then the light themes and the dark ones */}
+      <div className="border-b border-border py-5">
+        <p id="theme-label" className="text-sm font-medium text-foreground">
+          Theme
+        </p>
+        <p className="mt-0.5 text-[13px] text-muted-foreground">
+          Pick a look, or let it follow your device's light or dark setting.
+        </p>
+
+        <div role="radiogroup" aria-labelledby="theme-label" className="mt-4 space-y-5">
+          <button
+            type="button"
+            role="radio"
+            aria-checked={theme.preference === "system"}
+            className={[cardClass(theme.preference === "system"), "flex w-full items-center gap-4"].join(" ")}
+            onClick={() => theme.setPreference("system")}
+          >
+            <span className="w-32 shrink-0">
+              <ThemeSwatch name="system" size="lg" />
+            </span>
+            <ChoiceLabel
+              selected={theme.preference === "system"}
+              label="Match device"
+              description="Light or dark, whichever your device is set to"
+            />
+          </button>
+
+          {THEME_GROUPS.map((group) => (
+            <div key={group.scheme}>
+              <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                {group.scheme === "light" ? <Sun className="h-3.5 w-3.5" aria-hidden="true" /> : <Moon className="h-3.5 w-3.5" aria-hidden="true" />}
+                {group.label}
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {group.options.map((option) => (
+                  <ThemeCard
+                    key={option.name}
+                    name={option.name}
+                    label={option.label}
+                    description={option.description}
+                    selected={theme.preference === option.name}
+                    onSelect={() => theme.setPreference(option.name)}
+                  />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -82,30 +102,11 @@ export function AppearanceCard() {
                 type="button"
                 role="radio"
                 aria-checked={selected}
-                className={[
-                  "group cursor-pointer rounded-xl border p-2 text-left transition-[border-color,box-shadow,background-color] duration-150",
-                  selected
-                    ? "border-primary bg-card shadow-[0_0_0_1px_var(--primary)]"
-                    : "border-border hover:border-input hover:bg-muted/40",
-                ].join(" ")}
+                className={cardClass(selected)}
                 onClick={() => setLayout(option.value)}
               >
                 <LayoutPreview layout={option.value} />
-                <span className="mt-2.5 flex items-start gap-2.5 px-1.5 pb-1">
-                  <span
-                    aria-hidden="true"
-                    className={[
-                      "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors",
-                      selected ? "border-primary" : "border-foreground/25 group-hover:border-foreground/40",
-                    ].join(" ")}
-                  >
-                    {selected ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-[13px] font-semibold text-foreground">{option.label}</span>
-                    <span className="block text-xs text-muted-foreground">{option.description}</span>
-                  </span>
-                </span>
+                <ChoiceLabel className="mt-2.5" selected={selected} label={option.label} description={option.description} />
               </button>
             );
           })}
@@ -113,6 +114,65 @@ export function AppearanceCard() {
         <p className="mt-3 text-xs text-muted-foreground">On phones, blocks always open as a sheet from the bottom.</p>
       </div>
     </section>
+  );
+}
+
+/** The card around a choice: outlined in the ink when chosen. Shared by the theme cards and the editor layouts. */
+const cardClass = (selected: boolean) =>
+  [
+    "group cursor-pointer rounded-xl border p-2 text-left transition-[border-color,box-shadow,background-color] duration-150",
+    selected ? "border-primary bg-card shadow-[0_0_0_1px_var(--primary)]" : "border-border hover:border-input hover:bg-muted/40",
+  ].join(" ");
+
+/** A radio dot, a name and a line under it. */
+function ChoiceLabel({
+  selected,
+  label,
+  description,
+  className = "",
+}: {
+  selected: boolean;
+  label: string;
+  description: string;
+  className?: string;
+}) {
+  return (
+    <span className={["flex min-w-0 items-start gap-2.5 px-1.5 pb-1", className].join(" ")}>
+      <span
+        aria-hidden="true"
+        className={[
+          "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors",
+          selected ? "border-primary" : "border-foreground/25 group-hover:border-foreground/40",
+        ].join(" ")}
+      >
+        {selected ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[13px] font-semibold text-foreground">{label}</span>
+        <span className="block text-xs text-muted-foreground">{description}</span>
+      </span>
+    </span>
+  );
+}
+
+function ThemeCard({
+  name,
+  label,
+  description,
+  selected,
+  onSelect,
+}: {
+  name: ThemeName;
+  label: string;
+  description: string;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button type="button" role="radio" aria-checked={selected} className={cardClass(selected)} onClick={onSelect}>
+      <ThemeSwatch name={name} size="lg" />
+      <ChoiceLabel className="mt-2.5" selected={selected} label={label} description={description} />
+    </button>
   );
 }
 

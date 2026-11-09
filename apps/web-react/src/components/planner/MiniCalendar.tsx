@@ -157,8 +157,8 @@ export function MiniCalendar({
                         "group-hover:scale-[1.08] group-active:scale-95 group-focus-visible:ring-2 group-focus-visible:ring-ring motion-reduce:transition-none motion-reduce:group-hover:scale-100",
                         selected
                           ? isToday
-                            ? "bg-brand font-semibold text-brand-foreground shadow-[0_1px_3px_rgb(120_40_20/0.3)]"
-                            : "bg-foreground font-semibold text-background shadow-[0_1px_3px_rgb(60_40_20/0.25)]"
+                            ? "bg-brand font-semibold text-brand-foreground shadow-[0_1px_3px_rgb(var(--brand-shade)/0.3)]"
+                            : "bg-foreground font-semibold text-background shadow-[0_1px_3px_rgb(var(--shade)/0.25)]"
                           : isToday
                             ? "font-semibold text-brand group-hover:bg-brand/12"
                             : inMonth

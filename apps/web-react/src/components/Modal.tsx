@@ -242,7 +242,7 @@ export function Modal({
         "fixed inset-0 z-50 flex items-end justify-center bg-[var(--scrim)] backdrop-blur-[3px] transition-[opacity,background-color] duration-200",
         // The drawer leaves the page readable: a lighter veil, no blur.
         side
-          ? "modal-side sm:items-stretch sm:justify-start sm:bg-[rgb(28_20_12/0.14)] sm:p-2 sm:backdrop-blur-none sm:dark:bg-black/40"
+          ? "modal-side sm:items-stretch sm:justify-start sm:bg-[color-mix(in_oklab,var(--scrim)_40%,transparent)] sm:p-2 sm:backdrop-blur-none sm:dark:bg-black/40"
           : "sm:items-center sm:p-6",
       ].join(" ")}
     >
@@ -257,7 +257,7 @@ export function Modal({
         className={[
           "modal-panel relative z-10 flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-border/70 bg-background shadow-xl focus:outline-none dark:shadow-[0_28px_70px_-18px_rgb(0_0_0/0.75)] sm:rounded-2xl",
           side
-            ? "sm:h-full sm:max-h-full sm:max-w-[34rem] sm:shadow-[0_0_0_1px_rgb(60_40_20/0.03),24px_0_60px_-24px_rgb(60_40_20/0.35)]"
+            ? "sm:h-full sm:max-h-full sm:max-w-[34rem] sm:shadow-[0_0_0_1px_rgb(var(--shade)/0.03),24px_0_60px_-24px_rgb(var(--shade)/0.35)]"
             : ["sm:max-h-[88dvh]", wide ? "sm:max-w-2xl" : lg ? "sm:max-w-xl" : "sm:max-w-md"].join(" "),
           dragY ? "" : "transition-transform duration-200",
         ].join(" ")}

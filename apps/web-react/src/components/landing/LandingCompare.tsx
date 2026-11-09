@@ -74,7 +74,7 @@ export function LandingCompare() {
               <div className="absolute left-0 top-[10%] h-1/2 w-2/3 rounded-full bg-[color-mix(in_oklab,var(--cat-indigo)_22%,transparent)] blur-3xl" />
               <div className="absolute bottom-[6%] right-0 h-1/2 w-2/3 rounded-full bg-[color-mix(in_oklab,var(--cat-emerald)_20%,transparent)] blur-3xl" />
             </div>
-            <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_1px_2px_rgb(52_36_20/0.05),0_24px_56px_-28px_rgb(52_36_20/0.35)] sm:p-6 dark:shadow-[0_24px_56px_-28px_rgb(0_0_0/0.7)]">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-[0_1px_2px_rgb(var(--shade)/0.05),0_24px_56px_-28px_rgb(var(--shade)/0.35)] sm:p-6 dark:shadow-[0_24px_56px_-28px_rgb(0_0_0/0.7)]">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-semibold text-foreground">Thursday</p>
                 <span className="flex items-center gap-1.5 text-[11px] tabular-nums text-muted-foreground">

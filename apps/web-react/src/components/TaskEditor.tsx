@@ -453,11 +453,6 @@ function TaskEditorDialog({
           onChange={category.choose}
         />
 
-        {/* Or fill in the name, category and length from an activity; the time is set below */}
-        {!isEdit && templates.length > 0 ? (
-          <ActivityPicker value={draft.templateId} templates={templates} onChange={applyTemplate} />
-        ) : null}
-
         {/* When, as one statement on a slightly lifted band: the day (opens the calendar), then the span (each end
             opens a list of times). The length presets follow. */}
         <section className="card overflow-hidden">
@@ -539,6 +534,10 @@ function TaskEditorDialog({
           </div>
         </section>
 
+        {/* Or fill in the name, category and length from an activity; the day and start above stay as they are */}
+        {!isEdit && templates.length > 0 ? (
+          <ActivityPicker value={draft.templateId} templates={templates} onChange={applyTemplate} />
+        ) : null}
 
         <div className="block">
           <FieldLabel icon={StickyNote}>Notes</FieldLabel>

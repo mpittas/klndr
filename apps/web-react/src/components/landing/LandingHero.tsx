@@ -115,7 +115,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
           </div>
 
           <div className="hero-tilt">
-            <div className="rounded-[1.375rem] bg-white/55 p-1.5 shadow-[0_1px_2px_rgb(52_36_20/0.04),0_40px_80px_-36px_rgb(52_36_20/0.4)] ring-1 ring-foreground/[0.07] sm:p-2 dark:bg-white/[0.04] dark:shadow-[0_40px_80px_-36px_rgb(0_0_0/0.75)] dark:ring-white/10">
+            <div className="rounded-[1.375rem] bg-white/55 p-1.5 shadow-[0_1px_2px_rgb(var(--shade)/0.04),0_40px_80px_-36px_rgb(var(--shade)/0.4)] ring-1 ring-foreground/[0.07] sm:p-2 dark:bg-white/[0.04] dark:shadow-[0_40px_80px_-36px_rgb(0_0_0/0.75)] dark:ring-white/10">
               <PlannerMock />
             </div>
           </div>
@@ -123,7 +123,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
           {/* Floating details on wide screens */}
           <div
             aria-hidden="true"
-            className="hero-float absolute -left-20 -bottom-8 z-10 hidden w-56 items-center gap-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-[0_24px_48px_-20px_rgb(52_36_20/0.35)] backdrop-blur-md xl:flex dark:shadow-[0_24px_48px_-20px_rgb(0_0_0/0.7)]"
+            className="hero-float absolute -left-20 -bottom-8 z-10 hidden w-56 items-center gap-3 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-[0_24px_48px_-20px_rgb(var(--shade)/0.35)] backdrop-blur-md xl:flex dark:shadow-[0_24px_48px_-20px_rgb(0_0_0/0.7)]"
           >
             <svg viewBox="0 0 36 36" className="h-11 w-11 shrink-0 -rotate-90">
               <circle cx="18" cy="18" r="15" fill="none" className="stroke-muted" strokeWidth={4} />
@@ -148,7 +148,7 @@ export function LandingHero({ start, signedIn }: { start: LandingStart; signedIn
 
           <div
             aria-hidden="true"
-            className="hero-float absolute -right-20 top-[46%] z-10 hidden w-60 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-[0_24px_48px_-20px_rgb(52_36_20/0.35)] backdrop-blur-md [--float-delay:-3s] xl:block dark:shadow-[0_24px_48px_-20px_rgb(0_0_0/0.7)]"
+            className="hero-float absolute -right-20 top-[46%] z-10 hidden w-60 rounded-2xl border border-border/80 bg-card/90 p-3.5 shadow-[0_24px_48px_-20px_rgb(var(--shade)/0.35)] backdrop-blur-md [--float-delay:-3s] xl:block dark:shadow-[0_24px_48px_-20px_rgb(0_0_0/0.7)]"
           >
             <div className="flex items-center gap-1.5">
               <span className="keycap">

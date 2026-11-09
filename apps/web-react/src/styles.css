@@ -15,12 +15,18 @@
  * - One accent, terracotta (`brand`): today, the "now" line, focus and selection. Nothing else is orange.
  * - `success` (sage) for anything done. Category colors are reserved for what the person made (see `.tone-*`).
  * - Corners: 6px tiny marks, 8px small controls and blocks, 10px buttons and fields, 14px cards and menus,
- *   18px dialogs and large panels. Shadows are tinted brown, never grey.
+ *   18px dialogs and large panels. Shadows are tinted with the theme's own ink (`--shade`), never grey.
  * - Build screens from the shared parts below (`btn`, `card`, `field`, `segmented`, `menu`, `count`, `kbd`,
  *   `progress`, `tick`, `avatar`) instead of restyling a control in place.
+ *
+ * Themes: five, listed in `src/theme.tsx`. Each is a set of the variables below, chosen with
+ * `<html data-theme="…">`; the dark ones also carry the `dark` class, so every `dark:` utility and `.dark` rule
+ * applies to them too. A theme block also works on any element (`data-theme` on a span), which is how the theme
+ * pickers draw their previews in the real colors.
  * ---------------------------------------------------------------------------------------------
  */
-:root {
+:root,
+[data-theme="light"] {
   --background: #fbf8f3;
   --foreground: #231e18;
   --card: #fffefb;
@@ -50,9 +56,13 @@
 
   /* What sits behind a dialog. */
   --scrim: rgb(28 20 12 / 0.36);
+  /* Shadow tints as RGB triplets (`rgb(var(--shade) / 0.1)`): neutral, and brand-colored for accent chips. */
+  --shade: 60 40 20;
+  --brand-shade: 120 40 20;
 }
 
-.dark {
+.dark,
+[data-theme="dark"] {
   --background: #1a1714;
   --foreground: #f3ede4;
   --card: #221e1a;
@@ -81,6 +91,291 @@
   --warning: #e0b15a;
 
   --scrim: rgb(0 0 0 / 0.55);
+  --shade: 60 40 20;
+  --brand-shade: 120 40 20;
+}
+
+/*
+ * The three added themes. Same specificity as the blocks above, so they must stay after them. Lavender is a light
+ * scheme (it uses the `:root` category colors); Midnight and Forest are dark schemes (the `.dark` category colors,
+ * and the `dark` class on <html>; see `src/theme.tsx`).
+ */
+[data-theme="lavender"] {
+  color-scheme: light;
+  --background: #f8f6fc;
+  --foreground: #221d33;
+  --card: #fefdff;
+  --card-foreground: #221d33;
+  --popover: #fefdff;
+  --popover-foreground: #221d33;
+  --primary: #2a2340;
+  --primary-foreground: #f8f6fc;
+  --secondary: #f0ecf8;
+  --secondary-foreground: #2a2340;
+  --muted: #f0ecf8;
+  --muted-foreground: #6b6485;
+  --accent: #e9e3f5;
+  --accent-foreground: #2a2340;
+  --destructive: #c8384d;
+  --destructive-foreground: #fff8fa;
+  --border: #e6e0f0;
+  --input: #d8d0e6;
+  --ring: #6d4fd0;
+  --canvas: #f0ecf8;
+
+  --brand: #6d4fd0;
+  --brand-foreground: #fbf9ff;
+  --success: #3a8a62;
+  --success-foreground: #f5fbf7;
+  --warning: #b7791f;
+
+  --scrim: rgb(26 20 48 / 0.34);
+  --shade: 50 40 90;
+  --brand-shade: 70 40 150;
+}
+
+[data-theme="midnight"] {
+  color-scheme: dark;
+  --background: #0f141d;
+  --foreground: #e6ebf3;
+  --card: #151b26;
+  --card-foreground: #e6ebf3;
+  --popover: #1a2130;
+  --popover-foreground: #e6ebf3;
+  --primary: #e6ebf3;
+  --primary-foreground: #0f141d;
+  --secondary: #1b2230;
+  --secondary-foreground: #e6ebf3;
+  --muted: #1b2230;
+  --muted-foreground: #8f9bb0;
+  --accent: #232b3b;
+  --accent-foreground: #e6ebf3;
+  --destructive: #f06a6a;
+  --destructive-foreground: #0f141d;
+  --border: #262f40;
+  --input: #333d51;
+  --ring: #7ea6ff;
+  --canvas: #0b0f16;
+
+  --brand: #7ea6ff;
+  --brand-foreground: #0d1220;
+  --success: #6cc597;
+  --success-foreground: #0c1a13;
+  --warning: #e8b45c;
+
+  --scrim: rgb(0 0 0 / 0.6);
+  --shade: 2 6 18;
+  --brand-shade: 20 40 110;
+}
+
+[data-theme="forest"] {
+  color-scheme: dark;
+  --background: #121a16;
+  --foreground: #e8efe9;
+  --card: #17211c;
+  --card-foreground: #e8efe9;
+  --popover: #1c2721;
+  --popover-foreground: #e8efe9;
+  --primary: #e8efe9;
+  --primary-foreground: #121a16;
+  --secondary: #1d2822;
+  --secondary-foreground: #e8efe9;
+  --muted: #1d2822;
+  --muted-foreground: #96a89c;
+  --accent: #25322b;
+  --accent-foreground: #e8efe9;
+  --destructive: #ec6f5e;
+  --destructive-foreground: #121a16;
+  --border: #28362e;
+  --input: #35453b;
+  --ring: #e6b866;
+  --canvas: #0d1410;
+
+  --brand: #e6b866;
+  --brand-foreground: #1a1408;
+  --success: #82c99c;
+  --success-foreground: #0f1c14;
+  --warning: #eb9a5b;
+
+  --scrim: rgb(0 0 0 / 0.58);
+  --shade: 0 10 5;
+  --brand-shade: 90 60 10;
+}
+
+/*
+ * Five more. Rose, Sage and Sky are light schemes, Plum and Graphite dark ones, so each group of the picker holds
+ * five. Each has its own accent hue and, where the accent is close to a status color, the status color moves away
+ * from it (Sage's accent is teal so "done" stays green; Rose's destructive is a true red, not a pink).
+ */
+[data-theme="rose"] {
+  color-scheme: light;
+  --background: #fdf6f7;
+  --foreground: #2e1a21;
+  --card: #fffdfd;
+  --card-foreground: #2e1a21;
+  --popover: #fffdfd;
+  --popover-foreground: #2e1a21;
+  --primary: #3a1f29;
+  --primary-foreground: #fdf6f7;
+  --secondary: #f8ecee;
+  --secondary-foreground: #3a1f29;
+  --muted: #f8ecee;
+  --muted-foreground: #7a5a65;
+  --accent: #f3e1e5;
+  --accent-foreground: #3a1f29;
+  --destructive: #c8352a;
+  --destructive-foreground: #fff9f8;
+  --border: #efdde1;
+  --input: #e3cbd1;
+  --ring: #b8327a;
+  --canvas: #f6e9ec;
+
+  --brand: #b8327a;
+  --brand-foreground: #fff8fb;
+  --success: #2f8a5a;
+  --success-foreground: #f5fbf7;
+  --warning: #b7791f;
+
+  --scrim: rgb(46 20 30 / 0.34);
+  --shade: 90 30 50;
+  --brand-shade: 140 30 80;
+}
+
+[data-theme="sage"] {
+  color-scheme: light;
+  --background: #f5f7f2;
+  --foreground: #1d261f;
+  --card: #fcfdfa;
+  --card-foreground: #1d261f;
+  --popover: #fcfdfa;
+  --popover-foreground: #1d261f;
+  --primary: #24342b;
+  --primary-foreground: #f5f7f2;
+  --secondary: #ebf0e7;
+  --secondary-foreground: #24342b;
+  --muted: #ebf0e7;
+  --muted-foreground: #5b6b5f;
+  --accent: #e1e9dc;
+  --accent-foreground: #24342b;
+  --destructive: #c0412f;
+  --destructive-foreground: #fffaf8;
+  --border: #dfe6d9;
+  --input: #cfd9c8;
+  --ring: #1c7683;
+  --canvas: #ebf0e7;
+
+  --brand: #1c7683;
+  --brand-foreground: #f4fbfc;
+  --success: #3d8a58;
+  --success-foreground: #f5fbf7;
+  --warning: #b7791f;
+
+  --scrim: rgb(20 34 26 / 0.34);
+  --shade: 30 60 40;
+  --brand-shade: 20 80 90;
+}
+
+[data-theme="sky"] {
+  color-scheme: light;
+  --background: #f5f8fc;
+  --foreground: #16202e;
+  --card: #fdfeff;
+  --card-foreground: #16202e;
+  --popover: #fdfeff;
+  --popover-foreground: #16202e;
+  --primary: #1b2a41;
+  --primary-foreground: #f5f8fc;
+  --secondary: #ebf1f8;
+  --secondary-foreground: #1b2a41;
+  --muted: #ebf1f8;
+  --muted-foreground: #586a80;
+  --accent: #e1eaf5;
+  --accent-foreground: #1b2a41;
+  --destructive: #cb3a3a;
+  --destructive-foreground: #fffafa;
+  --border: #dfe7f1;
+  --input: #cbd7e6;
+  --ring: #2a62d8;
+  --canvas: #ebf1f8;
+
+  --brand: #2a62d8;
+  --brand-foreground: #f8faff;
+  --success: #2f8a5f;
+  --success-foreground: #f5fbf7;
+  --warning: #b7791f;
+
+  --scrim: rgb(15 28 50 / 0.34);
+  --shade: 30 50 90;
+  --brand-shade: 30 70 190;
+}
+
+[data-theme="plum"] {
+  color-scheme: dark;
+  --background: #17101b;
+  --foreground: #efe6f1;
+  --card: #1e1624;
+  --card-foreground: #efe6f1;
+  --popover: #251b2c;
+  --popover-foreground: #efe6f1;
+  --primary: #efe6f1;
+  --primary-foreground: #17101b;
+  --secondary: #271c2e;
+  --secondary-foreground: #efe6f1;
+  --muted: #271c2e;
+  --muted-foreground: #a592ab;
+  --accent: #31243a;
+  --accent-foreground: #efe6f1;
+  --destructive: #f0665f;
+  --destructive-foreground: #17101b;
+  --border: #33263b;
+  --input: #43344c;
+  --ring: #e48fd4;
+  --canvas: #110b14;
+
+  --brand: #e48fd4;
+  --brand-foreground: #2a0f26;
+  --success: #7bcb9a;
+  --success-foreground: #0e1c14;
+  --warning: #e8b45c;
+
+  --scrim: rgb(0 0 0 / 0.6);
+  --shade: 10 0 14;
+  --brand-shade: 100 30 90;
+}
+
+/* Neutral charcoal with a near-white accent: the only color on screen is the person's own. */
+[data-theme="graphite"] {
+  color-scheme: dark;
+  --background: #131416;
+  --foreground: #ececee;
+  --card: #1a1b1e;
+  --card-foreground: #ececee;
+  --popover: #202125;
+  --popover-foreground: #ececee;
+  --primary: #ececee;
+  --primary-foreground: #131416;
+  --secondary: #222327;
+  --secondary-foreground: #ececee;
+  --muted: #222327;
+  --muted-foreground: #9a9ba3;
+  --accent: #2b2c31;
+  --accent-foreground: #ececee;
+  --destructive: #f06b64;
+  --destructive-foreground: #131416;
+  --border: #2c2d32;
+  --input: #3a3b41;
+  --ring: #c9cad1;
+  --canvas: #0e0f10;
+
+  --brand: #e3e4ea;
+  --brand-foreground: #131416;
+  --success: #6fcf97;
+  --success-foreground: #0d1c14;
+  --warning: #e8b45c;
+
+  --scrim: rgb(0 0 0 / 0.62);
+  --shade: 0 0 0;
+  --brand-shade: 0 0 0;
 }
 
 /*
@@ -175,12 +470,12 @@
   --radius-2xl: 1.125rem;
   --radius-3xl: 1.5rem;
 
-  --shadow-2xs: 0 1px 0 rgb(60 40 20 / 0.03);
-  --shadow-xs: 0 1px 2px rgb(60 40 20 / 0.05);
-  --shadow-sm: 0 1px 2px rgb(60 40 20 / 0.05), 0 2px 8px -2px rgb(60 40 20 / 0.08);
-  --shadow-md: 0 1px 3px rgb(60 40 20 / 0.05), 0 8px 20px -6px rgb(60 40 20 / 0.12);
-  --shadow-lg: 0 2px 6px rgb(60 40 20 / 0.05), 0 16px 36px -10px rgb(60 40 20 / 0.18);
-  --shadow-xl: 0 4px 10px rgb(60 40 20 / 0.06), 0 28px 64px -18px rgb(60 40 20 / 0.3);
+  --shadow-2xs: 0 1px 0 rgb(var(--shade) / 0.03);
+  --shadow-xs: 0 1px 2px rgb(var(--shade) / 0.05);
+  --shadow-sm: 0 1px 2px rgb(var(--shade) / 0.05), 0 2px 8px -2px rgb(var(--shade) / 0.08);
+  --shadow-md: 0 1px 3px rgb(var(--shade) / 0.05), 0 8px 20px -6px rgb(var(--shade) / 0.12);
+  --shadow-lg: 0 2px 6px rgb(var(--shade) / 0.05), 0 16px 36px -10px rgb(var(--shade) / 0.18);
+  --shadow-xl: 0 4px 10px rgb(var(--shade) / 0.06), 0 28px 64px -18px rgb(var(--shade) / 0.3);
 }
 
 /*
@@ -299,8 +594,8 @@
     @apply bg-primary text-primary-foreground hover:bg-primary/88;
     box-shadow:
       inset 0 1px 0 rgb(255 255 255 / 0.14),
-      0 1px 2px rgb(52 36 20 / 0.16),
-      0 4px 12px -6px rgb(52 36 20 / 0.4);
+      0 1px 2px rgb(var(--shade) / 0.16),
+      0 4px 12px -6px rgb(var(--shade) / 0.4);
   }
   .dark .btn-primary {
     box-shadow:
@@ -367,7 +662,7 @@
     @apply shrink-0;
   }
   .segmented-item:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"], [data-active="true"]) {
-    @apply bg-card text-foreground shadow-[inset_0_0_0_1px_rgb(60_40_20/0.13)] hover:bg-card dark:bg-foreground/[0.16] dark:shadow-none dark:hover:bg-foreground/[0.16];
+    @apply bg-card text-foreground shadow-[inset_0_0_0_1px_rgb(var(--shade)/0.13)] hover:bg-card dark:bg-foreground/[0.16] dark:shadow-none dark:hover:bg-foreground/[0.16];
   }
 
   /* Small things */
@@ -634,7 +929,7 @@ html:has([data-landing]) {
 /* Cards whose scene comes forward a little on hover. */
 [data-landing] .lift-card:hover {
   border-color: color-mix(in oklab, var(--foreground) 16%, var(--border));
-  box-shadow: 0 18px 40px -22px rgb(52 36 20 / 0.3);
+  box-shadow: 0 18px 40px -22px rgb(var(--shade) / 0.3);
 }
 .dark [data-landing] .lift-card:hover {
   box-shadow: 0 18px 40px -22px rgb(0 0 0 / 0.7);
@@ -664,8 +959,8 @@ html:has([data-landing]) {
   padding: 0 0.16em 0.04em 0.3em;
   line-height: 1.02;
   box-shadow:
-    0 1px 2px rgb(52 36 20 / 0.04),
-    0 8px 20px -12px rgb(52 36 20 / 0.25);
+    0 1px 2px rgb(var(--shade) / 0.04),
+    0 8px 20px -12px rgb(var(--shade) / 0.25);
 }
 
 /* The product leans back at first and straightens as it scrolls into view. */

@@ -4,19 +4,38 @@
     {
       "name": "api",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "-w", "apps/api"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "-w",
+        "apps/api"
+      ],
       "port": 3001
     },
     {
       "name": "web-react",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "-w", "apps/web-react"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "-w",
+        "apps/web-react"
+      ],
       "port": 5173
     },
     {
       "name": "web-react-demo",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "-w", "apps/web-react", "--", "--port", "5174", "--strictPort"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "-w",
+        "apps/web-react",
+        "--",
+        "--port",
+        "5174",
+        "--strictPort"
+      ],
       "env": {
         "VITE_FIREBASE_API_KEY": "",
         "VITE_FIREBASE_AUTH_DOMAIN": "",
@@ -30,8 +49,66 @@
     {
       "name": "mobile",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "-w", "apps/mobile"],
+      "runtimeArgs": [
+        "run",
+        "start",
+        "-w",
+        "apps/mobile"
+      ],
       "port": 8081
+    },
+    {
+      "name": "mobile-preview-api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start",
+        "-w",
+        "apps/api"
+      ],
+      "env": {
+        "PORT": "3101",
+        "FIREBASE_PROJECT_ID": "",
+        "OPENAI_API_KEY": "",
+        "NODE_ENV": "development"
+      },
+      "port": 3101
+    },
+    {
+      "name": "mobile-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "C:/Users/mario/Documents/code/personal/klndr/node_modules/vite/bin/vite.js",
+        "--config",
+        "C:/Users/mario/AppData/Local/Temp/claude/C--Users-mario-Documents-code-personal-klndr/270c42bb-e2d5-476c-8a5a-c0061724db3a/scratchpad/harness/vite.config.mjs"
+      ],
+      "port": 5190
+    },
+    {
+      "name": "category-api",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "-w", "apps/api"],
+      "env": {
+        "PORT": "3011",
+        "FIREBASE_PROJECT_ID": "",
+        "NODE_ENV": "development"
+      },
+      "port": 3011
+    },
+    {
+      "name": "category-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "-w", "apps/web-react", "--", "--port", "5183", "--strictPort"],
+      "env": {
+        "VITE_API_PROXY_TARGET": "http://localhost:3011",
+        "VITE_FIREBASE_API_KEY": "",
+        "VITE_FIREBASE_AUTH_DOMAIN": "",
+        "VITE_FIREBASE_PROJECT_ID": "",
+        "VITE_FIREBASE_STORAGE_BUCKET": "",
+        "VITE_FIREBASE_MESSAGING_SENDER_ID": "",
+        "VITE_FIREBASE_APP_ID": ""
+      },
+      "port": 5183
     }
   ]
 }

@@ -1,26 +1,10 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import {
-  ChevronDown,
-  FileText,
-  Info,
-  LogOut,
-  Monitor,
-  Moon,
-  Settings,
-  ShieldCheck,
-  Sun,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDown, FileText, Info, LogOut, Palette, Settings, ShieldCheck } from "lucide-react";
 import { useEffect, useId, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 
 import { useAuth } from "@/auth";
-import { useTheme, type ThemePreference } from "@/theme";
-
-const APPEARANCE: Array<{ value: ThemePreference; label: string; icon: LucideIcon }> = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "dark", label: "Dark", icon: Moon },
-  { value: "system", label: "System", icon: Monitor },
-];
+import { ThemeSwatch } from "@/components/ThemeSwatch";
+import { THEME_OPTIONS, useTheme } from "@/theme";
 
 const itemClass = "menu-item h-9 gap-3 touch:h-11";
 const iconClass = "h-4 w-4 shrink-0 text-muted-foreground";
@@ -44,6 +28,8 @@ export function AccountMenu({
   const theme = useTheme();
   const navigate = useNavigate();
   const path = useRouterState({ select: (state) => state.location.pathname });
+  const themeLabel =
+    theme.preference === "system" ? "Match device" : (THEME_OPTIONS.find((option) => option.name === theme.preference)?.label ?? "");
 
   const [open, setOpen] = useState(false);
   const menuId = useId();
@@ -170,26 +156,25 @@ export function AccountMenu({
             Profile &amp; settings
           </Link>
 
-          {/* Appearance: three choices in one row */}
-          <div className="flex items-center justify-between gap-3 py-1 pl-2.5 pr-1">
-            <span className="text-[13px] text-foreground">Appearance</span>
-            <div role="group" aria-label="Appearance" className="segmented h-8">
-              {APPEARANCE.map(({ value, label, icon: Icon }) => (
-                <button
-                  key={value}
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={theme.preference === value}
-                  aria-label={label}
-                  title={label}
-                  className="segmented-item w-8 flex-none px-0"
-                  onClick={() => theme.setPreference(value)}
-                >
-                  <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* The theme in use; the picker itself is the button in the header and the profile's Appearance card */}
+          <Link
+            to="/profile"
+            hash="appearance"
+            role="menuitem"
+            className={itemClass}
+            onClick={() => {
+              setOpen(false);
+              // Already on the profile with this hash, the router has nothing to scroll to.
+              if (path === "/profile") document.getElementById("appearance")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          >
+            <Palette className={iconClass} aria-hidden="true" />
+            <span className="flex-1">Theme</span>
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <ThemeSwatch name={theme.theme} size="dot" />
+              {themeLabel}
+            </span>
+          </Link>
           <Separator />
 
           <Link to="/" role="menuitem" className={itemClass}>

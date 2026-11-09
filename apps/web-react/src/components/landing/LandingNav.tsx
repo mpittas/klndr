@@ -1,11 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { isFirebaseConfigured, isSignedIn, useAuth } from "@/auth";
+import { ThemeMenu } from "@/components/ThemeMenu";
 import { Wordmark } from "@/components/Wordmark";
 import type { LandingStart } from "@/components/landing/types";
-import { useTheme } from "@/theme";
 
 const LINKS = [
   { href: "#how-it-works", label: "How it works" },
@@ -15,7 +14,6 @@ const LINKS = [
 
 export function LandingNav({ start }: { start: LandingStart }) {
   const { state } = useAuth();
-  const { toggle: toggleTheme } = useTheme();
   const signedIn = isSignedIn(state);
 
   // The bar is see-through over the hero and tucks into a floating pill once the page scrolls under it.
@@ -34,7 +32,7 @@ export function LandingNav({ start }: { start: LandingStart }) {
         className={[
           "mx-auto mt-2 flex h-14 items-center justify-between gap-3 rounded-2xl border transition-all duration-500 ease-[cubic-bezier(0.2,0.7,0.2,1)]",
           scrolled
-            ? "max-w-4xl border-border/70 bg-background/80 pl-4 pr-2 shadow-[0_10px_32px_-14px_rgb(52_36_20/0.22)] backdrop-blur-xl dark:shadow-[0_10px_32px_-14px_rgb(0_0_0/0.6)]"
+            ? "max-w-4xl border-border/70 bg-background/80 pl-4 pr-2 shadow-[0_10px_32px_-14px_rgb(var(--shade)/0.22)] backdrop-blur-xl dark:shadow-[0_10px_32px_-14px_rgb(0_0_0/0.6)]"
             : "max-w-[70.5rem] border-transparent px-2 sm:px-5",
         ].join(" ")}
       >
@@ -59,17 +57,10 @@ export function LandingNav({ start }: { start: LandingStart }) {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Both icons render; CSS picks one so the markup is the same either way. */}
-          <button
-            type="button"
-            aria-label="Toggle light/dark theme"
-            title="Toggle theme"
-            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:h-9 sm:w-9"
-            onClick={toggleTheme}
-          >
-            <Moon className="h-4 w-4 dark:hidden" aria-hidden="true" />
-            <Sun className="hidden h-4 w-4 dark:block" aria-hidden="true" />
-          </button>
+          <ThemeMenu
+            triggerClassName="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:h-9 sm:w-9"
+            iconClassName="h-4 w-4"
+          />
 
           {/* Without Firebase nobody signs in, so there is nothing to wait for. */}
           {state.status === "loading" && isFirebaseConfigured ? (

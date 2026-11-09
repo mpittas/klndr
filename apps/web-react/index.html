@@ -21,12 +21,16 @@
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' fill='none'><rect width='32' height='32' rx='8' fill='%232a231c'/><rect x='6' y='8' width='20' height='18' rx='3' stroke='white' stroke-width='2'/><path d='M19 5v4M13 5v4M6 14h20M11 18h3M11 21h7' stroke='white' stroke-width='2' stroke-linecap='round'/></svg>"
     />
     <script>
-      // Apply the saved (or OS) theme before first paint to avoid a light/dark flash (see src/theme.ts).
+      // Apply the saved (or OS) theme before first paint to avoid a flash of the wrong theme (see src/theme.tsx).
+      // The map lists every theme and whether it is a dark scheme; keep it in step with THEME_OPTIONS there.
       try {
+        var schemes = { light: 0, dark: 1, lavender: 0, midnight: 1, forest: 1, rose: 0, sage: 0, sky: 0, plum: 1, graphite: 1 };
         var t = localStorage.getItem("klndr-theme");
-        if (t === "dark" || (t !== "light" && matchMedia("(prefers-color-scheme: dark)").matches)) {
-          document.documentElement.classList.add("dark");
+        if (!Object.prototype.hasOwnProperty.call(schemes, t)) {
+          t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         }
+        document.documentElement.setAttribute("data-theme", t);
+        if (schemes[t]) document.documentElement.classList.add("dark");
       } catch (e) {}
     </script>
   </head>

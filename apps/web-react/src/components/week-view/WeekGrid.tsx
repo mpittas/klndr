@@ -491,7 +491,7 @@ export function WeekGrid({
             ))}
             {nowMinute !== null ? (
               <div
-                className="pointer-events-none absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-full bg-brand px-1.5 py-[3px] text-[10px] font-semibold leading-none tabular-nums text-brand-foreground shadow-[0_1px_3px_rgb(120_40_20/0.35)] sm:right-1"
+                className="pointer-events-none absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-full bg-brand px-1.5 py-[3px] text-[10px] font-semibold leading-none tabular-nums text-brand-foreground shadow-[0_1px_3px_rgb(var(--brand-shade)/0.35)] sm:right-1"
                 style={{ top: `${minutesToPx(nowMinute)}px` }}
               >
                 {formatTime(nowMinute)}

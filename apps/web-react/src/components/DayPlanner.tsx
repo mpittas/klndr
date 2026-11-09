@@ -366,14 +366,9 @@ export function DayPlanner({ day }: { day: string }) {
             if (resize.justResized()) return;
             setEditor({ mode: "edit", day, startMinutes: task.startMinutes, task });
           }}
-          onGridClick={(event) => {
+          onGridClick={(startMinutes) => {
             if (resize.justResized()) return;
-            setEditor({
-              mode: "create",
-              day,
-              startMinutes: minutesFromEvent(event.currentTarget, event.clientY),
-              template: null,
-            });
+            setEditor({ mode: "create", day, startMinutes, template: null });
           }}
           onToggleComplete={(task) => void timeline.toggleComplete(task)}
           onDeleteTask={(task) => void timeline.deleteTask(task)}

@@ -3,6 +3,7 @@ import {
   HOUR_OPTIONS,
   SLOT_HEIGHT,
   SLOT_MINUTES,
+  SNAP_MINUTES,
   TOUCH_HOLD_MS,
   TOUCH_SLOP,
   blockHeight,
@@ -90,7 +91,8 @@ export function DayTimelineGrid({
   layout: Map<string, { left: number; width: number }>;
   gridHeight: number;
   onTaskClick: (task: ScheduledTask) => void;
-  onGridClick: (event: React.MouseEvent<HTMLDivElement>) => void;
+  /** A tap or click on an empty stretch, or a finger held there and let go: create a block at `startMinutes`. */
+  onGridClick: (startMinutes: number) => void;
   onToggleComplete: (task: ScheduledTask) => void;
   onDeleteTask: (task: ScheduledTask) => void;
   onStartResize: (task: ScheduledTask, event: React.PointerEvent<HTMLDivElement>) => void;
@@ -148,8 +150,35 @@ export function DayTimelineGrid({
   /** Ends the gesture in flight. It closes over the render that began it, so it removes exactly its listeners. */
   const stopTracking = useRef<(() => void) | null>(null);
 
-  // Cut short when the hovered slot is too close to midnight.
-  const hoverDuration = Math.min(HOVER_DURATION, DAY_MINUTES - (hoverMinutes ?? 0));
+  // A finger (or pen) resting on an empty stretch of the grid. Once it has rested for TOUCH_HOLD_MS a ghost
+  // block appears under it and follows it; letting go creates the block there. A quicker swipe scrolls.
+  const placing = useRef<{
+    pointerId: number;
+    startX: number;
+    startY: number;
+    timer: number | null;
+    /** The hold has lasted long enough: the ghost is up and the timeline no longer scrolls under the finger. */
+    held: boolean;
+  } | null>(null);
+  const placeRef = useRef<number | null>(null);
+  const [placeMinutes, setPlaceMinutes] = useState<number | null>(null);
+  const setPlaceBoth = (next: number | null) => {
+    placeRef.current = next;
+    setPlaceMinutes(next);
+  };
+  /** The finger that placed a ghost is lifting: its touchend must not also become a tap on whatever opens. */
+  const swallowTouchEnd = useRef(false);
+
+  /** The quarter hour under `clientY`, kept before midnight: where a new block would start. */
+  const slotUnder = (clientY: number) => {
+    const rect = gridRef.current!.getBoundingClientRect();
+    return Math.min(slotAt(clientY - rect.top), DAY_MINUTES - SNAP_MINUTES);
+  };
+
+  // The ghost of a new block: under a held finger, otherwise under the mouse.
+  const ghostMinutes = placeMinutes ?? hoverMinutes;
+  // Cut short when the slot is too close to midnight.
+  const ghostDuration = Math.min(HOVER_DURATION, DAY_MINUTES - (ghostMinutes ?? 0));
 
   const updateHover = () => {
     const pointer = lastPointer.current;
@@ -171,7 +200,7 @@ export function DayTimelineGrid({
     }
     // Floors to the quarter hour under the cursor, same as the click-to-create handler, so the block lands
     // where it's shown.
-    const minutes = slotAt(y - rect.top);
+    const minutes = slotUnder(y);
     // No ghost over a row that already holds activities.
     const end = minutes + Math.min(HOVER_DURATION, DAY_MINUTES - minutes);
     const occupied = tasksRef.current.some(
@@ -230,16 +259,24 @@ export function DayTimelineGrid({
     setDragBoth({ id: task.id, rawStart, snappedStart, fraction });
   };
 
+  const updatePlacing = () => {
+    if (!placing.current?.held || !gridRef.current) return;
+    const minutes = slotUnder(lastY.current);
+    if (minutes !== placeRef.current) setPlaceBoth(minutes);
+  };
+
+  // A held block, or a held ghost, near the top or bottom of the scroll area scrolls it.
   const edgeScrollTick = () => {
     rafId.current = null;
-    if (!active.current) return;
+    const follow = active.current ? updateDrag : placing.current?.held ? updatePlacing : null;
+    if (!follow) return;
     const el = scroller.current;
     if (el) {
       const rect = el.getBoundingClientRect();
       const speed = edgeScrollSpeed(lastY.current, rect.top, rect.bottom);
       if (speed !== 0) {
         el.scrollTop += speed;
-        updateDrag();
+        follow();
       }
     }
     rafId.current = requestAnimationFrame(edgeScrollTick);
@@ -302,15 +339,20 @@ export function DayTimelineGrid({
     updateDrag();
   };
 
+  /** Swallows the click a browser may still send after a hold-and-release that already did its job. */
+  const suppressNextClick = () => {
+    suppressClick.current = true;
+    window.setTimeout(() => {
+      suppressClick.current = false;
+    }, 80);
+  };
+
   const onWindowPointerUp = (event: PointerEvent) => {
     if (event.pointerId !== trackedPointer.current) return;
     const dragged = active.current?.task;
     const current = dragRef.current;
     if (dragged && current) {
-      suppressClick.current = true;
-      window.setTimeout(() => {
-        suppressClick.current = false;
-      }, 80);
+      suppressNextClick();
       const start = current.snappedStart;
       const lanes = changedLanes(tasksRef.current, planDrag(tasksRef.current, current.id, start, current.fraction));
       if (start !== dragged.startMinutes || lanes) onMoveTask(dragged, start, lanes);
@@ -356,16 +398,110 @@ export function DayTimelineGrid({
     if (next !== task.startMinutes) onMoveTask(task, next);
   };
 
+  // ---- Placing a new block with a held finger (touch and pen; the mouse has its hover ghost) ----
+
+  const endPlacing = () => {
+    stopTracking.current = null;
+    const state = placing.current;
+    if (state?.timer) window.clearTimeout(state.timer);
+    placing.current = null;
+    setPlaceBoth(null);
+    if (rafId.current !== null) cancelAnimationFrame(rafId.current);
+    rafId.current = null;
+    bodyStyle().userSelect = "";
+    bodyStyle().webkitUserSelect = "";
+    window.removeEventListener("pointermove", onPlacePointerMove);
+    window.removeEventListener("pointerup", onPlacePointerUp);
+    window.removeEventListener("pointercancel", onPlacePointerCancel);
+    window.removeEventListener("blur", endPlacing);
+  };
+
+  const beginPlacing = () => {
+    const state = placing.current;
+    if (!state || !gridRef.current) return;
+    state.timer = null;
+    state.held = true;
+    swallowTouchEnd.current = true;
+    scroller.current = findScroller(gridRef.current);
+    bodyStyle().userSelect = "none";
+    bodyStyle().webkitUserSelect = "none";
+    // A long press may already have begun selecting text nearby; drop it.
+    window.getSelection()?.removeAllRanges();
+    navigator.vibrate?.(8);
+    setHoverMinutes(null);
+    updatePlacing();
+    rafId.current = requestAnimationFrame(edgeScrollTick);
+  };
+
+  const onPlacePointerMove = (event: PointerEvent) => {
+    const state = placing.current;
+    if (!state || event.pointerId !== state.pointerId) return;
+    lastX.current = event.clientX;
+    lastY.current = event.clientY;
+    if (state.held) {
+      updatePlacing();
+    } else if (Math.hypot(event.clientX - state.startX, event.clientY - state.startY) > TOUCH_SLOP) {
+      endPlacing(); // the user is scrolling, not placing
+    }
+  };
+
+  const onPlacePointerUp = (event: PointerEvent) => {
+    const state = placing.current;
+    if (!state || event.pointerId !== state.pointerId) return;
+    const start = state.held ? placeRef.current : null;
+    endPlacing();
+    // A quick tap is left to the click that follows it, which creates the block the usual way.
+    if (start === null) return;
+    suppressNextClick();
+    onGridClick(start);
+  };
+
+  const onPlacePointerCancel = (event: PointerEvent) => {
+    if (event.pointerId !== placing.current?.pointerId) return;
+    endPlacing();
+  };
+
+  const onGridPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "mouse" || !event.isPrimary) return;
+    if (resizing || preview || pending.current || active.current || placing.current) return;
+    // Blocks have their own press-and-hold (moving them).
+    if ((event.target as HTMLElement).closest("[data-task-block]")) return;
+    swallowTouchEnd.current = false;
+    lastX.current = event.clientX;
+    lastY.current = event.clientY;
+    placing.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      timer: window.setTimeout(beginPlacing, TOUCH_HOLD_MS),
+      held: false,
+    };
+    window.addEventListener("pointermove", onPlacePointerMove);
+    window.addEventListener("pointerup", onPlacePointerUp);
+    window.addEventListener("pointercancel", onPlacePointerCancel);
+    window.addEventListener("blur", endPlacing);
+    stopTracking.current = endPlacing;
+  };
+
   useEffect(() => {
     const el = gridRef.current;
     if (!el) return;
-    // Once a block is picked up, stop the browser from scrolling the page under the finger.
+    // Once a block or a ghost is picked up, stop the browser from scrolling the page under the finger.
     const blockTouchScroll = (event: TouchEvent) => {
-      if (active.current && event.cancelable) event.preventDefault();
+      if ((active.current || placing.current?.held) && event.cancelable) event.preventDefault();
+    };
+    // Lifting the finger that placed a ghost opens the editor at once; without this the browser would also
+    // turn the release into a tap, which lands on the editor that just opened under it.
+    const swallowPlacingTap = (event: TouchEvent) => {
+      if (!swallowTouchEnd.current) return;
+      swallowTouchEnd.current = false;
+      if (event.cancelable) event.preventDefault();
     };
     el.addEventListener("touchmove", blockTouchScroll, { passive: false });
+    el.addEventListener("touchend", swallowPlacingTap, { passive: false });
     return () => {
       el.removeEventListener("touchmove", blockTouchScroll);
+      el.removeEventListener("touchend", swallowPlacingTap);
       stopTracking.current?.();
     };
   }, []);
@@ -406,9 +542,11 @@ export function DayTimelineGrid({
     ];
     if (drag) return span(drag.snappedStart, durationOf(tasks, drag.id));
     if (preview) return span(preview.start, preview.duration);
+    // The finger covers the held ghost's own label, so its times show in the gutter too.
+    if (placeMinutes !== null) return span(placeMinutes, HOVER_DURATION);
     const task = tasks.find((item) => item.id === resizing);
     return task ? span(task.startMinutes, task.durationMinutes) : null;
-  }, [drag, preview, resizing, tasks]);
+  }, [drag, preview, placeMinutes, resizing, tasks]);
 
   // Right click, the context-menu key or Shift+F10. A touch hold is the drag gesture, so it never opens the menu.
   const openMenu = (task: ScheduledTask, event: React.MouseEvent<HTMLDivElement>) => {
@@ -437,7 +575,7 @@ export function DayTimelineGrid({
   const handleGridClick = (event: React.MouseEvent<HTMLDivElement>) => {
     clearHover();
     if (suppressClick.current) return;
-    onGridClick(event);
+    onGridClick(slotUnder(event.clientY));
   };
 
   const dragOffsetPx = (task: ScheduledTask) =>
@@ -448,7 +586,9 @@ export function DayTimelineGrid({
 
   return (
     <>
-    <div className="mx-auto flex max-w-4xl pb-8 pt-4 sm:pb-12 sm:pt-6">
+    {/* Nothing on the timeline is text to copy: a press and hold places or moves a block, so it must never
+        start a text selection or the iOS callout. */}
+    <div className="mx-auto flex max-w-4xl select-none pb-8 pt-4 [-webkit-touch-callout:none] sm:pb-12 sm:pt-6">
       {/* Hour gutter */}
       <div className="relative w-14 shrink-0 select-none border-r border-border/80 bg-background pr-1.5 sm:w-16 sm:pr-2.5">
         {HOUR_OPTIONS.map((minute) => (
@@ -483,7 +623,7 @@ export function DayTimelineGrid({
         {/* Live time pill in gutter */}
         {nowMinute !== null ? (
           <div
-            className="pointer-events-none absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-full bg-brand px-1.5 py-[3px] text-[10px] font-semibold leading-none tabular-nums text-brand-foreground shadow-[0_1px_3px_rgb(120_40_20/0.35)] sm:right-1"
+            className="pointer-events-none absolute right-0.5 z-30 -translate-y-1/2 whitespace-nowrap rounded-full bg-brand px-1.5 py-[3px] text-[10px] font-semibold leading-none tabular-nums text-brand-foreground shadow-[0_1px_3px_rgb(var(--brand-shade)/0.35)] sm:right-1"
             style={{ top: `${minutesToPx(nowMinute)}px` }}
           >
             {formatTime(nowMinute)}
@@ -494,6 +634,11 @@ export function DayTimelineGrid({
       {/* Drop grid */}
       <div
         ref={gridRef}
+        onPointerDown={onGridPointerDown}
+        // A long press is the placing gesture; Android would otherwise also treat it as a right click.
+        onContextMenu={(event) => {
+          if (placing.current) event.preventDefault();
+        }}
         onPointerMove={handlePointerMove}
         onPointerLeave={clearHover}
         onDragStart={clearHover}
@@ -543,22 +688,27 @@ export function DayTimelineGrid({
           </div>
         ) : null}
 
-        {/* Where a click would create a block (default length, following the cursor) */}
-        {hoverMinutes !== null && !preview && !resizing ? (
+        {/* Where a click, or a held finger let go, would create a block (default length, following the
+            cursor or the finger) */}
+        {ghostMinutes !== null && !preview && !resizing ? (
           <div
             className={[
-              "pointer-events-none absolute z-20 flex gap-1 overflow-hidden rounded-md border border-dashed border-foreground/25 bg-foreground/[0.025] pl-2 text-xs font-medium leading-4 tabular-nums text-muted-foreground",
-              isShortBlock(hoverDuration) ? "items-center" : "items-start pt-1",
+              "pointer-events-none absolute flex gap-1 overflow-hidden rounded-md border border-dashed pl-2 text-xs font-medium leading-4 tabular-nums",
+              isShortBlock(ghostDuration) ? "items-center" : "items-start pt-1",
+              // Held by a finger: picked up, above the blocks it passes over, and a touch clearer.
+              placeMinutes !== null
+                ? "z-30 border-foreground/40 bg-card/90 text-foreground/80 shadow-lg animate-in fade-in zoom-in-95 duration-150"
+                : "z-20 border-foreground/25 bg-foreground/[0.025] text-muted-foreground",
             ].join(" ")}
             style={{
-              top: `${blockTop(hoverMinutes)}px`,
-              height: `${blockHeight(hoverDuration)}px`,
+              top: `${blockTop(ghostMinutes)}px`,
+              height: `${blockHeight(ghostDuration)}px`,
               left: "1%",
               width: "98%",
             }}
           >
             <Plus className="h-4 w-3.5 shrink-0" aria-hidden="true" />
-            {formatTimeRange(hoverMinutes, hoverMinutes + hoverDuration)}
+            {formatTimeRange(ghostMinutes, ghostMinutes + ghostDuration)}
           </div>
         ) : null}
 

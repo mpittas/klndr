@@ -42,12 +42,12 @@ export function LandingCta({ start, signedIn }: { start: LandingStart; signedIn:
     <section className="bg-background px-4 pb-6 pt-4 sm:px-8 sm:pb-8">
       <div
         data-reveal
-        className="relative isolate mx-auto grid max-w-6xl items-center gap-12 overflow-hidden rounded-3xl bg-[#241d17] px-6 py-16 text-white sm:px-12 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:px-16 dark:bg-card dark:ring-1 dark:ring-border"
+        className="relative isolate mx-auto grid max-w-6xl items-center gap-12 overflow-hidden rounded-3xl bg-primary px-6 py-16 text-white sm:px-12 sm:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:px-16 dark:bg-card dark:ring-1 dark:ring-border"
       >
         {/* Timeline rules and a glow in the activity colors behind the blocks */}
         <div aria-hidden="true" className="cta-rules pointer-events-none absolute inset-0 -z-10" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -right-24 -top-32 h-96 w-96 rounded-full bg-[#c4553a]/30 blur-3xl" />
+          <div className="absolute -right-24 -top-32 h-96 w-96 rounded-full bg-brand/30 blur-3xl dark:bg-brand/20" />
           <div className="absolute -bottom-40 right-1/4 h-96 w-96 rounded-full bg-[#5f8f6a]/25 blur-3xl" />
           <div className="absolute -left-32 -top-40 h-80 w-80 rounded-full bg-[#e0b15a]/14 blur-3xl" />
         </div>
@@ -62,7 +62,7 @@ export function LandingCta({ start, signedIn }: { start: LandingStart; signedIn:
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Link
               to={start.to}
-              className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 text-[15px] font-medium text-[#241d17] shadow-[0_8px_24px_-8px_rgb(255_255_255/0.35)] transition hover:bg-white/90 active:scale-[0.98]"
+              className="group inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 text-[15px] font-medium text-primary dark:text-background shadow-[0_8px_24px_-8px_rgb(255_255_255/0.35)] transition hover:bg-white/90 active:scale-[0.98]"
             >
               {start.label}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />

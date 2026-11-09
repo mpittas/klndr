@@ -149,7 +149,7 @@ export function MonthGrid({
                   className={[
                     "flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-semibold tabular-nums sm:h-7 sm:min-w-7 sm:text-[13px]",
                     day.isToday
-                      ? "bg-brand text-brand-foreground shadow-[0_1px_2px_rgb(120_40_20/0.3)]"
+                      ? "bg-brand text-brand-foreground shadow-[0_1px_2px_rgb(var(--brand-shade)/0.3)]"
                       : day.inMonth
                         ? day.isPast
                           ? "font-medium text-muted-foreground"
