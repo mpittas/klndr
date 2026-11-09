@@ -99,7 +99,7 @@ export function useDayTimeline(day: string) {
     [remove],
   );
 
-  /** Save from the editor: waits for the server, and throws its message so the form can show it. */
+  /** Save from the editor. Shown at once; a failure is put back, reported, and rejects the promise. */
   const saveTask = useCallback((vars: SaveTaskVars) => save(vars), [save]);
 
   /** Ask the server again, and say how it went. */

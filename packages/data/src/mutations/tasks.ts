@@ -8,8 +8,8 @@ import type { HistoryRecorder, MutationDeps } from "./types";
 /**
  * Everything that changes a scheduled block.
  *
- * Moving, resizing, ticking, splitting, deleting and adding from an activity show on screen at once and are put back
- * if saving fails; saving from the editor waits for the server, because its form shows the error. All of
+ * Every change here, saving from the editor included, shows on screen at once and is put back (with a message) if
+ * saving fails. All of
  * them share one `scope`, which makes TanStack Query run them one after another: the screen has already
  * moved on, so a quick drag followed by a tick has to reach the server in that order.
  */
@@ -240,23 +240,43 @@ export const deleteTaskOptions = (d: TaskMutationDeps): Options<void, DeleteTask
   },
 });
 
-// ---- Save from the editor: waits for the server, so the form can show what went wrong ----
+// ---- Save from the editor: shown at once, so the editor can close without waiting ----
 
 /** `id` is null for a new block. */
 export type SaveTaskVars = { id: string | null; payload: TaskDraft };
 
-export const saveTaskOptions = (d: TaskMutationDeps): Options<ScheduledTask, SaveTaskVars> => ({
+export const saveTaskOptions = (
+  d: TaskMutationDeps,
+): Options<ScheduledTask, SaveTaskVars, { before?: ScheduledTask; tempId?: string }> => ({
   mutationKey: ["tasks", "save"],
   scope: SCOPE,
   mutationFn: ({ id, payload }) => (id ? d.api.updateTask(live(d, id), payload) : d.api.createTask(payload)),
-  onSuccess: (saved, { id }) => {
-    const previous = id ? findTask(d.queryClient, saved.id) : undefined;
+  // A new block shows under a temporary id and an edit shows straight away; both are put back if saving fails.
+  onMutate: async ({ id, payload }) => {
+    await cancelTaskQueries(d);
+    if (!id) {
+      const tempId = newTempId();
+      upsertTask(d.queryClient, taskFromDraft(payload, tempId));
+      return { tempId };
+    }
+    const before = findTask(d.queryClient, id);
+    upsertTask(d.queryClient, { ...before, ...taskFromDraft(payload, id) });
+    return { before };
+  },
+  onSuccess: (saved, { id }, context) => {
+    if (context?.tempId) removeTask(d.queryClient, context.tempId);
     upsertTask(d.queryClient, saved);
     // An edit of a block that isn't in the cache can't be undone (there is no "before"), so it isn't recorded.
     if (!id) d.history?.record(`Add ${saved.title}`, [[null, saved]]);
-    else if (previous) d.history?.record(`Edit ${saved.title}`, [[previous, saved]]);
+    else if (context?.before) d.history?.record(`Edit ${saved.title}`, [[context.before, saved]]);
     // A category typed in the editor may have just been created by the server.
     void d.queryClient.invalidateQueries({ queryKey: queryKeys.categories });
+  },
+  onError: (error, { id }, context) => {
+    if (context?.tempId) removeTask(d.queryClient, context.tempId);
+    if (context?.before) upsertTask(d.queryClient, context.before);
+    else if (id) removeTask(d.queryClient, id); // it wasn't on screen before the edit
+    d.notify(error.message ? `Could not save: ${error.message}` : "Could not save that block");
   },
 });
 

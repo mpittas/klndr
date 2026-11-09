@@ -243,17 +243,18 @@ describe("saving from the editor", () => {
     ...extra,
   });
 
-  it("waits for the server before showing a new block, then records it", async () => {
+  it("shows a new block at once, then swaps in the saved one and records it", async () => {
     const { options, queryClient, messages, history, list } = await setup();
     const release = server.current.hold("POST /api/tasks");
 
     const done = run(queryClient, options.save, { id: null, payload: payload() });
-    await tick();
-    expect(list()).toEqual([]); // nothing optimistic: the form is still waiting
+    await vi.waitFor(() => expect(list()).toHaveLength(1)); // the editor has already closed
+    expect(isTempId(list()[0].id)).toBe(true);
+    expect(list()[0]).toMatchObject({ title: "Written", startMinutes: 600 });
 
     release();
     const saved = await done;
-    expect(list()).toEqual([saved]);
+    expect(list()).toEqual([saved]); // not duplicated
     expect(history.record).toHaveBeenCalledWith("Add Written", [[null, saved]]);
     expect(messages).toEqual([]);
   });
@@ -291,13 +292,35 @@ describe("saving from the editor", () => {
     expect(queryClient.getQueryState(queryKeys.templates)?.isInvalidated).toBe(false);
   });
 
-  it("throws the server's message and changes nothing when it refuses", async () => {
+  it("shows an edit at once", async () => {
+    const { options, queryClient, seeded, list } = await setup([{ title: "Old" }]);
+    const release = server.current.hold(`PATCH /api/tasks/${seeded[0].id}`);
+
+    const done = run(queryClient, options.save, { id: seeded[0].id, payload: payload({ title: "New" }) });
+    await vi.waitFor(() => expect(list()[0]).toMatchObject({ id: seeded[0].id, title: "New" }));
+
+    release();
+    await done;
+  });
+
+  it("takes a new block back off and says why when the server refuses", async () => {
     const { options, queryClient, messages, history, list } = await setup();
     await expect(run(queryClient, options.save, { id: null, payload: payload({ title: "  " }) })).rejects.toThrow(
       "Title is required",
     );
     expect(list()).toEqual([]);
-    expect(messages).toEqual([]); // the form shows it, not a toast
+    expect(messages).toEqual(["Could not save: Title is required"]); // the editor has closed, so a toast says it
     expect(history.record).not.toHaveBeenCalled();
+  });
+
+  it("puts an edited block back as it was when saving fails", async () => {
+    const { options, queryClient, messages, seeded, list } = await setup([{ title: "Old" }]);
+    server.current.fail(`PATCH /api/tasks/${seeded[0].id}`);
+
+    await expect(
+      run(queryClient, options.save, { id: seeded[0].id, payload: payload({ title: "New" }) }),
+    ).rejects.toThrow();
+    expect(list()).toEqual([seeded[0]]);
+    expect(messages).toHaveLength(1);
   });
 });

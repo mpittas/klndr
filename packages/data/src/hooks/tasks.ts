@@ -32,7 +32,7 @@ export function useTaskActions() {
         ),
       [toggle],
     ),
-    /** Create (`id: null`) or edit a block; waits for the server and throws its message, so a form can show it. */
+    /** Create (`id: null`) or edit a block. Shown at once; a failure is put back, reported, and rejects the promise. */
     saveTask: save,
     /**
      * Change some fields of a block at once (its day and start, say, when it is dragged to another day), put back

@@ -3,7 +3,6 @@ import { draftFromTemplate, useCategoryColor, useTaskActions } from "@klndr/data
 import { useCallback, useState } from "react";
 
 import { nextFreeStart } from "@/components/planner/planning";
-import { useToast } from "@/toast";
 
 /**
  * Planning with activities on the week and the month: the activity being dragged out of the sidebar (so the grid
@@ -15,7 +14,6 @@ import { useToast } from "@/toast";
 export function useActivityPlanning(tasks: ScheduledTask[], today: string) {
   const colorOf = useCategoryColor();
   const { saveTask } = useTaskActions();
-  const toast = useToast();
   const [dragging, setDragging] = useState<ActivityTemplate | null>(null);
 
   const place = useCallback(
@@ -23,12 +21,10 @@ export function useActivityPlanning(tasks: ScheduledTask[], today: string) {
       setDragging(null);
       const dayTasks = tasks.filter((task) => task.day === day);
       const at = start ?? nextFreeStart(dayTasks, day, today, template.defaultDuration);
-      saveTask({ id: null, payload: draftFromTemplate(day, template, at, colorOf(template)) }).then(
-        () => undefined,
-        () => toast.show(`Couldn't add ${template.name}. Try again.`),
-      );
+      // Shown at once; a failure is taken back off and reported by the data layer.
+      saveTask({ id: null, payload: draftFromTemplate(day, template, at, colorOf(template)) }).catch(() => undefined);
     },
-    [tasks, today, colorOf, saveTask, toast],
+    [tasks, today, colorOf, saveTask],
   );
 
   return {

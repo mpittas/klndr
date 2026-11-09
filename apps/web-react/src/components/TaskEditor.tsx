@@ -52,7 +52,10 @@ type TaskEditorProps = {
   request: EditorRequest | null;
   templates: ActivityTemplate[];
   onClose: () => void;
-  /** Waits for the server and throws its message, so the form can show it. */
+  /**
+   * Shows the change at once and saves it in the background, so the editor closes without waiting. A failure is
+   * put back and reported by the data layer; the promise is only used to finish the block off once saved.
+   */
   onSave: (vars: { id: string | null; payload: TaskDraft }) => Promise<ScheduledTask>;
   onDelete: (task: ScheduledTask) => Promise<unknown>;
   onDeleteTemplate: (id: string) => Promise<unknown>;
@@ -233,7 +236,7 @@ function TaskEditorDialog({
     }));
   };
 
-  /** Runs a save or delete: shows the busy state, reports a failure, and closes the dialog on success. */
+  /** Runs the activity delete: shows the busy state, reports a failure, and closes the dialog on success. */
   const attempt = async (action: () => Promise<unknown>, fallback: string) => {
     setBusy(true);
     setError(null);
@@ -254,29 +257,33 @@ function TaskEditorDialog({
       return;
     }
     if (busy) return;
-    const snapshot = draft;
     // Saving never waits for the emoji or the category: one still being picked is put on the block once it has
     // been saved.
     const picked = emoji.forSave();
     const filed = category.forSave();
-    void attempt(async () => {
-      const payload: TaskDraft = {
-        title: snapshot.title.trim(),
-        emoji: picked.emoji,
-        // Blocks take their category's color; there is no separate color to pick.
-        color: colorOf({ category: filed.category }),
-        category: filed.category,
-        day: snapshot.day,
-        startMinutes: fromTimeInput(snapshot.start),
-        durationMinutes: snapshot.duration,
-        notes: snapshot.notes.trim() || null,
-        completed: snapshot.completed,
-        templateId: snapshot.templateId,
-      };
-      const saved = await onSave({ id: request.task?.id ?? null, payload });
-      picked.fill?.({ kind: "task", id: saved.id });
-      filed.fill?.(saved.id);
-    }, "Something went wrong");
+    const payload: TaskDraft = {
+      title: draft.title.trim(),
+      emoji: picked.emoji,
+      // Blocks take their category's color; there is no separate color to pick.
+      color: colorOf({ category: filed.category }),
+      category: filed.category,
+      day: draft.day,
+      startMinutes: fromTimeInput(draft.start),
+      durationMinutes: draft.duration,
+      notes: draft.notes.trim() || null,
+      completed: draft.completed,
+      templateId: draft.templateId,
+    };
+    // The block is on screen as soon as this is called, so the editor closes straight away; the server answers
+    // later, and a failure is put back and reported with a message by the data layer.
+    onSave({ id: request.task?.id ?? null, payload }).then(
+      (saved) => {
+        picked.fill?.({ kind: "task", id: saved.id });
+        filed.fill?.(saved.id);
+      },
+      () => undefined,
+    );
+    onClose();
   };
 
   // Clicking off the dialog keeps what was typed: it saves a changed form (and says so if the name is missing),
@@ -292,7 +299,10 @@ function TaskEditorDialog({
 
   const removeBlock = () => {
     const { task } = request;
-    if (task) void attempt(() => onDelete(task), "Could not delete");
+    if (!task) return;
+    // Gone from the screen at once, like a save; a failure puts it back and says so.
+    void onDelete(task).catch(() => undefined);
+    onClose();
   };
 
   const removeTemplate = () => {
@@ -395,7 +405,7 @@ function TaskEditorDialog({
               disabled={busy}
               className="btn btn-primary btn-md h-11 px-5 sm:h-10"
             >
-              {busy ? "Saving…" : isEdit ? "Save" : "Add block"}
+              {isEdit ? "Save" : "Add block"}
             </button>
           </div>
         </div>
