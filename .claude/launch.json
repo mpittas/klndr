@@ -87,7 +87,12 @@
     {
       "name": "category-api",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start", "-w", "apps/api"],
+      "runtimeArgs": [
+        "run",
+        "start",
+        "-w",
+        "apps/api"
+      ],
       "env": {
         "PORT": "3011",
         "FIREBASE_PROJECT_ID": "",
@@ -98,7 +103,16 @@
     {
       "name": "category-web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "-w", "apps/web-react", "--", "--port", "5183", "--strictPort"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "-w",
+        "apps/web-react",
+        "--",
+        "--port",
+        "5183",
+        "--strictPort"
+      ],
       "env": {
         "VITE_API_PROXY_TARGET": "http://localhost:3011",
         "VITE_FIREBASE_API_KEY": "",
@@ -109,6 +123,21 @@
         "VITE_FIREBASE_APP_ID": ""
       },
       "port": 5183
+    },
+    {
+      "name": "web-react-secure-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "preview",
+        "-w",
+        "apps/web-react",
+        "--",
+        "--port",
+        "4173",
+        "--strictPort"
+      ],
+      "port": 4173
     }
   ]
 }
