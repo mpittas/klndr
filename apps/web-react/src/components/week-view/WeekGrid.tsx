@@ -41,6 +41,7 @@ import {
 import { TimeBlock } from "@/components/day-planner/TimeBlock";
 import { useBlockResize } from "@/components/day-planner/useBlockResize";
 import { paletteOf } from "@/lib/colors";
+import { summarizeNote } from "@/lib/notes";
 
 /** Blocks move in quarter hours, as on the day's timeline. */
 const STEP = 15;
@@ -369,6 +370,7 @@ export function WeekGrid({
           time={formatTimeRange(start, start + task.durationMinutes)}
           color={colorOf(task)}
           done={task.completed}
+          note={summarizeNote(task.notes)}
           short={short}
           lines={titleLines(task.durationMinutes)}
           className="h-full w-full !gap-1.5 !pl-2 !pr-1.5"

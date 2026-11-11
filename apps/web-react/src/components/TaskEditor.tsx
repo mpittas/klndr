@@ -553,9 +553,9 @@ function TaskEditorDialog({
           <FieldLabel icon={StickyNote}>Notes</FieldLabel>
           <NotesEditor
             value={draft.notes}
-            placeholder="Details, or type / for a list…"
-            touchPlaceholder="Tap to write. Add a to-do list, bullets or a title…"
-            context={draft.title.trim() || undefined}
+            placeholder="Add details, or type / for a to-do list…"
+            touchPlaceholder="Add details or a to-do list…"
+            context={draft.title.trim() ? [emoji.emoji, draft.title.trim()].filter(Boolean).join(" ") : undefined}
             onChange={(notes) => patch({ notes })}
           />
         </div>

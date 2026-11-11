@@ -36,6 +36,7 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { BlockContextMenu, type BlockMenuActions, type BlockMenuTarget } from "@/components/day-planner/BlockContextMenu";
 import { TimeBlock } from "@/components/day-planner/TimeBlock";
 import { paletteOf } from "@/lib/colors";
+import { summarizeNote } from "@/lib/notes";
 
 const MOUSE_SLOP = 4;
 /** Matches the default duration of a block created by clicking the grid. */
@@ -783,6 +784,7 @@ export function DayTimelineGrid({
                 time={formatTimeRange(shownStart(task), shownStart(task) + task.durationMinutes)}
                 color={colorOf(task)}
                 done={task.completed}
+                note={summarizeNote(task.notes)}
                 short={isShortBlock(task.durationMinutes)}
                 lines={titleLines(task.durationMinutes)}
                 className="h-full w-full"

@@ -830,7 +830,8 @@ textarea,
   /* iOS Safari zooms the whole page when a focused field is smaller than 16px. */
   input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"]),
   select,
-  textarea {
+  textarea,
+  [contenteditable="true"] {
     font-size: 16px;
   }
 }
@@ -1391,19 +1392,68 @@ html:has([data-landing]) {
 
 /* --- Notes field of a block (NotesEditor): a small rich-text page --------------------------------- */
 
-.notes-editor > * + * { margin-top: 0.25rem; }
-.notes-editor h1 { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.35; margin-top: 0.5rem; }
-.notes-editor h2 { font-size: 0.95rem; font-weight: 600; line-height: 1.4; margin-top: 0.4rem; }
+/* Sizes are relative to the text, so on a phone (16px) nothing is under 16px: iOS Safari zooms the page into a
+   field whose text is smaller, and a heading tapped into would set that off. */
+.notes-editor > * + * { margin-top: 0.25em; }
+.notes-editor h1 { font-size: 1.25em; font-weight: 600; letter-spacing: -0.015em; line-height: 1.35; margin-top: 0.6em; }
+.notes-editor h2 { font-size: 1.075em; font-weight: 600; letter-spacing: -0.005em; line-height: 1.4; margin-top: 0.5em; }
 .notes-editor > :first-child { margin-top: 0; }
-.notes-editor ul { list-style: disc; padding-left: 1.25rem; }
-.notes-editor ol { list-style: decimal; padding-left: 1.25rem; }
+.notes-editor ul { list-style: disc; padding-left: 1.3em; }
+.notes-editor ol { list-style: decimal; padding-left: 1.3em; }
+.notes-editor li::marker { color: var(--color-muted-foreground); }
 .notes-editor ul[data-type="taskList"] { list-style: none; padding-left: 0; }
-.notes-editor ul[data-type="taskList"] > li { display: flex; align-items: flex-start; gap: 0.5rem; }
-.notes-editor ul[data-type="taskList"] > li > label { display: flex; align-items: center; height: 1.5rem; flex-shrink: 0; user-select: none; }
-.notes-editor ul[data-type="taskList"] > li > label input { cursor: pointer; accent-color: var(--color-primary); }
+.notes-editor ul[data-type="taskList"] > li { display: flex; align-items: flex-start; gap: 0.55em; }
+/* As tall as a line of text, so the box sits on the first line however long the to-do runs. */
+.notes-editor ul[data-type="taskList"] > li > label { display: flex; align-items: center; height: 1.625em; flex-shrink: 0; user-select: none; }
 .notes-editor ul[data-type="taskList"] > li > div { flex: 1; min-width: 0; }
-.notes-editor ul[data-type="taskList"] > li[data-checked="true"] > div { color: var(--color-muted-foreground); text-decoration: line-through; }
+.notes-editor ul[data-type="taskList"] > li[data-checked="true"] > div {
+  color: var(--color-muted-foreground);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in oklab, var(--color-muted-foreground) 60%, transparent);
+}
 .notes-editor li > p { margin: 0; }
+
+/* A to-do's box: drawn here (not the browser's) so it looks the same on every phone and scales with the text. */
+.notes-editor ul[data-type="taskList"] input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-content: center;
+  width: 1.05em;
+  height: 1.05em;
+  margin: 0;
+  border: 1.5px solid color-mix(in oklab, var(--color-foreground) 32%, transparent);
+  border-radius: 0.3em;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+.notes-editor ul[data-type="taskList"] input[type="checkbox"]::before {
+  content: "";
+  width: 0.62em;
+  height: 0.62em;
+  background: var(--color-primary-foreground);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transition: transform 120ms ease;
+}
+.notes-editor ul[data-type="taskList"] input[type="checkbox"]:checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.notes-editor ul[data-type="taskList"] input[type="checkbox"]:checked::before { transform: scale(1); }
+.notes-editor ul[data-type="taskList"] input[type="checkbox"]:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+/* A finger needs more than the box itself: the label around it takes the tap too. */
+@media (pointer: coarse) {
+  .notes-editor ul[data-type="taskList"] > li > label { margin: 0 -0.35em; padding: 0 0.35em; }
+}
+
+/* The "/query" being typed: a soft chip, so it reads as a command and not as text. */
+.notes-editor .slash-query {
+  border-radius: 0.3em;
+  padding: 0.05em 0.15em;
+  background: color-mix(in oklab, var(--color-foreground) 7%, transparent);
+}
 .notes-editor p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
