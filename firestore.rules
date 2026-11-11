@@ -273,16 +273,19 @@ service cloud.firestore {
           && d.day is string
           && d.day.matches('^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$')
           && d.completedItemIds is list
+          && d.completedItemIds.size() <= 500
           // hiddenItemIds: default items skipped on this day; extraItems: one-off items for this day
           && (!('hiddenItemIds' in d) || (d.hiddenItemIds is list && d.hiddenItemIds.size() <= 200))
           && (!('extraItems' in d) || (d.extraItems is list && d.extraItems.size() <= 50))
           && d.updatedAt == request.time;
       }
 
+      // The document id is the day it holds, so one day can never be stored twice under made-up ids.
       match /checklist_days/{dayId} {
         allow read: if isOwner(uid);
         allow create, update: if isOwner(uid)
-          && validChecklistDay(request.resource.data);
+          && validChecklistDay(request.resource.data)
+          && request.resource.data.day == dayId;
         allow delete: if isOwner(uid);
       }
 
@@ -300,7 +303,8 @@ service cloud.firestore {
       match /day_notes/{dayId} {
         allow read: if isOwner(uid);
         allow create, update: if isOwner(uid)
-          && validDayNotes(request.resource.data);
+          && validDayNotes(request.resource.data)
+          && request.resource.data.day == dayId;
         allow delete: if isOwner(uid);
       }
     }

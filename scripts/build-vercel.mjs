@@ -10,6 +10,11 @@
 import { execFileSync } from "node:child_process";
 import { cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { build } from "esbuild";
+import { securityHeaders } from "./security-headers.mjs";
+
+/** The first path segment of every route the API serves (apps/api/src/app.ts); anything else under /api is a 404. */
+const API_PATHS = ["health", "tasks", "templates", "categories", "emoji", "suggest-category", "checklist", "notes", "account"];
+const REFUSAL_HEADERS = { "cache-control": "no-store", "content-type": "application/json" };
 
 const output = ".vercel/output";
 const fn = `${output}/functions/api.func`;
@@ -32,6 +37,9 @@ await build({
   banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
 });
 
+// Body for the refusals above; the status code comes from the route.
+writeFileSync(`${output}/static/refused.json`, JSON.stringify({ error: "Refused" }));
+
 writeFileSync(`${fn}/package.json`, JSON.stringify({ type: "module" }));
 writeFileSync(
   `${fn}/.vc-config.json`,
@@ -42,8 +50,20 @@ writeFileSync(
   JSON.stringify({
     version: 3,
     routes: [
+      // Every page and file gets the security headers; the API sets its own (apps/api/src/protect.ts).
+      {
+        src: "^/(?!api(?:/|$)).*",
+        headers: securityHeaders({ authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || undefined }),
+        continue: true,
+      },
       { handle: "filesystem" },
-      { src: "/api/(.*)", dest: "/api" },
+      // Scanners probe `/api/.env`, `/api/info.php` and the like all day. Each probe used to start the function
+      // (and burn Active CPU) just to answer 404/401, so those are answered here, without running it:
+      // paths the API doesn't have, and calls with no credentials at all (only `/api/health` is open).
+      { src: `^/api(?!/(?:${API_PATHS.join("|")})(?:/|$))(?:/.*)?$`, status: 404, headers: REFUSAL_HEADERS, dest: "/refused.json" },
+      { src: "^/api/health/?$", dest: "/api" },
+      { src: "^/api/.*", has: [{ type: "header", key: "authorization", value: "^Bearer .+" }], dest: "/api" },
+      { src: "^/api/.*", status: 401, headers: REFUSAL_HEADERS, dest: "/refused.json" },
       { src: "/(.*)", dest: "/index.html" },
     ],
   }),

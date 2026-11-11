@@ -16,7 +16,7 @@ import {
  * also get `class="dark"`, which every `dark:` utility and the dark category colors read. The variables of each
  * theme are the `[data-theme="…"]` blocks in `styles.css`.
  *
- * The first attributes are set by the inline script in `index.html`, before first paint, so there is no flash of
+ * The first attributes are set by `public/theme-init.js` (loaded from `index.html`), before first paint, so there is no flash of
  * the wrong theme; this provider keeps them in sync afterwards (and follows the OS while on "system").
  */
 
@@ -42,7 +42,7 @@ export type ThemeOption = {
 };
 
 /**
- * Keep in step with the scheme map in `index.html` and the blocks in `styles.css`. The order is the order the
+ * Keep in step with the scheme map in `public/theme-init.js` and the blocks in `styles.css`. The order is the order the
  * pickers show them in, within each scheme.
  */
 export const THEME_OPTIONS: readonly ThemeOption[] = [

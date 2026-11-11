@@ -13,6 +13,7 @@ import { account } from "./routes/account";
 import { categories } from "./routes/categories";
 import { checklist } from "./routes/checklist";
 import { emoji } from "./routes/emoji";
+import { apiHeaders, clientIp, createRateLimiter, DEFAULT_RATE_LIMITS, limitBody, rateLimit, type RateLimits } from "./protect";
 import { notes } from "./routes/notes";
 import { suggestCategory as suggestCategoryRoute } from "./routes/suggest-category";
 import { tasks } from "./routes/tasks";
@@ -42,7 +43,12 @@ export type ApiConfig = {
   openaiApiKey?: string;
   /** The OpenAI model that picks emoji and categories. Defaults to a small, cheap one. */
   emojiModel?: string;
+  /** Request limits per IP, per user and for the AI routes; `false` turns them off. Defaults to `DEFAULT_RATE_LIMITS`. */
+  rateLimits?: RateLimits | false;
 };
+
+/** The routes that call OpenAI, which get a tighter limit because each request costs money. */
+const AI_ROUTE = /^\/api\/(?:emoji|suggest-category)\/?$/;
 
 /**
  * The klndr HTTP API as a fetch handler (`app.fetch(request)`), so the same code runs on plain Node and
@@ -65,11 +71,12 @@ export function createApp(config: ApiConfig) {
 
   const app = new Hono<Env>();
 
-  app.use("*", async (c, next) => {
-    await next();
-    c.header("Cache-Control", "no-store");
-    c.header("X-Content-Type-Options", "nosniff");
-  });
+  const limits = config.rateLimits === false ? null : (config.rateLimits ?? DEFAULT_RATE_LIMITS);
+
+  app.use("*", apiHeaders);
+  // Cheap checks first, before any token is verified: who is flooding, and how big the body is.
+  if (limits) app.use("/api/*", rateLimit(createRateLimiter(limits.perIp), (c) => `ip:${clientIp(c)}`));
+  app.use("/api/*", limitBody());
 
   // Liveness only: unauthenticated, so it deliberately reports nothing about the database.
   app.get("/api/health", (c) => c.json({ ok: true }));
@@ -95,6 +102,10 @@ export function createApp(config: ApiConfig) {
       });
     }
   });
+  if (limits) {
+    api.use("*", rateLimit(createRateLimiter(limits.perUser), (c) => c.get("session").userId));
+    api.use("*", rateLimit(createRateLimiter(limits.ai), (c) => (AI_ROUTE.test(c.req.path) ? c.get("session").userId : null)));
+  }
   api.route("/tasks", tasks);
   api.route("/templates", templates);
   api.route("/categories", categories);
