@@ -2,6 +2,7 @@ import { addDaysISO, type ApiClient, type ScheduledTask } from "@klndr/core";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { byStart } from "../cache";
+import { STALE_MS } from "../client";
 import { queryKeys } from "../keys";
 import { useData } from "../provider";
 import { dayChecklistQuery, dayNotesQuery, rangeTasksQuery } from "./queries";
@@ -21,7 +22,7 @@ const around = (day: string, radius: number) =>
     .map((offset) => addDaysISO(day, offset));
 
 /** How long a day's list counts as fresh, the same as `createQueryClient`'s `staleTime`. */
-const FRESH_MS = 30_000;
+const FRESH_MS = STALE_MS;
 
 /**
  * One request for the blocks of the days around `day` that are not loaded yet (or are stale), stored as
