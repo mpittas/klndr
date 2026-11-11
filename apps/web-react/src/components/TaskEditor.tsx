@@ -153,9 +153,10 @@ function TaskEditorDialog({
   // A new block gets its emoji as its title is typed. One started from an activity has that activity's, and an
   // edited one keeps its own unless its title changes (see `useEmojiField`).
   const start = request.mode === "edit" ? request.task : null;
+  const initialEmoji = start ? start.emoji : (request.template?.emoji ?? null);
   const emoji = useEmojiField({
     kind: "activity",
-    initial: start ? start.emoji : (request.template?.emoji ?? null),
+    initial: initialEmoji,
     initialTitle: start ? start.title : (request.template?.name ?? ""),
     initialByHand: !start && !!request.template,
     title: draft.title,
@@ -286,13 +287,15 @@ function TaskEditorDialog({
     onClose();
   };
 
-  // Clicking off the dialog keeps what was typed: it saves a changed form (and says so if the name is missing),
-  // and closes an untouched one. Escape and the close button still discard.
+  // Clicking off the dialog or the drawer (or swiping the phone's sheet away) keeps what was typed: it saves a
+  // changed form, the name, notes, times, category and emoji alike (and says so if the name is missing), and
+  // closes an untouched one. Escape and the close button still discard.
   const dismiss = () => {
     if (busy) return;
     const changed =
       (Object.keys(draft) as (keyof Draft)[]).some((key) => draft[key] !== initial[key]) ||
-      category.value !== initialCategory;
+      category.value !== initialCategory ||
+      emoji.emoji !== initialEmoji;
     if (changed) submit();
     else onClose();
   };

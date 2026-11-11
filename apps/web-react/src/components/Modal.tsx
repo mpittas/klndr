@@ -76,7 +76,10 @@ export type ModalProps = {
    */
   compactHeader?: boolean;
   onClose: () => void;
-  /** A click on the dimmed area outside the dialog. Defaults to `onClose`; a form can save here instead. */
+  /**
+   * Leaving the dialog without a button: a click on the dimmed area outside it, or a swipe down of the phone's
+   * sheet. Defaults to `onClose`; a form can save here instead, so what was typed is never lost.
+   */
   onBackdropClick?: () => void;
   children: ReactNode;
   footer?: ReactNode;
@@ -218,7 +221,8 @@ export function Modal({
     const velocity = distance / Math.max(1, event.timeStamp - dragStart.current.time); // px per ms
     dragStart.current = null;
     setDragY(0);
-    if (distance > 120 || (distance > 40 && velocity > 0.6)) onClose();
+    // A swipe away is the phone's click outside: it saves (or closes) the same way.
+    if (distance > 120 || (distance > 40 && velocity > 0.6)) (onBackdropClick ?? onClose)();
   };
 
   if (!mounted) return null;
