@@ -34,7 +34,15 @@ import type * as React from "react";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { BlockContextMenu, type BlockMenuActions, type BlockMenuTarget } from "@/components/day-planner/BlockContextMenu";
+import { ResizeKnob } from "@/components/day-planner/ResizeKnob";
 import { TimeBlock } from "@/components/day-planner/TimeBlock";
+import {
+  haptic,
+  heldEdgeSpeed,
+  scrollParent,
+  swallowNextClick,
+  usePickedBlock,
+} from "@/components/day-planner/touch";
 import { paletteOf } from "@/lib/colors";
 import { summarizeNote } from "@/lib/notes";
 
@@ -62,6 +70,14 @@ type DragState = {
  * dragged-in activity, the live-time line, and the blocks themselves, which can be tapped, dragged (mouse,
  * touch and pen) and resized.
  *
+ * A mouse drags a block as soon as it moves, and resizes it from the strip along its bottom edge. A finger
+ * (or a pen) works as on a phone's calendar: a tap opens the block and a swipe scrolls the day, while a press
+ * and hold lifts the block with a buzz, and it then follows the finger, ticking at every quarter hour, with
+ * its times in the gutter and the day scrolling near the top and bottom edges. Let go, it stays picked
+ * (`usePickedBlock`): it moves at the first touch and shows a knob on its bottom edge to make it longer or
+ * shorter, until a tap elsewhere puts it down. Nothing on a block that is not picked holds on to a finger
+ * that only means to scroll.
+ *
  * Every measurement, snap and column decision is `@klndr/core`'s (`blockTop`, `planDrag`, `changedLanes`,
  * `dragPosition`, `resizedDuration`, `edgeScrollSpeed`), so the timeline behaves the same on every screen.
  */
@@ -69,6 +85,7 @@ export function DayTimelineGrid({
   tasks,
   nowMinute,
   resizing,
+  resized,
   preview,
   layout,
   gridHeight,
@@ -88,6 +105,8 @@ export function DayTimelineGrid({
   tasks: ScheduledTask[];
   nowMinute: number | null;
   resizing: string | null;
+  /** Blocks being resized or just let go (`useBlockResize`'s `lengths`): they spring to each new length. */
+  resized: ReadonlyMap<string, number>;
   preview: Preview | null;
   layout: Map<string, { left: number; width: number }>;
   gridHeight: number;
@@ -110,6 +129,7 @@ export function DayTimelineGrid({
 }) {
   const colorOf = useCategoryColor();
   const [menu, setMenu] = useState<BlockMenuTarget | null>(null);
+  const { picked, pick, putDown } = usePickedBlock();
 
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [hoverMinutes, setHoverMinutes] = useState<number | null>(null);
@@ -138,9 +158,18 @@ export function DayTimelineGrid({
     target: HTMLElement;
     startX: number;
     startY: number;
+    /** Counting down to the lift, for a finger on a block that is not picked yet; null when it lifts on moving. */
     timer: number | null;
   } | null>(null);
-  const active = useRef<{ task: ScheduledTask; grabMinutes: number } | null>(null);
+  const active = useRef<{
+    task: ScheduledTask;
+    grabMinutes: number;
+    /** Where a finger lifted the block, for the edge scroll to tell which way it has moved since; null for a mouse. */
+    fromY: number | null;
+    /** Where the block was pressed: a finger let go close to it taps as well, and that tap must not open it. */
+    pressX: number;
+    pressY: number;
+  } | null>(null);
   /** The pointer that pressed the block; any other finger or pen is ignored until it lets go. */
   const trackedPointer = useRef<number | null>(null);
   const lastX = useRef(0);
@@ -232,15 +261,8 @@ export function DayTimelineGrid({
   }, [resizing, preview]);
 
   // ---- Moving blocks (pointer based, so it works with mouse, touch and pen) ----
-  // Touch must press and hold (TOUCH_HOLD_MS), otherwise the gesture scrolls the timeline.
-
-  const findScroller = (el: HTMLElement | null): HTMLElement | null => {
-    for (let node = el?.parentElement ?? null; node; node = node.parentElement) {
-      const overflowY = getComputedStyle(node).overflowY;
-      if (overflowY === "auto" || overflowY === "scroll") return node;
-    }
-    return null;
-  };
+  // Touch must press and hold (TOUCH_HOLD_MS), otherwise the gesture scrolls the timeline; a picked block
+  // moves at once.
 
   const pointerMinutes = () => {
     const rect = gridRef.current!.getBoundingClientRect();
@@ -257,24 +279,37 @@ export function DayTimelineGrid({
     const { rawStart, snappedStart } = dragPosition(pointerMinutes(), grabMinutes, task.durationMinutes);
     const rect = gridRef.current!.getBoundingClientRect();
     const fraction = dragFraction(lastX.current, rect.left, rect.width);
+    // A tick under the finger for every quarter hour the block passes.
+    const before = dragRef.current;
+    if (state.fromY !== null && before && before.snappedStart !== snappedStart) haptic("step");
     setDragBoth({ id: task.id, rawStart, snappedStart, fraction });
   };
 
   const updatePlacing = () => {
     if (!placing.current?.held || !gridRef.current) return;
     const minutes = slotUnder(lastY.current);
-    if (minutes !== placeRef.current) setPlaceBoth(minutes);
+    if (minutes === placeRef.current) return;
+    if (placeRef.current !== null) haptic("step");
+    setPlaceBoth(minutes);
   };
 
   // A held block, or a held ghost, near the top or bottom of the scroll area scrolls it.
   const edgeScrollTick = () => {
     rafId.current = null;
-    const follow = active.current ? updateDrag : placing.current?.held ? updatePlacing : null;
+    const held = active.current;
+    const place = placing.current?.held ? placing.current : null;
+    const follow = held ? updateDrag : place ? updatePlacing : null;
     if (!follow) return;
     const el = scroller.current;
     if (el) {
       const rect = el.getBoundingClientRect();
-      const speed = edgeScrollSpeed(lastY.current, rect.top, rect.bottom);
+      // A finger scrolls only toward the edge it has moved toward since it lifted the block (or the ghost), so
+      // a block picked up near the bottom of the screen stays put until the finger heads that way.
+      const fromY = held ? held.fromY : (place?.startY ?? null);
+      const speed =
+        fromY === null
+          ? edgeScrollSpeed(lastY.current, rect.top, rect.bottom)
+          : heldEdgeSpeed(lastY.current, fromY, rect.top, rect.bottom);
       if (speed !== 0) {
         el.scrollTop += speed;
         follow();
@@ -295,11 +330,25 @@ export function DayTimelineGrid({
     } catch {
       // The pointer is already gone; the window listeners still end the drag.
     }
-    scroller.current = findScroller(gridRef.current);
-    active.current = { task, grabMinutes: grabOffset(pointerMinutes(), task.startMinutes) };
+    scroller.current = scrollParent(gridRef.current);
+    const finger = pointerType !== "mouse";
+    // Held by the point that was pressed, so the block catches up with a pointer that had to travel to lift it.
+    const pressedAt = pxToMinutes(start.startY - gridRef.current.getBoundingClientRect().top);
+    active.current = {
+      task,
+      grabMinutes: grabOffset(pressedAt, task.startMinutes),
+      fromY: finger ? lastY.current : null,
+      pressX: start.startX,
+      pressY: start.startY,
+    };
     bodyStyle().userSelect = "none";
     bodyStyle().webkitUserSelect = "none";
-    if (pointerType === "touch") navigator.vibrate?.(8);
+    if (finger) {
+      // Lifted: it stays picked once let go, with its knob to resize it.
+      window.getSelection()?.removeAllRanges();
+      haptic("lift");
+      pick(task.id);
+    }
     setHoverMinutes(null);
     updateDrag();
     rafId.current = requestAnimationFrame(edgeScrollTick);
@@ -330,8 +379,9 @@ export function DayTimelineGrid({
     const start = pending.current;
     if (start) {
       const moved = Math.hypot(event.clientX - start.startX, event.clientY - start.startY);
-      if (start.pointerType === "mouse") {
-        if (moved > MOUSE_SLOP) beginDrag();
+      if (start.timer === null) {
+        // A mouse, or a finger on the picked block: it lifts once it has really moved, so a tap stays a tap.
+        if (moved > (start.pointerType === "mouse" ? MOUSE_SLOP : TOUCH_SLOP)) beginDrag();
       } else if (moved > TOUCH_SLOP) {
         endTracking(); // the user is scrolling, not dragging
       }
@@ -350,13 +400,23 @@ export function DayTimelineGrid({
 
   const onWindowPointerUp = (event: PointerEvent) => {
     if (event.pointerId !== trackedPointer.current) return;
-    const dragged = active.current?.task;
+    const held = active.current;
+    const dragged = held?.task;
+    const finger = held ? held.fromY !== null : false;
     const current = dragRef.current;
-    if (dragged && current) {
+    if (held && dragged && current) {
       suppressNextClick();
+      // A finger let go where it pressed (a hold that did not move) also taps, a little later than a mouse
+      // clicks. A finger that travelled sends no tap, and nothing is held back that would catch the next one.
+      if (finger && Math.hypot(event.clientX - held.pressX, event.clientY - held.pressY) <= TOUCH_SLOP) {
+        swallowNextClick();
+      }
       const start = current.snappedStart;
       const lanes = changedLanes(tasksRef.current, planDrag(tasksRef.current, current.id, start, current.fraction));
-      if (start !== dragged.startMinutes || lanes) onMoveTask(dragged, start, lanes);
+      if (start !== dragged.startMinutes || lanes) {
+        if (finger) haptic("drop");
+        onMoveTask(dragged, start, lanes);
+      }
     }
     endTracking();
   };
@@ -369,10 +429,14 @@ export function DayTimelineGrid({
   const onBlockPointerDown = (task: ScheduledTask, event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     if (resizing || pending.current || active.current) return;
-    if ((event.target as HTMLElement).closest("button, [data-resize-handle]")) return;
+    // The ring and the delete button are pressed, not dragged. (The resize strip and knob stop their own
+    // presses from reaching the block; a finger on the strip comes through, and presses the block.)
+    if ((event.target as HTMLElement).closest("button")) return;
     lastX.current = event.clientX;
     lastY.current = event.clientY;
     trackedPointer.current = event.pointerId;
+    // A finger has to rest on a block before it lifts, unless the block is already picked.
+    const hold = event.pointerType !== "mouse" && picked !== task.id;
     pending.current = {
       task,
       pointerType: event.pointerType,
@@ -380,7 +444,7 @@ export function DayTimelineGrid({
       target: event.currentTarget,
       startX: event.clientX,
       startY: event.clientY,
-      timer: event.pointerType === "mouse" ? null : window.setTimeout(beginDrag, TOUCH_HOLD_MS),
+      timer: hold ? window.setTimeout(beginDrag, TOUCH_HOLD_MS) : null,
     };
     window.addEventListener("pointermove", onWindowPointerMove);
     window.addEventListener("pointerup", onWindowPointerUp);
@@ -423,12 +487,12 @@ export function DayTimelineGrid({
     state.timer = null;
     state.held = true;
     swallowTouchEnd.current = true;
-    scroller.current = findScroller(gridRef.current);
+    scroller.current = scrollParent(gridRef.current);
     bodyStyle().userSelect = "none";
     bodyStyle().webkitUserSelect = "none";
     // A long press may already have begun selecting text nearby; drop it.
     window.getSelection()?.removeAllRanges();
-    navigator.vibrate?.(8);
+    haptic("lift");
     setHoverMinutes(null);
     updatePlacing();
     rafId.current = requestAnimationFrame(edgeScrollTick);
@@ -570,6 +634,8 @@ export function DayTimelineGrid({
 
   const onBlockClick = (task: ScheduledTask) => {
     if (suppressClick.current) return;
+    // Opening a block puts it down; the editor takes over from here.
+    putDown();
     onTaskClick(task);
   };
 
@@ -742,10 +808,13 @@ export function DayTimelineGrid({
         {/* Scheduled task blocks */}
         {tasks.map((task) => {
           const isDragged = drag?.id === task.id;
+          const isPicked = picked === task.id;
           return (
             <div
               key={task.id}
               data-task-block
+              data-picked={isPicked || undefined}
+              data-resizing={resized.has(task.id) || undefined}
               role="button"
               tabIndex={0}
               aria-label={`${task.title}, ${formatTime(task.startMinutes)} to ${formatTime(
@@ -753,7 +822,11 @@ export function DayTimelineGrid({
               )}. Press Enter to edit.`}
               className={[
                 "group absolute cursor-grab select-none transition-[color,background-color,border-color,scale,box-shadow,left,width] duration-150 [-webkit-touch-callout:none]",
-                isDragged ? "z-40 scale-[1.02] cursor-grabbing rounded-md opacity-95 shadow-xl" : "z-10 hover:z-20",
+                isDragged
+                  ? "z-40 scale-[1.02] cursor-grabbing rounded-md opacity-95 shadow-xl"
+                  : isPicked
+                    ? "z-40 rounded-md shadow-lg"
+                    : "z-10 hover:z-20",
               ].join(" ")}
               style={{
                 top: `${blockTop(task.startMinutes)}px`,
@@ -761,6 +834,9 @@ export function DayTimelineGrid({
                 left: `${(layoutBox(task.id)?.left ?? 0) * 100 + 1}%`,
                 width: `${(layoutBox(task.id)?.width ?? 1) * 100 - 2}%`,
                 transform: isDragged ? `translateY(${dragOffsetPx(task)}px)` : undefined,
+                // A picked block moves at the first touch, so the browser must not scroll from it. (Inline, as
+                // the stylesheet gives every role="button" its own touch-action.)
+                touchAction: isPicked ? "none" : undefined,
               }}
               onKeyDown={(event) => {
                 if (event.key === "Enter" && event.target === event.currentTarget) {
@@ -787,7 +863,8 @@ export function DayTimelineGrid({
                 note={summarizeNote(task.notes)}
                 short={isShortBlock(task.durationMinutes)}
                 lines={titleLines(task.durationMinutes)}
-                className="h-full w-full"
+                // Picked: outlined in its own color while its knob is out.
+                className={["h-full w-full", isPicked ? "outline-2 outline-offset-1 outline-[color:var(--tone)]" : ""].join(" ")}
                 leading={
                   <button
                     type="button"
@@ -833,20 +910,27 @@ export function DayTimelineGrid({
                   <X className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
 
-                {/* Resize handle at bottom */}
+                {/* Resize strip along the bottom edge, for a mouse. A finger pressing here is pressing the block
+                    (a swipe from it scrolls the day); it resizes with the knob of a picked block instead. */}
                 <div
                   data-resize-handle
-                  onPointerDown={(event) => onStartResize(task, event)}
+                  onPointerDown={(event) => {
+                    if (event.pointerType === "mouse") onStartResize(task, event);
+                  }}
                   className={[
-                    "absolute inset-x-0 bottom-0 flex touch-none cursor-ns-resize items-end justify-center pb-[3px]",
-                    isShortBlock(task.durationMinutes) ? "h-2 touch:h-3" : "h-3.5 touch:h-5 sm:h-2",
+                    "absolute inset-x-0 bottom-0 flex cursor-ns-resize items-end justify-center pb-[3px]",
+                    isShortBlock(task.durationMinutes) ? "h-2" : "h-3.5 sm:h-2",
                   ].join(" ")}
                 >
                   {hasResizeGrip(task.durationMinutes) ? (
-                    <span className="h-0.5 w-5 rounded-full bg-current opacity-0 transition-opacity group-hover:opacity-25 touch:opacity-20" />
+                    <span className="h-0.5 w-5 rounded-full bg-current opacity-0 transition-opacity group-hover:opacity-25" />
                   ) : null}
                 </div>
               </TimeBlock>
+
+              {isPicked && !isDragged ? (
+                <ResizeKnob color={colorOf(task)} onPointerDown={(event) => onStartResize(task, event)} />
+              ) : null}
             </div>
           );
         })}

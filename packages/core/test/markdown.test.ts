@@ -85,6 +85,17 @@ describe("the block AST", () => {
       [false, false, "[  ] c"], // two spaces is not a checkbox
     ]);
   });
+
+  it("reads a to-do with nothing written yet, with or without a space after the box", () => {
+    // The web editor writes an empty to-do at the end of a note as "* [ ]", with no space.
+    const blocks = parseMarkdown("* [ ] \n* [ ]\n* [x]");
+    const items = blocks[0].type === "list" ? blocks[0].items : [];
+    expect(items.map((item) => [item.task, item.checked, item.text])).toEqual([
+      [true, false, ""],
+      [true, false, ""],
+      [true, true, ""],
+    ]);
+  });
 });
 
 describe("listItemDepth", () => {

@@ -1,4 +1,4 @@
-import { Check, FileText, Settings } from "lucide-react";
+import { Check, NotebookPen, Settings } from "lucide-react";
 
 const TAB =
   "relative flex min-h-12 flex-1 cursor-pointer flex-col items-center justify-center gap-0.5 rounded-xl text-muted-foreground transition-colors hover:text-foreground active:bg-foreground/[0.05] short:min-h-9 short:flex-row short:gap-2";
@@ -42,12 +42,12 @@ export function DayMobileNav({
       </button>
 
       <button type="button" className={TAB} onClick={() => onOpenSheet("notes")}>
-        <FileText className="h-5 w-5 text-foreground short:h-4 short:w-4" aria-hidden="true" />
-        <span className="text-[11px] font-medium">Notes</span>
+        <NotebookPen className="h-5 w-5 text-foreground short:h-4 short:w-4" aria-hidden="true" />
+        <span className="text-[11px] font-medium">Memo</span>
         {hasNotes && (
           <span
             className="absolute right-1/2 top-1.5 h-1.5 w-1.5 translate-x-[calc(50%+12px)] rounded-full bg-brand short:static short:translate-x-0"
-            aria-label="Has notes"
+            aria-label="Has a memo"
           />
         )}
       </button>

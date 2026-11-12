@@ -116,7 +116,7 @@ export function RoutinesShelf({ items, completedIds, onToggle, onManage, onOpenN
 
       {onOpenNotes ? (
         <View className="pr-md" style={{ paddingLeft: 4 }}>
-          <CircleButton label={hasNotes ? "Notes, this day has notes" : "Notes"} onPress={onOpenNotes} size={36} variant="muted">
+          <CircleButton label={hasNotes ? "Memo, written for this day" : "Memo"} onPress={onOpenNotes} size={36} variant="muted">
             <NotebookPen color={colors.foreground} size={17} strokeWidth={2} />
           </CircleButton>
           {hasNotes ? (

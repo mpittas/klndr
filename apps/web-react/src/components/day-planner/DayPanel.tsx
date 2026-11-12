@@ -43,7 +43,7 @@ export function DayPanel({
               </TabCount>
             ),
           },
-          { id: "notes", label: "Notes", extra: hasNotes ? <TabDot label="Has notes" /> : null },
+          { id: "notes", label: "Memo", extra: hasNotes ? <TabDot label="Has a memo" /> : null },
         ]}
       />
       <div className="flex min-h-0 flex-1 flex-col pt-2">

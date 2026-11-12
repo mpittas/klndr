@@ -216,7 +216,7 @@ export function WeekView({ days, tasks, loading }: { days: string[]; tasks: Sche
         onMove={(task, day, start) =>
           void changeTask(task, day === task.day ? { startMinutes: start } : { day, startMinutes: start })
         }
-        onResize={(task, durationMinutes) => void changeTask(task, { durationMinutes })}
+        onResize={(task, durationMinutes) => changeTask(task, { durationMinutes })}
         dropping={planning.dragging}
         onDropActivity={(day, start) => {
           if (planning.dragging) planning.place(planning.dragging, day, start);

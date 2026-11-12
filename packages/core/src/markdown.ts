@@ -62,7 +62,8 @@ export type MarkdownBlock =
 const HEADING = /^(#{1,6})\s+(.*)$/;
 const RULE = /^\s*([-*_])(\s*\1){2,}\s*$/;
 const LIST_ITEM = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
-const TASK = /^\[([ xX])\]\s+(.*)$/;
+/** A checkbox at the start of a list item; the text after it may be empty (a to-do not written yet). */
+const TASK = /^\[([ xX])\](?:\s+(.*))?$/;
 const QUOTE = /^>\s?(.*)$/;
 const FENCE = /^\s*```/;
 
@@ -133,7 +134,7 @@ export function parseMarkdown(source: string): MarkdownBlock[] {
           task: task !== null,
           checked: task !== null && task[1] !== " ",
           line: i,
-          text: task ? task[2] : content,
+          text: task ? (task[2] ?? "") : content,
         });
       }
       i--;

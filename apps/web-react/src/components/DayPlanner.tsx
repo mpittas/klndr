@@ -34,7 +34,7 @@ import { DayMobileNav } from "@/components/day-planner/DayMobileNav";
 import { DayPanel, type DayPanelTab } from "@/components/day-planner/DayPanel";
 import { DayRoutinesShelf } from "@/components/day-planner/DayRoutinesShelf";
 import { DayTimelineGrid } from "@/components/day-planner/DayTimelineGrid";
-import { useBlockResize } from "@/components/day-planner/useBlockResize";
+import { useBlockResize, withLengths } from "@/components/day-planner/useBlockResize";
 import { LibraryModal } from "@/components/LibraryModal";
 import { Modal } from "@/components/Modal";
 import { CategoryFilter } from "@/components/planner/CategoryFilter";
@@ -93,7 +93,7 @@ export function DayPlanner({ day }: { day: string }) {
   /** The activity picked up in the palette, waiting to be dropped on the timeline. */
   const [dragSource, setDragSource] = useState<ActivityTemplate | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
-  const resize = useBlockResize((task, duration) => void timeline.resizeTask(task, duration));
+  const resize = useBlockResize((task, duration) => timeline.resizeTask(task, duration));
   const { resizing } = resize;
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const scrolledForDay = useRef<string | null>(null);
@@ -111,15 +111,7 @@ export function DayPlanner({ day }: { day: string }) {
 
   // The timeline as it should look right now, including a resize still in flight; then without the categories
   // hidden from the toolbar (the same setting as on the week and the month).
-  const allTasks = useMemo(
-    () =>
-      resize.override
-        ? timeline.tasks.map((task) =>
-            task.id === resize.override?.id ? { ...task, durationMinutes: resize.override.duration } : task,
-          )
-        : timeline.tasks,
-    [timeline.tasks, resize.override],
-  );
+  const allTasks = useMemo(() => withLengths(timeline.tasks, resize.lengths), [timeline.tasks, resize.lengths]);
   const hiddenCategories = categoryFilter.hidden;
   const tasks = useMemo(
     () => (hiddenCategories.length ? allTasks.filter((task) => !hiddenCategories.includes(task.category)) : allTasks),
@@ -263,7 +255,7 @@ export function DayPlanner({ day }: { day: string }) {
           onManage={() => showLibrary()}
         />
       }
-      panelLabel="The day's checklist and notes"
+      panelLabel="The day's checklist and memo"
       panel={<DayPanel day={day} active={panelTab} onChange={setPanelTab} checklist={checklist} notes={notes} />}
       toolbar={
         <PlannerToolbar
@@ -321,7 +313,7 @@ export function DayPlanner({ day }: { day: string }) {
 
           <Modal
             open={mobileSheet === "notes"}
-            title="Notes"
+            title="Memo"
             subtitle={longDate(day)}
             flush
             onClose={() => setMobileSheet(null)}
@@ -359,6 +351,7 @@ export function DayPlanner({ day }: { day: string }) {
           tasks={tasks}
           nowMinute={nowMinute}
           resizing={resizing}
+          resized={resize.lengths}
           preview={preview}
           layout={layout}
           gridHeight={GRID_HEIGHT}

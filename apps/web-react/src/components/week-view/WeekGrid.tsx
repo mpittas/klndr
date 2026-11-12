@@ -3,11 +3,15 @@ import {
   GRID_HEIGHT,
   HOUR_OPTIONS,
   SLOT_HEIGHT,
+  TOUCH_HOLD_MS,
+  TOUCH_SLOP,
   WEEKDAY_LABELS,
   blockHeight,
   blockTop,
   boxOf,
+  dragPosition,
   edgeScrollSpeed,
+  grabOffset,
   hasResizeGrip,
   formatDuration,
   formatTime,
@@ -38,8 +42,16 @@ import {
   type RefObject,
 } from "react";
 
+import { ResizeKnob } from "@/components/day-planner/ResizeKnob";
 import { TimeBlock } from "@/components/day-planner/TimeBlock";
-import { useBlockResize } from "@/components/day-planner/useBlockResize";
+import {
+  haptic,
+  heldEdgeSpeed,
+  scrollViewport,
+  swallowNextClick,
+  usePickedBlock,
+} from "@/components/day-planner/touch";
+import { useBlockResize, withLengths } from "@/components/day-planner/useBlockResize";
 import { paletteOf } from "@/lib/colors";
 import { summarizeNote } from "@/lib/notes";
 
@@ -53,11 +65,14 @@ const NEW_LENGTH = 60;
 type Drag = {
   task: ScheduledTask;
   pointerId: number;
+  /** Where the block was pressed (a mouse) or lifted (a finger). */
   x: number;
   y: number;
   /** Where in the block it was grabbed, in minutes from its top, so it doesn't jump under the pointer. */
   grab: number;
   moved: boolean;
+  /** A finger or a pen, which lifts the block with a press and hold (or at once, once it is picked). */
+  finger: boolean;
   day: string;
   start: number;
 };
@@ -68,10 +83,13 @@ type Drag = {
  * view places them, overlaps side by side.
  *
  * A click on an empty slot asks for a new block there; a click on a block opens it; its ring ticks it off. With
- * a mouse or a pen a block can be dragged to another time or another day (the grid scrolls when it is held near
- * the top or the bottom) and made longer or shorter from its bottom edge, as on the day (touch keeps its tap and
- * scroll). A focused block moves with the arrow keys: ↑ ↓ a quarter hour, ← → a day. An activity dragged out of
- * the sidebar can be dropped on any slot, with a ghost of it showing where it will land.
+ * a mouse a block can be dragged to another time or another day (the grid scrolls when it is held near an
+ * edge) and made longer or shorter from its bottom edge, as on the day. A finger or a pen works as it does on
+ * the day: a tap opens the block and a swipe scrolls the week, while a press and hold lifts the block, which
+ * then follows the finger across hours and days, a quarter hour at a time, and stays picked once let go, with a
+ * knob to resize it (`usePickedBlock`, `ResizeKnob`). A focused block moves with the arrow keys: ↑ ↓ a quarter
+ * hour, ← → a day. An activity dragged out of the sidebar can be dropped on any slot, with a ghost of it showing
+ * where it will land.
  *
  * In the current week, now is a brand line across today and a faint one across the other days, so the time of
  * day reads anywhere on the grid; the weekend columns are a shade darker.
@@ -100,7 +118,8 @@ export function WeekGrid({
   onEdit: (task: ScheduledTask) => void;
   onToggle: (task: ScheduledTask) => void;
   onMove: (task: ScheduledTask, day: string, start: number) => void;
-  onResize: (task: ScheduledTask, durationMinutes: number) => void;
+  /** Save a block's new length; the promise, if any, settles once saved (the block keeps its length until then). */
+  onResize: (task: ScheduledTask, durationMinutes: number) => void | Promise<unknown>;
   /** The activity being dragged out of the sidebar, if any. */
   dropping?: ActivityTemplate | null;
   onDropActivity?: (day: string, start: number) => void;
@@ -117,18 +136,19 @@ export function WeekGrid({
   const refocus = useRef<{ id: string; day: string } | null>(null);
   /** The last pointer position of a block drag, for the edge scrolling to work from between moves. */
   const lastPointer = useRef<{ x: number; y: number } | null>(null);
+  /** The block a finger has picked up, which keeps its resize knob until a tap elsewhere puts it down. */
+  const { picked, pick, putDown } = usePickedBlock();
+  /** A finger resting on a block, counting down to lifting it. */
+  const holding = useRef<{ stop: () => void } | null>(null);
+  /** A finger is moving a block: the week must not scroll under it. Set with the drag, not after its render. */
+  const fingerHeld = useRef(false);
+  /** What pressed a block last, so its click knows whether it was a tap (the click's own pointer type is not
+      reported by every browser). */
+  const pressedWith = useRef("mouse");
 
   // Resizing from the bottom edge: the block follows the pointer, and the new length is saved on release.
   const resize = useBlockResize(onResize);
-  const live = useMemo(
-    () =>
-      resize.override
-        ? tasks.map((task) =>
-            task.id === resize.override?.id ? { ...task, durationMinutes: resize.override.duration } : task,
-          )
-        : tasks,
-    [tasks, resize.override],
-  );
+  const live = useMemo(() => withLengths(tasks, resize.lengths), [tasks, resize.lengths]);
 
   // Each day's blocks in start order. A block being dragged stays in its place (faded) while a copy follows the
   // pointer, so the element the drag started on is never taken out from under it.
@@ -172,29 +192,96 @@ export function WeekGrid({
 
   // ---- Dragging a block to another time or day ----
   const onBlockPointerDown = (task: ScheduledTask, event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.button !== 0 || event.pointerType === "touch") return;
+    pressedWith.current = event.pointerType;
+    if (event.button !== 0 || drag || holding.current || resize.resizing) return;
     const point = pointAt(event.clientX, event.clientY);
     if (!point) return;
+    const finger = event.pointerType !== "mouse";
+    // A finger has to rest on a block before it lifts, unless the block is already picked.
+    if (finger && picked !== task.id) {
+      holdBlock(task, event);
+      return;
+    }
     setHover(null);
+    fingerHeld.current = finger;
     setDrag({
       task,
       pointerId: event.pointerId,
       x: event.clientX,
       y: event.clientY,
-      grab: Math.max(0, point.minutes - task.startMinutes),
+      grab: grabOffset(point.minutes, task.startMinutes),
       moved: false,
+      finger,
       day: task.day,
       start: task.startMinutes,
     });
   };
 
-  /** Puts the dragged block where the pointer at (x, y) says, a quarter hour at a time. */
+  /**
+   * A finger resting on a block: after TOUCH_HOLD_MS it lifts, with a buzz, where it lies (the lifted copy then
+   * follows the finger). A finger that wanders past the slop first is scrolling, and is left to the browser.
+   */
+  const holdBlock = (task: ScheduledTask, event: ReactPointerEvent<HTMLDivElement>) => {
+    const { pointerId, clientX: startX, clientY: startY } = event;
+    let x = startX;
+    let y = startY;
+
+    const stop = () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onEnd);
+      window.removeEventListener("pointercancel", onEnd);
+      window.removeEventListener("blur", stop);
+      holding.current = null;
+    };
+    const onMove = (moveEvent: PointerEvent) => {
+      if (moveEvent.pointerId !== pointerId) return;
+      x = moveEvent.clientX;
+      y = moveEvent.clientY;
+      if (Math.hypot(x - startX, y - startY) > TOUCH_SLOP) stop();
+    };
+    const onEnd = (endEvent: PointerEvent) => {
+      if (endEvent.pointerId === pointerId) stop();
+    };
+
+    const timer = window.setTimeout(() => {
+      stop();
+      // Held by the point that was pressed, so the block does not jump under the finger.
+      const point = pointAt(startX, startY);
+      if (!point) return;
+      window.getSelection()?.removeAllRanges();
+      haptic("lift");
+      pick(task.id);
+      setHover(null);
+      fingerHeld.current = true;
+      setDrag({
+        task,
+        pointerId,
+        x,
+        y,
+        grab: grabOffset(point.minutes, task.startMinutes),
+        moved: true,
+        finger: true,
+        day: task.day,
+        start: task.startMinutes,
+      });
+    }, TOUCH_HOLD_MS);
+
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onEnd);
+    window.addEventListener("pointercancel", onEnd);
+    window.addEventListener("blur", stop);
+    holding.current = { stop };
+  };
+
+  /** Puts the dragged block where the pointer at (x, y) says, a quarter hour at a time (core's snapping). */
   const dragTo = (current: Drag, x: number, y: number) => {
     const point = pointAt(x, y);
     if (!point) return;
-    const raw = Math.round((point.minutes - current.grab) / STEP) * STEP;
-    const start = Math.max(0, Math.min(DAY_MINUTES - current.task.durationMinutes, raw));
+    const { snappedStart: start } = dragPosition(point.minutes, current.grab, current.task.durationMinutes);
     if (!current.moved || point.day !== current.day || start !== current.start) {
+      // A buzz as a picked block starts to move, and a tick for every step after that.
+      if (current.finger) haptic(current.moved ? "step" : "lift");
       setDrag({ ...current, moved: true, day: point.day, start });
     }
   };
@@ -202,38 +289,56 @@ export function WeekGrid({
   // The drag follows the pointer anywhere on the page (it may leave the grid), until it is let go.
   const onDragMove = useEffectEvent((event: PointerEvent) => {
     if (!drag || event.pointerId !== drag.pointerId) return;
-    if (!drag.moved && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < DRAG_THRESHOLD) return;
+    const threshold = drag.finger ? TOUCH_SLOP : DRAG_THRESHOLD;
+    if (!drag.moved && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < threshold) return;
     lastPointer.current = { x: event.clientX, y: event.clientY };
     dragTo(drag, event.clientX, event.clientY);
   });
 
-  // Held near the top or the bottom of the grid, a dragged block scrolls it (faster nearer the edge), so a block
-  // can go to any hour without letting go; the block keeps following the pointer as the hours pass under it.
+  // Held near an edge of the grid, a dragged block scrolls it (faster nearer the edge), so a block can go to any
+  // hour, or any day of a week wider than the screen, without letting go; it keeps following the pointer as
+  // the grid moves under it. Sideways, and up and down for a finger, it scrolls only toward the edge the pointer
+  // has moved toward, so a block lifted near one does not run off before it is moved.
   const onEdgeTick = useEffectEvent(() => {
     const el = scrollRef.current;
     const pointer = lastPointer.current;
     if (!el || !pointer || !drag?.moved) return;
+    const { top, bottom } = scrollViewport(el);
     const rect = el.getBoundingClientRect();
-    const header = el.querySelector<HTMLElement>("[data-timeline-header]")?.offsetHeight ?? 0;
-    const speed = edgeScrollSpeed(pointer.y, rect.top + header, rect.bottom);
-    if (speed === 0) return;
-    const before = el.scrollTop;
-    el.scrollTop += speed;
-    if (el.scrollTop !== before) dragTo(drag, pointer.x, pointer.y);
+    const gutter = el.querySelector<HTMLElement>("[data-timeline-gutter]")?.offsetWidth ?? 0;
+    const down = drag.finger ? heldEdgeSpeed(pointer.y, drag.y, top, bottom) : edgeScrollSpeed(pointer.y, top, bottom);
+    const across = heldEdgeSpeed(pointer.x, drag.x, rect.left + gutter, rect.right);
+    if (down === 0 && across === 0) return;
+    const before = { top: el.scrollTop, left: el.scrollLeft };
+    el.scrollTop += down;
+    el.scrollLeft += across;
+    if (el.scrollTop !== before.top || el.scrollLeft !== before.left) dragTo(drag, pointer.x, pointer.y);
   });
 
   const onDragEnd = useEffectEvent((event: PointerEvent) => {
     if (!drag || event.pointerId !== drag.pointerId) return;
-    const { task, moved, day, start } = drag;
+    const { task, moved, finger, day, start } = drag;
     setDrag(null);
+    fingerHeld.current = false;
     lastPointer.current = null;
     if (event.type === "pointercancel") return;
     if (moved) {
       justDropped.current = true;
       window.setTimeout(() => (justDropped.current = false), 0);
+      // A finger let go where it lifted the block (a hold that did not move) also taps, a little later; that tap
+      // must not open the block. A finger that travelled sends no tap.
+      if (finger && Math.hypot(event.clientX - drag.x, event.clientY - drag.y) <= TOUCH_SLOP) swallowNextClick();
     }
-    if (!moved) onEdit(task);
-    else if (day !== task.day || start !== task.startMinutes) onMove(task, day, start);
+    if (!moved) {
+      // A mouse opens the block on release; a finger's tap opens it with its click (see the block).
+      if (!finger) {
+        putDown();
+        onEdit(task);
+      }
+    } else if (day !== task.day || start !== task.startMinutes) {
+      if (finger) haptic("drop");
+      onMove(task, day, start);
+    }
   });
 
   const dragging = drag !== null;
@@ -255,6 +360,21 @@ export function WeekGrid({
       cancelAnimationFrame(frame);
     };
   }, [dragging]);
+
+  // Once a finger has lifted a block, the browser must not scroll the week under it. (Before that, a swipe is
+  // the browser's: it scrolls, and the hold is called off.) A finger still resting when the grid goes away
+  // stops counting down.
+  useEffect(() => {
+    const el = scrollRef.current;
+    const blockTouchScroll = (event: TouchEvent) => {
+      if (fingerHeld.current && event.cancelable) event.preventDefault();
+    };
+    el?.addEventListener("touchmove", blockTouchScroll, { passive: false });
+    return () => {
+      el?.removeEventListener("touchmove", blockTouchScroll);
+      holding.current?.stop();
+    };
+  }, [scrollRef]);
 
   // A block moved to another day with the keyboard lands in another column (a new element): focus follows it,
   // once it is there (renders in between still have it in the old column).
@@ -323,6 +443,9 @@ export function WeekGrid({
 
   const renderBlock = (task: ScheduledTask, box: { left: number; width: number }, lifted = false) => {
     const start = lifted && drag ? drag.start : task.startMinutes;
+    // The block being moved stays in its place, faded, while a lifted copy follows the pointer.
+    const held = !lifted && Boolean(drag?.moved) && drag?.task.id === task.id;
+    const isPicked = !lifted && picked === task.id;
     const palette = paletteOf(colorOf(task));
     const short = isShortBlock(task.durationMinutes);
     return (
@@ -331,28 +454,42 @@ export function WeekGrid({
         role="button"
         tabIndex={0}
         data-task-id={lifted ? undefined : task.id}
+        data-picked={isPicked || undefined}
+        data-resizing={(!lifted && resize.lengths.has(task.id)) || undefined}
         aria-label={`${task.title}, ${formatTimeRange(task.startMinutes, task.startMinutes + task.durationMinutes)}${task.completed ? ", done" : ""}. Enter to edit, arrow keys to move.`}
         className={[
           "absolute select-none transition-[box-shadow,scale,opacity] duration-150 [-webkit-touch-callout:none]",
           lifted
             ? "pointer-events-none z-40 scale-[1.02] rounded-md opacity-95 shadow-xl"
-            : drag?.moved && drag.task.id === task.id
+            : held
               ? "z-10 opacity-35"
               : resize.resizing === task.id
                 ? "z-30 cursor-ns-resize"
-                : "group/block z-10 cursor-pointer hover:z-20 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:cursor-grab",
+                : isPicked
+                  ? "z-40 cursor-grab rounded-md shadow-lg focus-visible:outline-none"
+                  : "group/block z-10 cursor-pointer hover:z-20 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background sm:cursor-grab",
         ].join(" ")}
         style={{
           top: `${blockTop(start)}px`,
           height: `${blockHeight(task.durationMinutes)}px`,
           left: `calc(${box.left * 100}% + 3px)`,
           width: `calc(${box.width * 100}% - 6px)`,
+          // A picked block moves at the first touch, so the browser must not scroll from it. (Inline, as the
+          // stylesheet gives every role="button" its own touch-action.)
+          touchAction: isPicked ? "none" : undefined,
         }}
         onPointerDown={(event) => onBlockPointerDown(task, event)}
+        // A long press is the lifting gesture; Android would otherwise also treat it as a right click.
+        onContextMenu={(event) => {
+          if (holding.current || drag?.finger) event.preventDefault();
+        }}
         onClick={(event) => {
           event.stopPropagation();
-          // Touch has no drag here, so a tap opens the block.
-          if ((event.nativeEvent as PointerEvent).pointerType === "touch") onEdit(task);
+          // A finger or a pen opens the block with its tap; a mouse opens it on release (see onDragEnd).
+          if (pressedWith.current !== "mouse") {
+            putDown();
+            onEdit(task);
+          }
         }}
         onKeyDown={(event) => {
           if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey) return;
@@ -373,7 +510,11 @@ export function WeekGrid({
           note={summarizeNote(task.notes)}
           short={short}
           lines={titleLines(task.durationMinutes)}
-          className="h-full w-full !gap-1.5 !pl-2 !pr-1.5"
+          // Picked: outlined in its own color while its knob is out.
+          className={[
+            "h-full w-full !gap-1.5 !pl-2 !pr-1.5",
+            isPicked && !held ? "outline-2 outline-offset-1 outline-[color:var(--tone)]" : "",
+          ].join(" ")}
           leading={
             <button
               type="button"
@@ -393,17 +534,19 @@ export function WeekGrid({
             </button>
           }
         />
+        {/* Resize strip along the bottom edge, for a mouse. A finger pressing here is pressing the block (a
+            swipe from it scrolls the week); it resizes with the knob of a picked block instead. */}
         {lifted ? null : (
           <div
             aria-hidden="true"
             data-resize-handle
             onPointerDown={(event) => {
-              if (event.button !== 0) return;
+              if (event.button !== 0 || event.pointerType !== "mouse") return;
               setHover(null);
               resize.startResize(task, event);
             }}
             className={[
-              "absolute inset-x-0 bottom-0 flex touch-none cursor-ns-resize items-end justify-center pb-[3px]",
+              "absolute inset-x-0 bottom-0 flex cursor-ns-resize items-end justify-center pb-[3px]",
               short ? "h-2" : "h-2.5",
             ].join(" ")}
           >
@@ -412,6 +555,15 @@ export function WeekGrid({
             ) : null}
           </div>
         )}
+        {isPicked && !held ? (
+          <ResizeKnob
+            color={colorOf(task)}
+            onPointerDown={(event) => {
+              setHover(null);
+              resize.startResize(task, event);
+            }}
+          />
+        ) : null}
       </div>
     );
   };
@@ -476,7 +628,10 @@ export function WeekGrid({
 
         <div className="flex">
           {/* Hour gutter, kept in view while the week scrolls sideways */}
-          <div className="sticky left-0 z-20 w-14 shrink-0 select-none border-r border-border/80 bg-background pr-1.5 sm:w-16 sm:pr-2.5">
+          <div
+            data-timeline-gutter
+            className="sticky left-0 z-20 w-14 shrink-0 select-none border-r border-border/80 bg-background pr-1.5 sm:w-16 sm:pr-2.5"
+          >
             {HOUR_OPTIONS.map((minute) => (
               <div key={minute} style={{ height: `${SLOT_HEIGHT}px` }} className="relative">
                 {gutterLabel(minute) ? (

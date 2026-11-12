@@ -27,7 +27,7 @@ export default function DaySheet() {
     <SheetScreen
       onClose={() => router.back()}
       subtitle={longDate(day)}
-      title={tab === "notes" ? "Notes" : "Routines"}
+      title={tab === "notes" ? "Memo" : "Routines"}
       top={
         <View className="px-md pb-sm">
           <SegmentedControl
@@ -35,7 +35,7 @@ export default function DaySheet() {
             onChange={setTab}
             options={[
               { label: "Routines", value: "checklist" },
-              { label: "Notes", value: "notes" },
+              { label: "Memo", value: "notes" },
             ]}
             value={tab}
           />

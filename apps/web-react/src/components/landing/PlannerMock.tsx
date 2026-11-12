@@ -189,7 +189,7 @@ function PlannerMockBody({ bodyRef, sourceRef, targetRef, flight, playing }: Pla
               <span className="flex flex-1 items-center justify-center gap-1">
                 Checklist <span className="count h-4 min-w-4 px-1 text-[10px]">2/4</span>
               </span>
-              <span className="flex flex-1 items-center justify-center">Notes</span>
+              <span className="flex flex-1 items-center justify-center">Memo</span>
             </div>
           </div>
           <div className="px-2.5 pb-1.5">

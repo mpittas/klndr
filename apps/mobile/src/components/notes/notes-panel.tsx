@@ -26,7 +26,7 @@ export function NotesPanel({ notes }: { notes: ReturnType<typeof useNotesEditor>
 
   if (notes.state === "loading") {
     return (
-      <View accessibilityLabel="Loading notes" className="gap-sm" importantForAccessibility="no">
+      <View accessibilityLabel="Loading the memo" className="gap-sm" importantForAccessibility="no">
         <Skeleton height={16} width="66%" />
         <Skeleton height={16} width="50%" />
       </View>
@@ -37,7 +37,7 @@ export function NotesPanel({ notes }: { notes: ReturnType<typeof useNotesEditor>
     return (
       <View className="items-center gap-sm py-lg">
         <Text className="text-center" tone="muted" variant="callout">
-          Couldn’t load the notes for this day.
+          Couldn’t load the memo for this day.
         </Text>
         <Button label="Try again" onPress={notes.retryLoad} variant="surface" />
       </View>
@@ -49,7 +49,7 @@ export function NotesPanel({ notes }: { notes: ReturnType<typeof useNotesEditor>
       <View className="flex-row items-center gap-md">
         <SegmentedControl
           className="flex-1"
-          label="Notes view"
+          label="Memo view"
           onChange={setChoice}
           options={[
             { label: "Write", value: "write" },
@@ -78,7 +78,7 @@ export function NotesPanel({ notes }: { notes: ReturnType<typeof useNotesEditor>
 
       {mode === "write" ? (
         <TextInput
-          accessibilityLabel="Notes for this day"
+          accessibilityLabel="Memo for this day"
           autoCapitalize="sentences"
           className="bg-card px-md py-md text-foreground"
           maxLength={MAX_LENGTH}
